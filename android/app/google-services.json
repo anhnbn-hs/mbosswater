@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "231869503501",
+    "project_id": "mbosswater",
+    "storage_bucket": "mbosswater.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231869503501:android:cf3b807e9c133bb4bb9d44",
+        "android_client_info": {
+          "package_name": "com.hamsa.mbosswater"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKs8bXhdpqMRevM0vb0RI33LA7IYzZelE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
