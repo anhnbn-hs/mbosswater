@@ -2,20 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
   final String id;
-  final String fullName;
-  final DateTime dob;
-  final String gender;
-  final String role;
-  final String password;
-  final Timestamp createdAt;
+  final String email;
+  final String? fullName;
+  final String? dob;
+  final String? gender;
+  final String? address;
+  final String? role;
+  final String? password;
+  final Timestamp? createdAt;
 
   UserModel({
     required this.id,
     required this.fullName,
     required this.dob,
+    required this.email,
     required this.gender,
     required this.role,
     required this.createdAt,
+    required this.address,
     required this.password,
   });
 
@@ -23,12 +27,14 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as String,
-      fullName: json['fullName'] as String,
-      dob: DateTime.parse(json['dob'] as String),
-      gender: json['gender'] as String,
-      role: json['role'] as String,
-      createdAt: json['createdAt'] as Timestamp,
-      password: json["password"] as String,
+      fullName: json['fullName'] as String?,
+      dob: json['dob'] as String,
+      gender: json['gender'] as String?,
+      address: json['address'] as String?,
+      email: json["email"] as String,
+      role: json['role'] as String?,
+      createdAt: json['createdAt'] as Timestamp?,
+      password: json["password"] as String?,
     );
   }
 
@@ -37,9 +43,12 @@ class UserModel {
     return {
       'id': id,
       'fullName': fullName,
-      'dob': dob.toIso8601String(),
+      'address': address,
+      'dob': dob,
       'gender': gender,
       'role': role,
+      'email': email,
+      'password': password,
       'createdAt': createdAt,
     };
   }

@@ -65,10 +65,11 @@ class _LoginPageState extends State<LoginPage> {
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: () => context.push("/forgot-password"),
-                  child: Text(
+                  child: const Text(
                     "Quên mật khẩu ?",
-                    style: GoogleFonts.beVietnamPro(
-                      color: const Color(0xff6A707C),
+                    style: TextStyle(
+                      fontFamily: "BeVietnam",
+                      color: Color(0xff6A707C),
                       fontWeight: FontWeight.w500,
                       fontSize: 14,
                     ),
@@ -119,14 +120,17 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void handleLogin() {
+    // Get text field value
     String email = emailController.text;
     String password = passwordController.text;
+    // Show loading dialog
     DialogUtils.showLoadingDialog(context);
     loginBloc.add(PressLogin(
       email: email,
       password: password,
     ));
   }
+
 }
 
 class CustomElevatedButton extends StatelessWidget {
@@ -155,8 +159,9 @@ class CustomElevatedButton extends StatelessWidget {
         child: Center(
           child: Text(
             text,
-            style: GoogleFonts.beVietnamPro(
+            style: const TextStyle(
               color: Colors.white,
+              fontFamily: "BeVietnam",
               fontWeight: FontWeight.w500,
               fontSize: 15,
             ),

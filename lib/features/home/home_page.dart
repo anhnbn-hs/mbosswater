@@ -1,7 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
+import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
+import 'package:mbosswater/core/widgets/feature_grid_item.dart';
+import 'package:mbosswater/core/widgets/floating_action_button.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -9,6 +14,12 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: CustomFloatingActionButton(
+        onTap: () {
+          context.push('/qrcode-scanner');
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
@@ -19,6 +30,50 @@ class HomePage extends StatelessWidget {
               child: ImageHelper.loadAssetImage(
                 AppAssets.imgBgHome,
                 fit: BoxFit.fill,
+              ),
+            ),
+            Positioned(
+              top: 36,
+              right: 16,
+              left: 10,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        DialogUtils.showConfirmationDialog(
+                          context: context,
+                          size: MediaQuery.of(context).size,
+                          title: "Bạn chắc chắc muốn đăng xuất?",
+                          labelTitle: "Đăng xuất",
+                          textCancelButton: "Hủy",
+                          textAcceptButton: "Đăng xuất",
+                          acceptPressed: () => handleLogout(context),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.logout,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const CircleAvatar(
+                      backgroundColor: Color(0xff3F689D),
+                      radius: 20,
+                      child: Text(
+                        "T",
+                        style: TextStyle(
+                          fontFamily: 'BeVietnam',
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          height: -.2,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
             Positioned(
@@ -51,29 +106,33 @@ class HomePage extends StatelessWidget {
                             color: const Color(0xffeeeeee),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
+                          child: const Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.search,
-                                size: 20,
+                                size: 22,
                                 color: Colors.grey,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 6),
                               Expanded(
                                 child: Center(
                                   child: TextField(
-                                    style: GoogleFonts.beVietnamPro(
+                                    style: TextStyle(
+                                      fontFamily: "BeVietnam",
                                       color: Colors.grey,
-                                      fontSize: 14,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w400,
                                     ),
                                     decoration: InputDecoration(
-                                      border: const UnderlineInputBorder(
+                                      border: UnderlineInputBorder(
                                         borderSide: BorderSide.none,
                                       ),
                                       hintText: "Tìm kiếm theo SĐT",
-                                      hintStyle: GoogleFonts.beVietnamPro(
-                                        color: const Color(0xffA7A7A7),
-                                        fontSize: 14,
+                                      hintStyle: TextStyle(
+                                        fontFamily: "BeVietnam",
+                                        color: Color(0xffA7A7A7),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w400,
                                       ),
                                     ),
                                   ),
@@ -83,12 +142,13 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 30),
-                        Align(
+                        const Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Dịch vụ",
-                            style: GoogleFonts.beVietnamPro(
-                              color: const Color(0xff201E1E),
+                            style: TextStyle(
+                              fontFamily: "BeVietnam",
+                              color: Color(0xff201E1E),
                               fontSize: 18,
                               fontWeight: FontWeight.normal,
                             ),
@@ -97,7 +157,7 @@ class HomePage extends StatelessWidget {
                         const SizedBox(height: 16),
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: ServiceGridItem(
+                          child: FeatureGridItem(
                             title: "Kích hoạt bảo hành",
                             subtitle: "Quét mã sản phẩm tại đây",
                             assetIcon: AppAssets.icGuarantee,
@@ -106,12 +166,13 @@ class HomePage extends StatelessWidget {
                         ),
                         // Management
                         const SizedBox(height: 30),
-                        Align(
+                        const Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Quản lý",
-                            style: GoogleFonts.beVietnamPro(
-                              color: const Color(0xff201E1E),
+                            style: TextStyle(
+                              fontFamily: "BeVietnam",
+                              color: Color(0xff201E1E),
                               fontSize: 18,
                               fontWeight: FontWeight.normal,
                             ),
@@ -122,7 +183,7 @@ class HomePage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: ServiceGridItem(
+                              child: FeatureGridItem(
                                 title: "Quản lý nhân viên",
                                 subtitle: "Quản lý thông tin nhân viên",
                                 assetIcon: AppAssets.icTeamManagement,
@@ -131,7 +192,7 @@ class HomePage extends StatelessWidget {
                             ),
                             const SizedBox(width: 20),
                             Expanded(
-                              child: ServiceGridItem(
+                              child: FeatureGridItem(
                                 title: "Mua bán hàng",
                                 subtitle: "Mua bán hàng với đại lý",
                                 assetIcon: AppAssets.icTeamManagement,
@@ -151,62 +212,16 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-}
 
-class ServiceGridItem extends StatelessWidget {
-  final String title, subtitle, assetIcon;
-  final VoidCallback onTap;
-
-  const ServiceGridItem({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.assetIcon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xffE5E5E5)),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ImageHelper.loadAssetImage(
-              assetIcon,
-              width: 26,
-              height: 26,
-              fit: BoxFit.fill,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: GoogleFonts.beVietnamPro(
-                color: const Color(0xff313131),
-                fontSize: 13,
-                fontWeight: FontWeight.w300,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.beVietnamPro(
-                color: const Color(0xff828282),
-                fontSize: 10,
-                fontWeight: FontWeight.w300,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  handleLogout(BuildContext context) async {
+    try {
+      DialogUtils.showLoadingDialog(context);
+      await Future.delayed(const Duration(milliseconds: 1000));
+      await FirebaseAuth.instance.signOut();
+      while (context.canPop()) {
+        context.pop();
+      }
+      context.push("/login");
+    } on Exception catch (e) {}
   }
 }

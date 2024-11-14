@@ -36,7 +36,7 @@ class ChangePasswordBloc
       emit(ChangeLoading());
       UserModel userEntity =
           await _changePassword(event.email, event.newPassword);
-      await StorageUtils.storeValue(key: "role", value: userEntity.role);
+      await StorageUtils.storeValue(key: "role", value: userEntity.role!);
       emit(ChangeSuccess());
     } on Exception catch (e) {
       emit(ChangeError(e.toString()));

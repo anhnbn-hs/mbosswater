@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
+import 'package:mbosswater/core/styles/app_colors.dart';
 
 enum MessageType { success, error, warning }
 
@@ -78,10 +79,10 @@ class DialogUtils {
     required BuildContext context,
     required Size size,
     required String title,
+    String? labelTitle,
     required String textCancelButton,
     required String textAcceptButton,
     required VoidCallback acceptPressed,
-    bool reverseButton = false,
   }) {
     showGeneralDialog(
       context: context,
@@ -92,135 +93,101 @@ class DialogUtils {
           margin: const EdgeInsets.only(left: 12, right: 12),
           alignment: Alignment.center,
           child: Material(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(14),
             child: Container(
-              height: 110,
+              height: 190,
               width: size.width,
+              padding: const EdgeInsets.symmetric(
+                vertical: 16,
+                horizontal: 28,
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                  if (labelTitle != null)
+                    Text(
+                      labelTitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: "BeVietnam",
+                        color: Color(0xff000000),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: "BeVietnam",
+                        color: Color(0xff1b1e25),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w300,
+                      ),
                     ),
                   ),
-                  reverseButton
-                      ? Row(
-                          children: [
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: InkWell(
-                                onTap: acceptPressed,
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    color: const Color(0xff603F26),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      textAcceptButton,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
+                  Row(
+                    children: [
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => Navigator.pop(context),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Container(
+                            height: 38,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              color: const Color(0xffC2C2C2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Center(
+                              child: Text(
+                                textCancelButton,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                  fontSize: 15,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: InkWell(
-                                onTap: () => Navigator.pop(context),
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    color: const Color(0xffEEEEEE),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      textCancelButton,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                          ],
-                        )
-                      : Row(
-                          children: [
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: InkWell(
-                                onTap: () => Navigator.pop(context),
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    color: const Color(0xffEEEEEE),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      textCancelButton,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: InkWell(
-                                onTap: acceptPressed,
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    color: const Color(0xff603F26),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      textAcceptButton,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                          ],
+                          ),
                         ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: InkWell(
+                          onTap: acceptPressed,
+                          borderRadius: BorderRadius.circular(4),
+                          child: Container(
+                            height: 38,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              color: AppColors.primaryColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Center(
+                              child: Text(
+                                textAcceptButton,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                  ),
                 ],
               ),
             ),

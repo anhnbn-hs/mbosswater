@@ -1,6 +1,9 @@
 import 'package:go_router/go_router.dart';
+import 'package:mbosswater/features/guarantee/data/model/product.dart';
+import 'package:mbosswater/features/guarantee/presentation/page/guarantee_activate_page.dart';
 import 'package:mbosswater/features/home/home_page.dart';
 import 'package:mbosswater/features/login/presentation/page/login_page.dart';
+import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scanner_page.dart';
 import 'package:mbosswater/features/recovery/presentation/page/change_password_page.dart';
 import 'package:mbosswater/features/recovery/presentation/page/forgot_password_page.dart';
 import 'package:mbosswater/features/splash/presentation/page/splash_page.dart';
@@ -24,8 +27,19 @@ final GoRouter router = GoRouter(
       builder: (context, state) => ChangePasswordPage(),
     ),
     GoRoute(
-      path: '/',
+      path: '/ah',
       builder: (context, state) => const HomePage(),
+    ),
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const QrcodeScannerPage(),
+    ),
+    GoRoute(
+      path: '/guarantee-active',
+      builder: (context, state) {
+        final data = state.extra as Product?;
+        return GuaranteeActivatePage(product: data);
+      },
     ),
   ],
 );
