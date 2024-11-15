@@ -1,9 +1,11 @@
 buildscript {
+    ext.kotlin_version = '1.8.0'
     repositories {
         google() // Kho lưu trữ Google
         mavenCentral()
     }
     dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.android.tools.build:gradle:7.2.2'  // Plugin Android
         classpath 'com.google.gms:google-services:4.4.2'  // Plugin Google Services
     }

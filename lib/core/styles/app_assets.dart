@@ -10,7 +10,9 @@ class AppAssets {
   // Images
   static const String imgBgHome = 'assets/images/img_bg_home.png';
   static const String imgLogo = 'assets/images/img_logo.png';
+  static const String imgActiveSuccess = 'assets/images/img_active_success.png';
 
   // Animations
   static const String aLoading = "assets/animations/loading.json";
+  static const String aWarning = "assets/animations/warning.json";
 }

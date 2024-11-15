@@ -1,8 +1,17 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
-import 'package:mbosswater/features/guarantee/presentation/bloc/step_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
@@ -17,7 +26,6 @@ void main() async {
     await Firebase.initializeApp();
   }
   initServiceLocator();
-
   // Future<void> addMultipleUsers(List<UserModel> users) async {
   //   try {
   //     WriteBatch batch = FirebaseFirestore.instance.batch();
@@ -60,9 +68,20 @@ void main() async {
         BlocProvider(create: (_) => sl<VerifyEmailBloc>()),
         BlocProvider(create: (_) => sl<VerifyOtpBloc>()),
         BlocProvider(create: (_) => sl<ChangePasswordBloc>()),
+        BlocProvider(create: (_) => sl<ProvincesBloc>()),
+        BlocProvider(create: (_) => sl<DistrictsBloc>()),
+        BlocProvider(create: (_) => sl<CommunesBloc>()),
+        BlocProvider(create: (_) => sl<ActiveGuaranteeBloc>()),
+        // For step handling
         BlocProvider(create: (_) => StepBloc(0)),
+        BlocProvider(create: (_) => ProductBloc(null)),
+        BlocProvider(create: (_) => CustomerBloc(null)),
+        BlocProvider(create: (_) => AdditionalInfoBloc(null)),
       ],
-      child: const MyApp(),
+      child: DevicePreview(
+        enabled: !kReleaseMode,
+        builder: (context) => const MyApp(),
+      ),
     ),
   );
 }
@@ -74,6 +93,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'MBossWater',
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
       theme: AppTheme.lightTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,

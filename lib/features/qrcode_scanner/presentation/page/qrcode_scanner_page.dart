@@ -26,6 +26,7 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
       ValueNotifier(CameraFacing.back);
 
   bool isProcessingScan = false;
+  bool isShowingDialog = false;
 
   @override
   void initState() {
@@ -45,8 +46,8 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Start camera khi quay lại trang
-    print("CAM START _______________");
     if (ModalRoute.of(context)?.isCurrent == true) {
+      print("CAM START _______________");
       controller.start(); // Khởi động lại camera
     }
   }
@@ -78,25 +79,26 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
   }
 
   Future<void> handleScannedCode(String code) async {
-    if (isProcessingScan) return; // Skip if already processing a scan
+    if (isProcessingScan || isShowingDialog) {
+      return; // Skip if already processing a scan
+    }
     isProcessingScan = true;
 
-    // Your handling logic here
     try {
       Map<String, dynamic> data = jsonDecode(code);
       if (data["code"] == "mbosswater") {
         // QR code valid
         DialogUtils.showLoadingDialog(context);
-        await Future.delayed(const Duration(seconds: 1), () {
-          isProcessingScan = false;
-        });
         // Extract data to get product
         if (data["product"] != null) {
           final productItem = Product.fromJson(data["product"]);
           // Stop camera
-          await controller
-              .stop()
-              .then((value) => controller.stop());
+          await controller.stop().then((value) => controller.stop());
+          // Delay
+          await Future.delayed(const Duration(seconds: 2), () {
+            isProcessingScan = false;
+            isShowingDialog = false;
+          });
           // Navigate
           DialogUtils.hide(context);
           context.push(
@@ -107,29 +109,38 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
         }
         DialogUtils.hide(context);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Mã QR không hợp lệ!'),
-            duration: Duration(seconds: 2),
-          ),
+        isShowingDialog = true;
+        DialogUtils.showWarningDialog(
+          context: context,
+          title: "Mã QR không hợp lệ!",
+          onClickOutSide: () => isShowingDialog = false,
         );
-        isProcessingScan = false;
+        await Future.delayed(const Duration(seconds: 5), () {
+          if (isShowingDialog) DialogUtils.hide(context);
+          isProcessingScan = false;
+          isShowingDialog = false;
+        });
         return;
       }
     } on Exception {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mã QR không hợp lệ!'),
-          duration: Duration(seconds: 2),
-        ),
+      isShowingDialog = true;
+      DialogUtils.showWarningDialog(
+        context: context,
+        title: "Mã QR không hợp lệ!",
+        onClickOutSide: () => isShowingDialog = false,
       );
-      isProcessingScan = false;
+      await Future.delayed(const Duration(seconds: 5), () {
+        if (isShowingDialog) DialogUtils.hide(context);
+        isProcessingScan = false;
+        isShowingDialog = false;
+      });
       return;
     }
 
     // Reset processing flag after a delay
     await Future.delayed(const Duration(seconds: 2), () {
       isProcessingScan = false;
+      isShowingDialog = false;
     });
   }
 
@@ -221,7 +232,7 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
                           child: Text("Đang khởi tạo máy ảnh"),
                         );
                       },
-                      fit: BoxFit.fill,
+                      fit: BoxFit.cover,
                       scanWindowUpdateThreshold: 2,
                       onDetect: (capture) async {
                         final List<Barcode> barcodes = capture.barcodes;

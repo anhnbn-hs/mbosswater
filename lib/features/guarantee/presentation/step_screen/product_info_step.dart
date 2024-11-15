@@ -1,11 +1,13 @@
 // Step 1: Product Information
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
 
-class ProductInfoStep extends StatelessWidget {
+class ProductInfoStep extends StatefulWidget {
   final Product? product;
   final VoidCallback onNextStep;
 
@@ -16,7 +18,22 @@ class ProductInfoStep extends StatelessWidget {
   });
 
   @override
+  State<ProductInfoStep> createState() => _ProductInfoStepState();
+}
+
+class _ProductInfoStepState extends State<ProductInfoStep>
+    with AutomaticKeepAliveClientMixin {
+  late ProductBloc productBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    productBloc = BlocProvider.of<ProductBloc>(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -26,12 +43,12 @@ class ProductInfoStep extends StatelessWidget {
           children: [
             buildBoxItem(
               label: "Tên sản phẩm",
-              fieldValue: product?.name ?? "",
+              fieldValue: widget.product?.name ?? "",
             ),
             const SizedBox(height: 12),
             buildBoxItem(
               label: "Dòng sản phẩm",
-              fieldValue: product?.category ?? "",
+              fieldValue: widget.product?.category ?? "",
             ),
             const SizedBox(height: 12),
             buildBoxItem(
@@ -61,7 +78,9 @@ class ProductInfoStep extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             CustomButton(
-              onTap: onNextStep,
+              onTap: () {
+                widget.onNextStep();
+              },
               textButton: "TIẾP TỤC",
             ),
             const SizedBox(height: 24),
@@ -103,4 +122,7 @@ class ProductInfoStep extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

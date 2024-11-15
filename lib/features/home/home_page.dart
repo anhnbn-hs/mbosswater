@@ -27,6 +27,7 @@ class HomePage extends StatelessWidget {
           children: [
             SizedBox(
               width: MediaQuery.of(context).size.width,
+              height: 253,
               child: ImageHelper.loadAssetImage(
                 AppAssets.imgBgHome,
                 fit: BoxFit.fill,
@@ -77,7 +78,8 @@ class HomePage extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: 250,
+              // top: MediaQuery.of(context).size.height * 0.27,
+              top: 253 - 24,
               left: 0,
               right: 0,
               bottom: 0,

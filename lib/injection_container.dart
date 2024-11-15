@@ -1,5 +1,18 @@
 // injection_container.dart
 import 'package:get_it/get_it.dart';
+import 'package:mbosswater/features/guarantee/data/datasource/address_datasource.dart';
+import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasource.dart';
+import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasource_impl.dart';
+import 'package:mbosswater/features/guarantee/data/repository/address_repository_impl.dart';
+import 'package:mbosswater/features/guarantee/data/repository/guarantee_repository_impl.dart';
+import 'package:mbosswater/features/guarantee/domain/repository/address_repository.dart';
+import 'package:mbosswater/features/guarantee/domain/repository/guarantee_repository.dart';
+import 'package:mbosswater/features/guarantee/domain/usecase/active_guarantee.dart';
+import 'package:mbosswater/features/guarantee/domain/usecase/address_usecase.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource_impl.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_bloc.dart';
@@ -26,31 +39,66 @@ void initServiceLocator() {
 
   // Forgot password
   sl.registerLazySingleton<RecoveryDatasource>(
-        () => RecoveryDatasourceImpl(),
+    () => RecoveryDatasourceImpl(),
   );
 
   sl.registerLazySingleton<RecoveryRepository>(
-        () => RecoveryRepositoryImpl(sl<RecoveryDatasource>()),
+    () => RecoveryRepositoryImpl(sl<RecoveryDatasource>()),
   );
 
   sl.registerLazySingleton<VerifyEmailUseCase>(
-        () => VerifyEmailUseCase(sl<RecoveryRepository>()),
+    () => VerifyEmailUseCase(sl<RecoveryRepository>()),
   );
 
   sl.registerLazySingleton<VerifyEmailBloc>(
-        () => VerifyEmailBloc(sl<VerifyEmailUseCase>()),
+    () => VerifyEmailBloc(sl<VerifyEmailUseCase>()),
   );
 
   sl.registerLazySingleton<VerifyOtpBloc>(
-        () => VerifyOtpBloc(sl<VerifyEmailUseCase>()),
+    () => VerifyOtpBloc(sl<VerifyEmailUseCase>()),
   );
 
   sl.registerLazySingleton<ChangePasswordUseCase>(
-        () => ChangePasswordUseCase(sl<RecoveryRepository>()),
+    () => ChangePasswordUseCase(sl<RecoveryRepository>()),
   );
 
   sl.registerLazySingleton<ChangePasswordBloc>(
-        () => ChangePasswordBloc(sl<ChangePasswordUseCase>()),
+    () => ChangePasswordBloc(sl<ChangePasswordUseCase>()),
   );
 
+  // Address
+  sl.registerLazySingleton<AddressDatasource>(
+    () => AddressDatasource(),
+  );
+  sl.registerLazySingleton<AddressRepository>(
+    () => AddressRepositoryImpl(sl<AddressDatasource>()),
+  );
+  sl.registerLazySingleton<AddressUseCase>(
+    () => AddressUseCase(sl<AddressRepository>()),
+  );
+
+  sl.registerLazySingleton<ProvincesBloc>(
+    () => ProvincesBloc(sl<AddressUseCase>()),
+  );
+  sl.registerLazySingleton<DistrictsBloc>(
+    () => DistrictsBloc(sl<AddressUseCase>()),
+  );
+  sl.registerLazySingleton<CommunesBloc>(
+    () => CommunesBloc(sl<AddressUseCase>()),
+  );
+
+  // Guarantee
+  sl.registerLazySingleton<GuaranteeDatasource>(
+    () => GuaranteeDatasourceImpl(),
+  );
+  sl.registerLazySingleton<GuaranteeRepository>(
+    () => GuaranteeRepositoryImpl(sl<GuaranteeDatasource>()),
+  );
+  sl.registerLazySingleton<ActiveGuaranteeUseCase>(
+    () => ActiveGuaranteeUseCase(sl<GuaranteeRepository>()),
+  );
+
+  sl.registerLazySingleton<ActiveGuaranteeBloc>(
+    () => ActiveGuaranteeBloc(sl<ActiveGuaranteeUseCase>()),
+  );
 }

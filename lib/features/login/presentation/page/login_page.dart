@@ -101,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                       while (context.canPop()) {
                         context.pop();
                       }
-                      context.push("/home-page");
+                      context.push("/home");
                     });
                   }
                   return const SizedBox.shrink();

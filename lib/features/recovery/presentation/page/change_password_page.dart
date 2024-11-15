@@ -114,7 +114,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     // Navigate
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       Navigator.of(context).popUntil((route) => route.isFirst);
-                      context.push("/home-page");
+                      context.push("/home");
                     });
                   }
                   return const SizedBox.shrink();

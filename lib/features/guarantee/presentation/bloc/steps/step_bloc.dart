@@ -19,4 +19,9 @@ class StepBloc extends Cubit<int> {
     currentStep--;
     emit(currentStep);
   }
+
+  void reset(){
+    currentStep = 0;
+    emit(currentStep);
+  }
 }
