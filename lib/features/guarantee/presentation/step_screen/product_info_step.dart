@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
+import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class ProductInfoStep extends StatefulWidget {
   final Product? product;
@@ -24,6 +26,7 @@ class ProductInfoStep extends StatefulWidget {
 class ProductInfoStepState extends State<ProductInfoStep>
     with AutomaticKeepAliveClientMixin {
   late ProductBloc productBloc;
+  late UserInfoBloc userInfoBloc;
 
   void performAction() {
     widget.onNextStep();
@@ -33,12 +36,16 @@ class ProductInfoStepState extends State<ProductInfoStep>
   void initState() {
     super.initState();
     productBloc = BlocProvider.of<ProductBloc>(context);
+    userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    int? guaranteeDuration = widget.product?.duration;
+    DateTime endDate = calculateEndDateFromDuration(guaranteeDuration!);
+    String endDateFormatted = DateFormat("dd/MM/yyyy").format(endDate);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: SingleChildScrollView(
@@ -62,13 +69,12 @@ class ProductInfoStepState extends State<ProductInfoStep>
             const SizedBox(height: 12),
             buildBoxItem(
               label: "Thời gian bảo hành",
-              fieldValue: "12 tháng",
+              fieldValue: widget.product?.guaranteeDuration ?? "Không xác định",
             ),
             const SizedBox(height: 12),
             buildBoxItem(
               label: "Ngày kết thúc bảo hành",
-              fieldValue: DateFormat("dd/MM/yyyy")
-                  .format(now.add(const Duration(days: 365))),
+              fieldValue: endDateFormatted,
             ),
             const SizedBox(height: 12),
             buildBoxItem(
@@ -78,7 +84,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
             const SizedBox(height: 12),
             buildBoxItem(
               label: "Nhân viên bán hàng",
-              fieldValue: "Nguyễn Ngọc Nam",
+              fieldValue: userInfoBloc.user!.fullName!,
             ),
             const SizedBox(height: 40),
             CustomButton(

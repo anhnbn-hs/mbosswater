@@ -1,10 +1,9 @@
 flutter_native_splash:
-  color: "#ff0000"
-  image: assets/images/img_logo.png
+  color: "#FFFFFF"
+  image: assets/icons/ic_launcher.png
 #  branding: assets/branding.png
   fullscreen: true
   android_12:
-    image: assets/images/img_logo.png
-    icon_background_color: "#121212"
+    image: assets/icons/ic_launcher.png
   web: false
 

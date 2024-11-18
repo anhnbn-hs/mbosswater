@@ -16,6 +16,7 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 import 'package:mbosswater/go_router.dart';
 
 import 'features/login/presentation/bloc/login_bloc.dart';
@@ -66,6 +67,7 @@ void main() async {
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<LoginBloc>()),
+        BlocProvider(create: (_) => sl<UserInfoBloc>()),
         BlocProvider(create: (_) => sl<VerifyEmailBloc>()),
         BlocProvider(create: (_) => sl<VerifyOtpBloc>()),
         BlocProvider(create: (_) => sl<ChangePasswordBloc>()),

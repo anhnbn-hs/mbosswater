@@ -33,6 +33,12 @@ import 'package:mbosswater/features/recovery/domain/usecase/verify_email.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
+import 'package:mbosswater/features/user_info/data/datasource/user_datasource.dart';
+import 'package:mbosswater/features/user_info/data/datasource/user_datasource_impl.dart';
+import 'package:mbosswater/features/user_info/data/repository/user_repository_impl.dart';
+import 'package:mbosswater/features/user_info/domain/repository/user_repository.dart';
+import 'package:mbosswater/features/user_info/domain/usecase/fetch_user_info.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -131,5 +137,20 @@ void initServiceLocator() {
 
   sl.registerLazySingleton<CustomerSearchBloc>(
         () => CustomerSearchBloc(sl<SearchCustomerUseCase>()),
+  );
+
+  // User
+  sl.registerLazySingleton<UserDatasource>(
+        () => UserDatasourceImpl(),
+  );
+  sl.registerLazySingleton<UserRepository>(
+        () => UserRepositoryImpl(sl<UserDatasource>()),
+  );
+  sl.registerLazySingleton<FetchUserInfoUseCase>(
+        () => FetchUserInfoUseCase(sl<UserRepository>()),
+  );
+
+  sl.registerLazySingleton<UserInfoBloc>(
+        () => UserInfoBloc(sl<FetchUserInfoUseCase>()),
   );
 }

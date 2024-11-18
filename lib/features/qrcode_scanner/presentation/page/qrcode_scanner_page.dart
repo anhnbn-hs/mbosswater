@@ -216,55 +216,58 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
           ),
           Flexible(
             flex: 3,
-            child: Center(
-              child: Stack(
-                children: [
-                  Container(
-                    height: size.width * 0.8,
-                    width: size.width * 0.8,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
+            child: Hero(
+              tag: 'hero-fab',
+              child: Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      height: size.width * 0.8,
+                      width: size.width * 0.8,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: MobileScanner(
+                        controller: controller,
+                        placeholderBuilder: (p0, p1) {
+                          return const Center(
+                            child: Text("Đang khởi tạo máy ảnh"),
+                          );
+                        },
+                        fit: BoxFit.cover,
+                        scanWindowUpdateThreshold: 2,
+                        onDetect: (capture) async {
+                          final List<Barcode> barcodes = capture.barcodes;
+                          for (final barcode in barcodes) {
+                            final String? code = barcode.rawValue;
+                            if (code != null) {
+                              await handleScannedCode(code);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('No value found in the scanned code'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
                     ),
-                    child: MobileScanner(
-                      controller: controller,
-                      placeholderBuilder: (p0, p1) {
-                        return const Center(
-                          child: Text("Đang khởi tạo máy ảnh"),
+                    AnimatedBuilder(
+                      animation: animationController,
+                      builder: (context, child) {
+                        return CustomPaint(
+                          size: Size(size.width * 0.8, size.width * 0.8),
+                          painter: ScannerOverlayPainter(
+                            animationValue: animationController.value,
+                          ),
                         );
                       },
-                      fit: BoxFit.cover,
-                      scanWindowUpdateThreshold: 2,
-                      onDetect: (capture) async {
-                        final List<Barcode> barcodes = capture.barcodes;
-                        for (final barcode in barcodes) {
-                          final String? code = barcode.rawValue;
-                          if (code != null) {
-                            await handleScannedCode(code);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('No value found in the scanned code'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        }
-                      },
                     ),
-                  ),
-                  AnimatedBuilder(
-                    animation: animationController,
-                    builder: (context, child) {
-                      return CustomPaint(
-                        size: Size(size.width * 0.8, size.width * 0.8),
-                        painter: ScannerOverlayPainter(
-                          animationValue: animationController.value,
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

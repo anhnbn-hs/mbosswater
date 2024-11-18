@@ -134,18 +134,20 @@ class _HomePageState extends State<HomePage> {
                                   padding: const EdgeInsets.only(left: 28),
                                   child: TypeAheadField<Customer>(
                                     suggestionsCallback: (search) async {
-                                      bloc.add(SearchCustomersByPhone(
-                                          search.trim()));
-                                      await for (final state in bloc.stream) {
-                                        if (state is CustomerSearchLoaded) {
-                                          return state.customers;
-                                        } else if (state
-                                            is CustomerSearchError) {
-                                          // Handle error case
-                                          return [];
+                                      if (search.isNotEmpty) {
+                                        bloc.add(SearchCustomersByPhone(
+                                            search.trim()));
+                                        await for (final state in bloc.stream) {
+                                          if (state is CustomerSearchLoaded) {
+                                            return state.customers;
+                                          } else if (state
+                                              is CustomerSearchError) {
+                                            // Handle error case
+                                            return [];
+                                          }
                                         }
+                                        return [];
                                       }
-                                      return [];
                                     },
                                     builder: (context, controller, focusNode) {
                                       return TextField(
@@ -230,16 +232,27 @@ class _HomePageState extends State<HomePage> {
                                           vertical: 16,
                                         ),
                                         child: Row(
-                                          children: [
-                                            ImageHelper.loadAssetImage(
-                                                AppAssets.icPerson),
+                                          children: <Widget>[
+                                            const Padding(
+                                              padding: EdgeInsets.only(top: 3),
+                                              child: Icon(
+                                                Icons.person_outlined,
+                                                color: Colors.black54,
+                                                size: 18,
+                                              ),
+                                            ),
                                             const SizedBox(width: 10),
-                                            Text(
-                                              "${customer.fullName} (${customer.phoneNumber})",
-                                              style: const TextStyle(
-                                                color: Color(0xff282828),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w400,
+                                            Expanded(
+                                              child: Align(
+                                                alignment: FractionalOffset.centerLeft,
+                                                child: Text(
+                                                  "${customer.fullName} (${customer.phoneNumber})",
+                                                  style: const TextStyle(
+                                                    color: Color(0xff282828),
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                                ),
                                               ),
                                             )
                                           ],
@@ -255,7 +268,7 @@ class _HomePageState extends State<HomePage> {
                                     // Additional customization options
                                     debounceDuration:
                                         const Duration(milliseconds: 800),
-                                    hideOnEmpty: true,
+                                    hideOnEmpty: false,
                                     hideOnLoading: false,
                                   ),
                                 ),

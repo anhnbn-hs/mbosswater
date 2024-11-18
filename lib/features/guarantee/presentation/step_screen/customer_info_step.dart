@@ -162,7 +162,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                               return provinces.map((value) {
                                 return PopupMenuItem<String>(
                                   value: value,
-                                  height: 30,
+                                  height: 40,
                                   enabled: value != "Tỉnh/TP",
                                   // Disable the "Tỉnh/TP" option
                                   child: Text(
@@ -244,7 +244,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                               return districts.map((value) {
                                 return PopupMenuItem<String>(
                                   value: value,
-                                  height: 30,
+                                  height: 40,
                                   enabled: value != "Quận/Huyện",
                                   child: Text(
                                     value,
@@ -319,7 +319,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                               return communes.map((value) {
                                 return PopupMenuItem<String>(
                                   value: value,
-                                  height: 30,
+                                  height: 40,
                                   enabled: value != "Xã/Phường",
                                   child: Text(
                                     value,
