@@ -25,10 +25,10 @@ class CustomerInfoStep extends StatefulWidget {
   });
 
   @override
-  State<CustomerInfoStep> createState() => _CustomerInfoStepState();
+  State<CustomerInfoStep> createState() => CustomerInfoStepState();
 }
 
-class _CustomerInfoStepState extends State<CustomerInfoStep>
+class CustomerInfoStepState extends State<CustomerInfoStep>
     with AutomaticKeepAliveClientMixin {
   final formKey = GlobalKey<FormState>();
 
@@ -77,12 +77,12 @@ class _CustomerInfoStepState extends State<CustomerInfoStep>
     return BlocListener(
       bloc: provincesBloc,
       listener: (context, state) {
-        if (state is ProvincesLoading) {
-          DialogUtils.showLoadingDialog(context);
-        }
-        if (state is ProvincesLoaded) {
-          DialogUtils.hide(context);
-        }
+        // if (state is ProvincesLoading) {
+        //   DialogUtils.showLoadingDialog(context);
+        // }
+        // if (state is ProvincesLoaded) {
+        //   DialogUtils.hide(context);
+        // }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -403,47 +403,9 @@ class _CustomerInfoStepState extends State<CustomerInfoStep>
               ),
               const SizedBox(height: 50),
               const Spacer(),
-              Row(
-                children: [
-                  ImageHelper.loadAssetImage(
-                    AppAssets.icArrowLeft,
-                    width: 18,
-                  ),
-                  TextButton(
-                    onPressed: widget.onPreStep,
-                    child: const Text(
-                      "Quay lại",
-                      style: TextStyle(
-                        color: Color(0xff000000),
-                        fontWeight: FontWeight.w500,
-                        fontFamily: "BeVietnam",
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
               CustomButton(
                 onTap: () {
-                  if (checkInput()) {
-                    customerBloc.emitCustomer(
-                      Customer(
-                        id: generateRandomId(6),
-                        fullName: nameController.text,
-                        email: emailController.text,
-                        phoneNumber: phoneController.text,
-                        address: Address(
-                          province: provincesBloc.selectedProvince,
-                          district: districtsBloc.selectedDistrict,
-                          commune: communesBloc.selectedCommune,
-                          detail: addressController.text,
-                        ),
-                      ),
-                    );
-                    widget.onNextStep();
-                  }
-                },
+                  handleAndGoToNextStep();},
                 textButton: "TIẾP TỤC",
               ),
               const SizedBox(height: 24),
@@ -551,4 +513,30 @@ class _CustomerInfoStepState extends State<CustomerInfoStep>
 
   @override
   bool get wantKeepAlive => true;
+
+  void handleAndGoToNextStep() {
+    if (checkInput()) {
+      customerBloc.emitCustomer(
+        Customer(
+          id: generateRandomId(6),
+          fullName: nameController.text,
+          email: emailController.text,
+          phoneNumber: phoneController.text,
+          address: Address(
+            province: provincesBloc.selectedProvince,
+            district: districtsBloc.selectedDistrict,
+            commune: communesBloc.selectedCommune,
+            detail: addressController.text,
+          ),
+        ),
+      );
+      widget.onNextStep();
+    } else {
+      DialogUtils.showWarningDialog(
+        context: context,
+        title: "Hãy nhập đầy đủ thông tin khách hàng!",
+        onClickOutSide: () {},
+      );
+    }
+  }
 }

@@ -1,7 +1,11 @@
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/features/active_success/active_success_page.dart';
+import 'package:mbosswater/features/customer/presentation/page/customer_detail_page.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_activate_page.dart';
+import 'package:mbosswater/features/guarantee/presentation/page/guarantee_history_page.dart';
 import 'package:mbosswater/features/home/home_page.dart';
 import 'package:mbosswater/features/login/presentation/page/login_page.dart';
 import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scanner_page.dart';
@@ -29,7 +33,7 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) => const HomePage(),
+      builder: (context, state) => HomePage(),
     ),
     GoRoute(
       path: '/qrcode-scanner',
@@ -45,6 +49,20 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/active-success',
       builder: (context, state) => const ActiveSuccessPage(),
+    ),
+    GoRoute(
+      path: '/customer-detail',
+      builder: (context, state) {
+        final data = state.extra as Customer?;
+        return CustomerDetailPage(customer: data);
+      },
+    ),
+    GoRoute(
+      path: '/guarantee-history',
+      builder: (context, state) {
+        final data = state.extra as Guarantee;
+        return GuaranteeHistoryPage(guarantee: data);
+      },
     ),
   ],
 );

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
@@ -65,9 +66,9 @@ class DialogUtils {
               const SizedBox(width: 10),
               Expanded(
                   child: Text(
-                    message,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  )),
+                message,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              )),
             ],
           ),
         );
@@ -77,11 +78,11 @@ class DialogUtils {
 
   static void showConfirmationDialog({
     required BuildContext context,
-    required Size size,
     required String title,
     String? labelTitle,
     required String textCancelButton,
     required String textAcceptButton,
+    required VoidCallback cancelPressed,
     required VoidCallback acceptPressed,
   }) {
     showGeneralDialog(
@@ -96,7 +97,7 @@ class DialogUtils {
             borderRadius: BorderRadius.circular(14),
             child: Container(
               height: 190,
-              width: size.width,
+              width: double.infinity,
               padding: const EdgeInsets.symmetric(
                 vertical: 16,
                 horizontal: 28,
@@ -138,7 +139,7 @@ class DialogUtils {
                       const SizedBox(width: 16),
                       Expanded(
                         child: InkWell(
-                          onTap: () => Navigator.pop(context),
+                          onTap: cancelPressed,
                           borderRadius: BorderRadius.circular(4),
                           child: Container(
                             height: 38,
@@ -149,6 +150,7 @@ class DialogUtils {
                             ),
                             child: Center(
                               child: Text(
+                                textAlign: TextAlign.center,
                                 textCancelButton,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w400,
@@ -174,6 +176,7 @@ class DialogUtils {
                             ),
                             child: Center(
                               child: Text(
+                                textAlign: TextAlign.center,
                                 textAcceptButton,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w400,
@@ -214,11 +217,8 @@ class DialogUtils {
           child: Material(
             borderRadius: BorderRadius.circular(14),
             child: Container(
-              height: 190,
-              width: MediaQuery
-                  .of(context)
-                  .size
-                  .width,
+              height: 175,
+              width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.symmetric(
                 vertical: 16,
                 horizontal: 28,

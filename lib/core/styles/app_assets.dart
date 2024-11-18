@@ -7,6 +7,7 @@ class AppAssets {
   static const String icRequest = 'assets/icons/ic_request.png';
   static const String icArrowLeft = 'assets/icons/ic_arrow-left.png';
   static const String icTeamManagement = 'assets/icons/ic_team-management.png';
+  static const String icPerson = 'assets/icons/ic_person.png';
   // Images
   static const String imgBgHome = 'assets/images/img_bg_home.png';
   static const String imgLogo = 'assets/images/img_logo.png';

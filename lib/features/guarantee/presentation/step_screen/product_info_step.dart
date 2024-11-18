@@ -18,12 +18,16 @@ class ProductInfoStep extends StatefulWidget {
   });
 
   @override
-  State<ProductInfoStep> createState() => _ProductInfoStepState();
+  State<ProductInfoStep> createState() => ProductInfoStepState();
 }
 
-class _ProductInfoStepState extends State<ProductInfoStep>
+class ProductInfoStepState extends State<ProductInfoStep>
     with AutomaticKeepAliveClientMixin {
   late ProductBloc productBloc;
+
+  void performAction() {
+    widget.onNextStep();
+  }
 
   @override
   void initState() {

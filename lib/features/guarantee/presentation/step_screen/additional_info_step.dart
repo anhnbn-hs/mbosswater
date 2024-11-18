@@ -21,10 +21,10 @@ class AdditionalInfoStep extends StatefulWidget {
   final VoidCallback onNextStep, onPreStep;
 
   @override
-  State<AdditionalInfoStep> createState() => _AdditionalInfoStepState();
+  State<AdditionalInfoStep> createState() => AdditionalInfoStepState();
 }
 
-class _AdditionalInfoStepState extends State<AdditionalInfoStep>
+class AdditionalInfoStepState extends State<AdditionalInfoStep>
     with AutomaticKeepAliveClientMixin {
   late AdditionalInfoBloc additionalInfoBloc;
 
@@ -142,27 +142,6 @@ class _AdditionalInfoStepState extends State<AdditionalInfoStep>
           const SizedBox(height: 12),
           const SizedBox(height: 50),
           const Spacer(),
-          Row(
-            children: [
-              ImageHelper.loadAssetImage(
-                AppAssets.icArrowLeft,
-                width: 18,
-              ),
-              TextButton(
-                onPressed: widget.onPreStep,
-                child: const Text(
-                  "Quay lại",
-                  style: TextStyle(
-                    color: Color(0xff000000),
-                    fontWeight: FontWeight.w500,
-                    fontFamily: "BeVietnam",
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
           CustomButton(
             onTap: () {
               // Validate pH input

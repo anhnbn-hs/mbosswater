@@ -1,15 +1,35 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/feature_grid_item.dart';
 import 'package:mbosswater/core/widgets/floating_action_button.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/search_customer_event.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {
+  HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final searchController = TextEditingController();
+  late CustomerSearchBloc bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    bloc = BlocProvider.of<CustomerSearchBloc>(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,12 +66,12 @@ class HomePage extends StatelessWidget {
                       onPressed: () {
                         DialogUtils.showConfirmationDialog(
                           context: context,
-                          size: MediaQuery.of(context).size,
                           title: "Bạn chắc chắc muốn đăng xuất?",
                           labelTitle: "Đăng xuất",
                           textCancelButton: "Hủy",
                           textAcceptButton: "Đăng xuất",
                           acceptPressed: () => handleLogout(context),
+                          cancelPressed: () => Navigator.pop(context),
                         );
                       },
                       icon: const Icon(
@@ -102,47 +122,153 @@ class HomePage extends StatelessWidget {
                     child: Column(
                       children: <Widget>[
                         Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffeeeeee),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.search,
-                                size: 22,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(width: 6),
-                              Expanded(
-                                child: Center(
-                                  child: TextField(
-                                    style: TextStyle(
-                                      fontFamily: "BeVietnam",
-                                      color: Colors.grey,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    decoration: InputDecoration(
-                                      border: UnderlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                      ),
-                                      hintText: "Tìm kiếm theo SĐT",
-                                      hintStyle: TextStyle(
-                                        fontFamily: "BeVietnam",
-                                        color: Color(0xffA7A7A7),
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xffeeeeee),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.only(left: 28),
+                                  child: TypeAheadField<Customer>(
+                                    suggestionsCallback: (search) async {
+                                      bloc.add(SearchCustomersByPhone(
+                                          search.trim()));
+                                      await for (final state in bloc.stream) {
+                                        if (state is CustomerSearchLoaded) {
+                                          return state.customers;
+                                        } else if (state
+                                            is CustomerSearchError) {
+                                          // Handle error case
+                                          return [];
+                                        }
+                                      }
+                                      return [];
+                                    },
+                                    builder: (context, controller, focusNode) {
+                                      return TextField(
+                                        controller: controller,
+                                        focusNode: focusNode,
+                                        keyboardType: TextInputType.number,
+                                        style: const TextStyle(
+                                          fontFamily: "BeVietnam",
+                                          color: Colors.grey,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          border: UnderlineInputBorder(
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          hintText: "Tìm kiếm theo SĐT",
+                                          hintStyle: TextStyle(
+                                            fontFamily: "BeVietnam",
+                                            color: Color(0xffA7A7A7),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    loadingBuilder: (context) {
+                                      return Container(
+                                        height: 100,
+                                        width: double.infinity,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                        ),
+                                        child: Center(
+                                          child: Lottie.asset(
+                                            AppAssets.aLoading,
+                                            height: 50,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    emptyBuilder: (context) {
+                                      return Container(
+                                        height: 100,
+                                        width: double.infinity,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                        ),
+                                        child: const Center(
+                                          child: Text(
+                                              "Không tìm thấy khách hàng!"),
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder: (context, error) {
+                                      return Container(
+                                        height: 100,
+                                        width: double.infinity,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                        ),
+                                        child: const Center(
+                                          child:
+                                              Text("Xảy ra lỗi. Hãy thử lại!"),
+                                        ),
+                                      );
+                                    },
+                                    itemBuilder: (context, customer) {
+                                      return Container(
+                                        width: double.infinity,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: Color(0xFFEEEEEE),
+                                              width: .3,
+                                            ),
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 16,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            ImageHelper.loadAssetImage(
+                                                AppAssets.icPerson),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              "${customer.fullName} (${customer.phoneNumber})",
+                                              style: const TextStyle(
+                                                color: Color(0xff282828),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    onSelected: (Customer value) {
+                                      context.push(
+                                        "/customer-detail",
+                                        extra: value,
+                                      );
+                                    },
+                                    // Additional customization options
+                                    debounceDuration:
+                                        const Duration(milliseconds: 800),
+                                    hideOnEmpty: true,
+                                    hideOnLoading: false,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Icon(
+                                    Icons.search,
+                                    size: 22,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            )),
                         const SizedBox(height: 30),
                         const Align(
                           alignment: Alignment.centerLeft,
@@ -163,7 +289,9 @@ class HomePage extends StatelessWidget {
                             title: "Kích hoạt bảo hành",
                             subtitle: "Quét mã sản phẩm tại đây",
                             assetIcon: AppAssets.icGuarantee,
-                            onTap: () {},
+                            onTap: () {
+                              context.push('/qrcode-scanner');
+                            },
                           ),
                         ),
                         // Management

@@ -7,11 +7,13 @@ import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasource_impl.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_event.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_state.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
@@ -33,6 +35,11 @@ class GuaranteeActivatePage extends StatefulWidget {
 }
 
 class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
+  // Keys
+  final productStepKey = GlobalKey<ProductInfoStepState>();
+  final customerStepKey = GlobalKey<CustomerInfoStepState>();
+  final additionalStepKey = GlobalKey<AdditionalInfoStepState>();
+
   late StepBloc stepBloc;
   late ProductBloc productBloc;
   late CustomerBloc customerBloc;
@@ -65,110 +72,151 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        leading: const LeadingBackButton(),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Text(
-            "Thông Tin Sản Phẩm",
-            style: TextStyle(
-              fontFamily: "BeVietnam",
-              fontWeight: FontWeight.w600,
-              fontSize: 22,
-              color: Color(0xff201E1E),
-            ),
+    return WillPopScope(
+      onWillPop: () async {
+        backToPreviousPage();
+        return true;
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          leading: LeadingBackButton(
+            onTap: () => backToPreviousPage(),
           ),
-          const SizedBox(height: 20),
-          BlocBuilder<StepBloc, int>(
-            bloc: stepBloc,
-            builder: (context, state) {
-              return EasyStepper(
-                activeStep: state,
-                enableStepTapping: false,
-                lineStyle: const LineStyle(
-                  lineType: LineType.normal,
-                  defaultLineColor: Color(0xffD3DCE6),
-                  lineThickness: 1.5,
-                ),
-                activeStepTextColor: Colors.black87,
-                finishedStepTextColor: Colors.black87,
-                internalPadding: 60,
-                showLoadingAnimation: false,
-                stepRadius: 8,
-                showStepBorder: false,
-                steps: [
-                  buildEasyStep(title: "Sản phẩm", stepNumber: 1),
-                  buildEasyStep(title: "Khách hàng", stepNumber: 2),
-                  buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
-                ],
-                onStepReached: (index) {
-                  stepBloc.changeStep(index);
-                  _pageController.animateToPage(
-                    index,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
+        ),
+        body: BlocListener(
+          bloc: activeGuaranteeBloc,
+          listener: (context, state) {
+            if (state is ActiveGuaranteeLoaded) {
+              DialogUtils.hide(context);
+              // Activated
+              context.go("/active-success");
+            }
+            if (state is ActiveGuaranteeError) {
+              DialogUtils.hide(context);
+              DialogUtils.showWarningDialog(
+                context: context,
+                title: "Kích hoạt không thành công. Vui lòng thử lại!",
+                onClickOutSide: () {},
+              );
+            }
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              BlocBuilder<StepBloc, int>(
+                bloc: stepBloc,
+                builder: (context, state) {
+                  String title = "";
+                  if (state == 0) {
+                    title = "Thông Tin Sản Phẩm";
+                  }
+                  if (state == 1) {
+                    title = "Thông Tin Khách Hàng";
+                  }
+                  if (state == 2) {
+                    title = "Thông Tin Thêm";
+                  }
+                  return Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: "BeVietnam",
+                      fontWeight: FontWeight.w600,
+                      fontSize: 22,
+                      color: Color(0xff201E1E),
+                    ),
                   );
                 },
-              );
-            },
+              ),
+              const SizedBox(height: 20),
+              BlocBuilder<StepBloc, int>(
+                bloc: stepBloc,
+                builder: (context, state) {
+                  return EasyStepper(
+                    activeStep: state,
+                    enableStepTapping: true,
+                    lineStyle: const LineStyle(
+                      lineType: LineType.normal,
+                      defaultLineColor: Color(0xffD3DCE6),
+                      lineThickness: 1.5,
+                    ),
+                    activeStepTextColor: Colors.black87,
+                    finishedStepTextColor: Colors.black87,
+                    internalPadding: 60,
+                    showLoadingAnimation: false,
+                    stepRadius: 8,
+                    showStepBorder: false,
+                    steps: [
+                      buildEasyStep(title: "Sản phẩm", stepNumber: 1),
+                      buildEasyStep(title: "Khách hàng", stepNumber: 2),
+                      buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
+                    ],
+                    onStepReached: (index) {
+                      changeStep(index);
+                    },
+                  );
+                },
+              ),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  scrollDirection: Axis.horizontal,
+                  onPageChanged: (index) => changeStep(index),
+                  children: [
+                    ProductInfoStep(
+                      key: productStepKey,
+                      product: widget.product,
+                      onNextStep: () {
+                        if (widget.product != null) {
+                          productBloc.emitProduct(widget.product!);
+                        }
+                        stepBloc.goToNextStep();
+                        _pageController.animateToPage(
+                          stepBloc.currentStep,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    ),
+                    CustomerInfoStep(
+                      key: customerStepKey,
+                      onPreStep: () {
+                        stepBloc.goToPreviousStep();
+                        _pageController.animateToPage(
+                          stepBloc.currentStep,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                      onNextStep: () {
+                        stepBloc.goToNextStep();
+                        _pageController.animateToPage(
+                          stepBloc.currentStep,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    ),
+                    AdditionalInfoStep(
+                      key: additionalStepKey,
+                      onPreStep: () {
+                        stepBloc.goToPreviousStep();
+                        _pageController.animateToPage(
+                          stepBloc.currentStep,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                      onNextStep: () async {
+                        handleConfirmAndActiveGuarantee();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              onPageChanged: (index) => stepBloc.changeStep(index),
-              children: [
-                ProductInfoStep(
-                  product: widget.product,
-                  onNextStep: () {
-                    if (widget.product != null) {
-                      productBloc.emitProduct(widget.product!);
-                    }
-                    stepBloc.goToNextStep();
-                    _pageController.animateToPage(
-                      stepBloc.currentStep,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                ),
-                CustomerInfoStep(
-                  onPreStep: () {
-                    stepBloc.goToPreviousStep();
-                    _pageController.animateToPage(
-                      stepBloc.currentStep,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                  onNextStep: () {
-                    stepBloc.goToNextStep();
-                    _pageController.animateToPage(
-                      stepBloc.currentStep,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                ),
-                AdditionalInfoStep(
-                  onPreStep: () {
-                    stepBloc.goToPreviousStep();
-                    _pageController.animateToPage(
-                      stepBloc.currentStep,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                  onNextStep: handleConfirmAndActiveGuarantee,
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -240,7 +288,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     }
   }
 
-  void handleConfirmAndActiveGuarantee() {
+  void handleConfirmAndActiveGuarantee() async {
     Product? product = productBloc.product;
     Customer? customer = customerBloc.customer;
     AdditionalInfo? additionalInfo = additionalInfoBloc.additionalInfo;
@@ -248,31 +296,38 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     if (product != null && customer != null && additionalInfo != null) {
       // Save additional info to customer
       customer.additionalInfo = additionalInfo;
-
       DialogUtils.showConfirmationDialog(
         context: context,
-        size: MediaQuery.of(context).size,
         title: "",
         labelTitle: "Bạn chắc chắn xác nhận thông tin trên ?",
         textCancelButton: "Hủy",
         textAcceptButton: "Xác nhận",
-        acceptPressed: () {
-          // handle active
-
-          final guarantee = Guarantee(
-            id: generateRandomId(6),
-            createdAt: Timestamp.now(),
-            product: product,
-            customerID: customer.id!,
-            endDate: DateTime.now().toUtc().add(
-                  const Duration(days: 365),
-                ),
-          );
-
-          activeGuaranteeBloc.add(ActiveGuarantee(guarantee, customer));
-          // activated
-          context.go("/active-success");
+        acceptPressed: () async {
+          // Check customer exist
+          DialogUtils.showLoadingDialog(context);
+          Customer? oldCustomer = await activeGuaranteeBloc
+              .getCustumerExist(customerBloc.customer!.phoneNumber!);
+          print(oldCustomer);
+          DialogUtils.hide(context);
+          if (oldCustomer != null) {
+            DialogUtils.showConfirmationDialog(
+              context: context,
+              title:
+                  "Khách hàng đã tồn tại trong hệ thống. Bạn muốn lấy thông tin cũ hay cập nhật thông tin mới?",
+              textCancelButton: "Giữ lại thông tin",
+              textAcceptButton: "Cập nhật mới",
+              acceptPressed: () {
+                activeGuarantee(product, customer, ActionType.update);
+              },
+              cancelPressed: () {
+                activeGuarantee(product, oldCustomer, ActionType.update);
+              },
+            );
+          } else {
+            activeGuarantee(product, customer, ActionType.create);
+          }
         },
+        cancelPressed: () => Navigator.pop(context),
       );
     } else {
       DialogUtils.showWarningDialog(
@@ -281,5 +336,69 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
         onClickOutSide: () {},
       );
     }
+  }
+
+  void activeGuarantee(
+      Product product, Customer customer, ActionType actionType) {
+    DialogUtils.showLoadingDialog(context);
+    // handle active
+    final guarantee = Guarantee(
+      id: generateRandomId(6),
+      createdAt: Timestamp.now(),
+      product: product,
+      customerID: customer.id!,
+      endDate: DateTime.now().toUtc().add(
+            const Duration(
+              days: 365,
+              hours: 7,
+            ),
+          ),
+    );
+    if (actionType == ActionType.create) {
+      activeGuaranteeBloc
+          .add(ActiveGuarantee(guarantee, customer, ActionType.create));
+    } else if (actionType == ActionType.update) {
+      activeGuaranteeBloc
+          .add(ActiveGuarantee(guarantee, customer, ActionType.update));
+    }
+  }
+
+  void changeStep(int index) {
+    if (index == 1) {
+      productStepKey.currentState?.widget.onNextStep();
+    }
+    if (index == 2) {
+      customerStepKey.currentState?.handleAndGoToNextStep();
+      if (!customerStepKey.currentState!.checkInput()) {
+        _pageController.animateToPage(
+          1,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        return;
+      }
+    }
+    stepBloc.changeStep(index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void backToPreviousPage() {
+    DialogUtils.showConfirmationDialog(
+      context: context,
+      title: "Các thông tin bạn đang điền sẽ mất đi\nBạn chắc chắn muốn thoát?",
+      textCancelButton: "Hủy",
+      textAcceptButton: "Xác nhận",
+      cancelPressed: () => Navigator.pop(context),
+      acceptPressed: () {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        });
+      },
+    );
   }
 }
