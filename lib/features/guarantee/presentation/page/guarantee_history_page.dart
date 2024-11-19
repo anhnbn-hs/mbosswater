@@ -36,7 +36,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             const Align(
               alignment: FractionalOffset.centerLeft,
               child: Text(
@@ -91,7 +91,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
             const Align(
               alignment: FractionalOffset.centerLeft,
               child: Text(
-                "Lich sử bảo hành",
+                "Lịch sử bảo hành",
                 style: TextStyle(
                   color: Color(0xff820a1a),
                   fontWeight: FontWeight.w600,
@@ -108,9 +108,50 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
               label: "Ngày bảo hành",
               value: "20/11/2024",
             ),
+            buildHistoryItem(label: "Nguyên nhân bảo hành", value: "Nước bị rò rỉ, ..."),
+            buildHistoryItem(label: "Sau khi bảo hành", value: "Đã khắc phục lỗi, máy chạy bình thường")
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildHistoryItem({required String label, required String value}) {
+    return Column(
+      children: [
+        Align(
+          alignment: FractionalOffset.centerLeft,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          height: 36,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xffBDBDBD), width: .5),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Align(
+            alignment: FractionalOffset.centerLeft,
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        )
+      ],
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_stepper/easy_stepper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -342,11 +343,13 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
       Product product, Customer customer, ActionType actionType) {
     DialogUtils.showLoadingDialog(context);
     // handle active
+    final user = FirebaseAuth.instance.currentUser;
     final guarantee = Guarantee(
       id: generateRandomId(6),
       createdAt: Timestamp.now(),
       product: product,
       customerID: customer.id!,
+      technicalID: user!.uid,
       endDate: DateTime.now().toUtc().add(
             const Duration(
               days: 365,

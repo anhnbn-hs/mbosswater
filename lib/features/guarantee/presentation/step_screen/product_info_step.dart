@@ -58,6 +58,11 @@ class ProductInfoStepState extends State<ProductInfoStep>
             ),
             const SizedBox(height: 12),
             buildBoxItem(
+              label: "Mã sản phẩm",
+              fieldValue: widget.product?.id ?? "",
+            ),
+            const SizedBox(height: 12),
+            buildBoxItem(
               label: "Dòng sản phẩm",
               fieldValue: widget.product?.category ?? "",
             ),
@@ -65,6 +70,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
             buildBoxItem(
               label: "Ngày bắt đầu bảo hành",
               fieldValue: DateFormat("dd/MM/yyyy").format(now),
+              icon: Icons.calendar_month,
             ),
             const SizedBox(height: 12),
             buildBoxItem(
@@ -75,6 +81,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
             buildBoxItem(
               label: "Ngày kết thúc bảo hành",
               fieldValue: endDateFormatted,
+              icon: Icons.calendar_month,
             ),
             const SizedBox(height: 12),
             buildBoxItem(
@@ -103,6 +110,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
   Widget buildBoxItem({
     required String label,
     required String fieldValue,
+    IconData? icon,
   }) {
     return Column(
       children: [
@@ -123,10 +131,24 @@ class ProductInfoStepState extends State<ProductInfoStep>
             color: const Color(0xffF6F6F6),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(
-            fieldValue,
-            style: AppStyle.boxField,
-            maxLines: 2,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  fieldValue,
+                  style: AppStyle.boxField.copyWith(),
+                  maxLines: 2,
+                ),
+              ),
+              icon != null
+                  ? Icon(
+                      icon,
+                      size: 20,
+                      color: Colors.grey,
+                    )
+                  : const SizedBox.shrink()
+            ],
           ),
         ),
       ],

@@ -1,10 +1,8 @@
 // Step 3: Additional Information
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
-import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
@@ -133,7 +131,9 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
                 border: const UnderlineInputBorder(
                   borderSide: BorderSide.none,
                 ),
-                hintStyle: AppStyle.boxField,
+                hintStyle: AppStyle.boxField.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
               cursorColor: Colors.grey,

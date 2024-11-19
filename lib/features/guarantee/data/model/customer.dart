@@ -19,7 +19,8 @@ class Customer {
     return Customer(
       id: json['id'],
       fullName: json['fullName'],
-      address: json['address'] != null ? Address.fromJson(json['address']) : null,
+      address:
+          json['address'] != null ? Address.fromJson(json['address']) : null,
       phoneNumber: json['phoneNumber'],
       email: json['email'],
       additionalInfo: json['additionalInfo'] != null
@@ -52,6 +53,10 @@ class Address {
     this.commune,
     this.detail,
   });
+
+  String displayAddress() {
+    return "${commune!}, ${district!}, $province";
+  }
 
   factory Address.fromJson(Map<String, dynamic> json) {
     return Address(

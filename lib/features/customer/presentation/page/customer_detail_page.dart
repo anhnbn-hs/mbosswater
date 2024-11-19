@@ -53,7 +53,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             const Align(
               alignment: Alignment.center,
               child: Text(
-                "Lịch sử mua hàng",
+                "Lịch Sử Mua Hàng",
                 style: TextStyle(
                   color: Color(0xff820a1a),
                   fontWeight: FontWeight.w600,
@@ -80,8 +80,9 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
               value: widget.customer?.phoneNumber ?? "---",
             ),
             buildCustomerInfoItem(
-                label: "Địa chỉ",
-                value: widget.customer?.address?.detail ?? "---"),
+              label: "Địa chỉ",
+              value: widget.customer?.address!.displayAddress() ?? "---",
+            ),
             buildCustomerInfoItem(
               label: "Email",
               value: widget.customer?.email != ""

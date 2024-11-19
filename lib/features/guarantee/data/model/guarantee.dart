@@ -6,6 +6,7 @@ class Guarantee {
   final Timestamp createdAt;
   final Product product;
   final String customerID;
+  final String technicalID;
   final DateTime endDate;
 
   Guarantee({
@@ -13,6 +14,7 @@ class Guarantee {
     required this.createdAt,
     required this.product,
     required this.customerID,
+    required this.technicalID,
     required this.endDate,
   });
 
@@ -24,6 +26,7 @@ class Guarantee {
       product: Product.fromJson(json['product'] as Map<String, dynamic>),
       customerID: json['customerID'] as String,
       endDate: DateTime.parse(json['endDate'] as String),
+      technicalID: json['technicalID'] as String,
     );
   }
 
@@ -35,6 +38,7 @@ class Guarantee {
       'product': product.toJson(),
       'customerID': customerID,
       'endDate': endDate.toIso8601String(),
+      'technicalID': technicalID,
     };
   }
 }

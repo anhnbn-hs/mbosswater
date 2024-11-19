@@ -97,6 +97,13 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                 controller: nameController,
               ),
               const SizedBox(height: 12),
+              buildTextFieldItem(
+                label: "Số điện thoại",
+                hint: "SĐT",
+                inputType: TextInputType.number,
+                controller: phoneController,
+              ),
+              const SizedBox(height: 12),
               Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: Row(
@@ -387,13 +394,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                   )
                 ],
               ),
-              const SizedBox(height: 12),
-              buildTextFieldItem(
-                label: "Số điện thoại",
-                hint: "SĐT",
-                inputType: TextInputType.number,
-                controller: phoneController,
-              ),
+
               const SizedBox(height: 12),
               buildTextFieldItem(
                 label: "Email",
@@ -405,7 +406,8 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
               const Spacer(),
               CustomButton(
                 onTap: () {
-                  handleAndGoToNextStep();},
+                  handleAndGoToNextStep();
+                },
                 textButton: "TIẾP TỤC",
               ),
               const SizedBox(height: 24),
@@ -478,12 +480,15 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
             keyboardType: inputType,
             style: AppStyle.boxField.copyWith(),
             decoration: InputDecoration(
-                border: const UnderlineInputBorder(
-                  borderSide: BorderSide.none,
-                ),
-                hintText: hint,
-                hintStyle: AppStyle.boxField,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12)),
+              border: const UnderlineInputBorder(
+                borderSide: BorderSide.none,
+              ),
+              hintText: hint,
+              hintStyle: AppStyle.boxField.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+            ),
             cursorColor: Colors.grey,
           ),
         ),
