@@ -79,7 +79,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
         return true;
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           leading: LeadingBackButton(
             onTap: () => backToPreviousPage(),
@@ -371,6 +371,15 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
       productStepKey.currentState?.widget.onNextStep();
     }
     if (index == 2) {
+      if(customerStepKey.currentState == null){
+        DialogUtils.showWarningDialog(
+          context: context,
+          title: "Hãy nhập thông tin khách hàng!",
+          onClickOutSide: () {},
+        );
+        return;
+      }
+
       customerStepKey.currentState?.handleAndGoToNextStep();
       if (!customerStepKey.currentState!.checkInput()) {
         _pageController.animateToPage(

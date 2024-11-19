@@ -22,8 +22,9 @@ class WaterQualityRating extends StatelessWidget {
               return GestureDetector(
                 onTap: () => selectedNumber.value = e,
                 child: Container(
-                  height: 26,
-                  width: 26,
+                  height: 27,
+                  width: 27,
+                  padding: const EdgeInsets.only(bottom: 2),
                   decoration: BoxDecoration(
                     color: isActive ? activeColor : Colors.white,
                     border: isActive
@@ -31,8 +32,7 @@ class WaterQualityRating extends StatelessWidget {
                         : Border.all(color: const Color(0xffD3DCE6)),
                     shape: BoxShape.circle,
                   ),
-                  child: Align(
-                    alignment: Alignment.center,
+                  child: Center(
                     child: Text(
                       e.toString(),
                       style: TextStyle(

@@ -57,6 +57,8 @@ dependencies:
   collection: ^1.18.0
   device_preview: ^1.2.0
   flutter_typeahead: ^5.2.0
+  azlistview: ^2.0.0
+  alphabet_scroll_view: ^0.3.2
 
 
 

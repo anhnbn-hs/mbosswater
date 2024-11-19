@@ -9,7 +9,11 @@ class FetchCommunes extends CommunesEvent {
 
   FetchCommunes(this.districtId);
 }
+class SearchCommunes extends CommunesEvent {
+  String query;
 
+  SearchCommunes(this.query);
+}
 abstract class CommunesState {}
 
 class CommunesInitial extends CommunesState {}
@@ -31,7 +35,8 @@ class CommunesError extends CommunesState {
 class CommunesBloc extends Bloc<CommunesEvent, CommunesState> {
   final AddressUseCase addressUseCase;
 
-  String? selectedCommune;
+  Commune? selectedCommune;
+  List<Commune>? communes;
 
   CommunesBloc(this.addressUseCase) : super(CommunesInitial()) {
     on<FetchCommunes>((event, emit) async {
@@ -40,6 +45,7 @@ class CommunesBloc extends Bloc<CommunesEvent, CommunesState> {
         final communes = await addressUseCase.getCommunes(event.districtId);
         if (communes != null) {
           emit(CommunesLoaded(communes));
+          this.communes = communes;
         } else {
           emit(CommunesError("Failed to fetch communes"));
         }
@@ -47,6 +53,31 @@ class CommunesBloc extends Bloc<CommunesEvent, CommunesState> {
         emit(CommunesError(e.toString()));
       }
     });
+
+    on<SearchCommunes>((event, emit) async {
+      if (communes == null || communes!.isEmpty) {
+        emit(CommunesError("No provinces available to search"));
+        return;
+      }
+
+      // Perform the search based on the query
+      final filteredCommune = communes!
+          .where((commune) => commune.name!.toLowerCase().contains(event.query.toLowerCase()))
+          .toList();
+
+      if (filteredCommune.isNotEmpty) {
+        emit(CommunesLoaded(filteredCommune));
+      } else {
+        emit(CommunesError("No provinces match the search query"));
+      }
+    });
   }
 
+  void selectCommune(Commune commune) {
+    if (state is CommunesLoaded) {
+      final currentState = state as CommunesLoaded;
+      selectedCommune = commune;
+      emit(CommunesLoaded(currentState.communes));
+    }
+  }
 }

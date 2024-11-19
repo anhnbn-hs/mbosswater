@@ -69,7 +69,7 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
             children: [
               Expanded(
                 child: BoxSelectNumber(
-                  hint: "Nguời lớn",
+                  hint: "Người lớn",
                   numberNotifier: adultNumber,
                   numberController: adultNumberController,
                 ),
