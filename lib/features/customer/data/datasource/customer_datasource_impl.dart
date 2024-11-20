@@ -26,6 +26,20 @@ class CustomerDatasourceImpl extends CustomerDatasource {
     }
   }
 
+  @override
+  Future<int> getGuaranteeCount(String userID) async {
+    try {
+      final querySnapshot = await firebaseFirestore
+          .collection('guarantees')
+          .where('userID', isEqualTo: userID)
+          .get();
+
+      return querySnapshot.docs.length;
+    } catch (e) {
+      throw Exception('Failed to fetch guarantee count: $e');
+    }
+  }
+
   /// Fetch all customers from the Firestore collection.
   @override
   Future<List<Customer>> fetchCustomers() async {
@@ -71,5 +85,12 @@ class CustomerDatasourceImpl extends CustomerDatasource {
     } catch (e) {
       throw Exception('Failed to fetch guarantees for customer $customerID: $e');
     }
+  }
+
+
+  @override
+  Future<List<Customer>> fetchCustomersOfAgency(String agencyID) {
+    // TODO: implement fetchCustomersOfAgency
+    throw UnimplementedError();
   }
 }

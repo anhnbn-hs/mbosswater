@@ -114,11 +114,12 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 child: SingleChildScrollView(
-                  child: Padding(
+                  child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 30,
                     ),
+                    margin: EdgeInsets.only(bottom: 50),
                     child: Column(
                       children: <Widget>[
                         Container(
@@ -338,12 +339,35 @@ class _HomePageState extends State<HomePage> {
                               child: FeatureGridItem(
                                 title: "Mua bán hàng",
                                 subtitle: "Mua bán hàng với đại lý",
-                                assetIcon: AppAssets.icTeamManagement,
+                                assetIcon: AppAssets.icCart,
                                 onTap: () {},
                               ),
                             ),
                           ],
-                        )
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: FeatureGridItem(
+                                title: "Cài đặt tài khoản",
+                                subtitle: "Thông tin tài khoản",
+                                assetIcon: AppAssets.icAccount,
+                                onTap: () {},
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: FeatureGridItem(
+                                title: "Khách hàng",
+                                subtitle: "Danh sách khách hàng",
+                                assetIcon: AppAssets.icCustomer,
+                                onTap: () => context.push("/customer-list"),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

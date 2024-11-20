@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
@@ -71,9 +72,44 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
               ),
             ),
             const SizedBox(height: 16),
-            buildGuaranteeInfoItem(
-              label: "Tình trạng",
-              value: expired ? "Hết hạn" : "Còn hạn",
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Tình trạng",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(width: 36),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: CircleAvatar(
+                          backgroundColor: expired
+                              ? AppColors.primaryColor
+                              : const Color(0xff00B81C),
+                          radius: 4,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        expired ? "Hết hạn" : "Còn hạn",
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             buildGuaranteeInfoItem(
               label: "Ngày bắt đầu",
@@ -85,7 +121,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
             ),
             buildGuaranteeInfoItem(
               label: "Thời gian bảo hành",
-              value: "1 năm",
+              value: "${widget.guarantee.product.duration} tháng",
             ),
             const SizedBox(height: 16),
             const Align(
@@ -102,14 +138,19 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
             const SizedBox(height: 16),
             buildGuaranteeInfoItem(
               label: "Kỹ thuật viên",
-              value: "///",
+              value: "Nguyễn Văn A",
             ),
             buildGuaranteeInfoItem(
               label: "Ngày bảo hành",
               value: "20/11/2024",
             ),
-            buildHistoryItem(label: "Nguyên nhân bảo hành", value: "Nước bị rò rỉ, ..."),
-            buildHistoryItem(label: "Sau khi bảo hành", value: "Đã khắc phục lỗi, máy chạy bình thường")
+            buildHistoryItem(
+                label: "Nguyên nhân bảo hành", value: "Nước bị rò rỉ, ..."),
+            const SizedBox(height: 16),
+            buildHistoryItem(
+              label: "Sau khi bảo hành",
+              value: "Đã khắc phục lỗi, máy chạy bình thường",
+            )
           ],
         ),
       ),

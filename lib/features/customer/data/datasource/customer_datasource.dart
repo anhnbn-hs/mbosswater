@@ -6,6 +6,10 @@ abstract class CustomerDatasource {
 
   Future<List<Customer>> fetchCustomers();
 
+  Future<List<Customer>> fetchCustomersOfAgency(String agencyID);
+
+  Future<int> getGuaranteeCount(String userID);
+
   Future<List<Customer>> searchCustomers(String phoneNumberQuery);
 
   Future<List<Guarantee>> fetchGuaranteesOfCustomer(String customerID);
