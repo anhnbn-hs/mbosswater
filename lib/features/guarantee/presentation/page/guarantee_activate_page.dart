@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
@@ -16,12 +17,14 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_event.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_state.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
-import 'package:mbosswater/features/guarantee/presentation/step_screen/additional_info_step.dart';
-import 'package:mbosswater/features/guarantee/presentation/step_screen/customer_info_step.dart';
-import 'package:mbosswater/features/guarantee/presentation/step_screen/product_info_step.dart';
+import 'package:mbosswater/features/guarantee/presentation/step_active_screen/additional_info_step.dart';
+import 'package:mbosswater/features/guarantee/presentation/step_active_screen/customer_info_step.dart';
+import 'package:mbosswater/features/guarantee/presentation/step_active_screen/product_info_step.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class GuaranteeActivatePage extends StatefulWidget {
   final Product? product;
@@ -46,6 +49,8 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
   late CustomerBloc customerBloc;
   late AdditionalInfoBloc additionalInfoBloc;
   late ActiveGuaranteeBloc activeGuaranteeBloc;
+  late UserInfoBloc userInfoBloc;
+  late AgencyBloc agencyBloc;
 
   late PageController _pageController;
 
@@ -57,7 +62,17 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     customerBloc = BlocProvider.of<CustomerBloc>(context);
     additionalInfoBloc = BlocProvider.of<AdditionalInfoBloc>(context);
     activeGuaranteeBloc = BlocProvider.of<ActiveGuaranteeBloc>(context);
+    userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
+    agencyBloc = BlocProvider.of<AgencyBloc>(context);
+    handleFetchAgencyInitial();
     _pageController = PageController();
+  }
+
+  handleFetchAgencyInitial() {
+    final user = userInfoBloc.user;
+    if (Roles.LIST_ROLES_AGENCY.contains(user?.role)) {
+      agencyBloc.fetchAgency(user!.agency!);
+    }
   }
 
   @override
@@ -69,6 +84,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     customerBloc.reset();
     additionalInfoBloc.reset();
     activeGuaranteeBloc.reset();
+    agencyBloc.reset();
   }
 
   @override
@@ -295,6 +311,11 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     AdditionalInfo? additionalInfo = additionalInfoBloc.additionalInfo;
 
     if (product != null && customer != null && additionalInfo != null) {
+      if(Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role)){
+        customer.agency = userInfoBloc.user?.agency;
+      } else {
+        customer.agency = agencyBloc.selectedAgency?.id;
+      }
       // Save additional info to customer
       customer.additionalInfo = additionalInfo;
       DialogUtils.showConfirmationDialog(
@@ -371,7 +392,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
       productStepKey.currentState?.widget.onNextStep();
     }
     if (index == 2) {
-      if(customerStepKey.currentState == null){
+      if (customerStepKey.currentState == null) {
         DialogUtils.showWarningDialog(
           context: context,
           title: "Hãy nhập thông tin khách hàng!",

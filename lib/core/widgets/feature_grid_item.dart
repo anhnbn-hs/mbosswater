@@ -17,7 +17,7 @@ class FeatureGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xffffffff),
+      color: const Color(0xcaf4f4f4),
       child: InkWell(
         onTap: onTap,
         splashColor: Colors.grey.shade100,

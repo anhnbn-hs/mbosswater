@@ -19,10 +19,12 @@ import 'package:mbosswater/features/guarantee/domain/repository/address_reposito
 import 'package:mbosswater/features/guarantee/domain/repository/guarantee_repository.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/active_guarantee.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/address_usecase.dart';
+import 'package:mbosswater/features/guarantee/domain/usecase/agency_usecase.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource_impl.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_bloc.dart';
@@ -162,5 +164,14 @@ void initServiceLocator() {
 
   sl.registerLazySingleton<UserInfoBloc>(
         () => UserInfoBloc(sl<FetchUserInfoUseCase>()),
+  );
+
+  // Agency
+  sl.registerLazySingleton<AgencyUseCase>(
+        () => AgencyUseCase(sl<GuaranteeRepository>()),
+  );
+
+  sl.registerLazySingleton<AgencyBloc>(
+        () => AgencyBloc(sl<AgencyUseCase>()),
   );
 }

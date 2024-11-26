@@ -4,10 +4,13 @@ import 'package:bloc/bloc.dart';
 import 'package:mbosswater/features/customer/domain/usecase/search_customer.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 
 class CustomerSearchBloc
     extends Bloc<CustomerSearchEvent, CustomerSearchState> {
   final SearchCustomerUseCase searchCustomerUseCase;
+
+  Customer? selectedCustomer;
 
   CustomerSearchBloc(this.searchCustomerUseCase)
       : super(CustomerSearchInitial()) {
@@ -51,6 +54,14 @@ class CustomerSearchBloc
       emit(CustomerSearchLoaded(customers));
     } catch (e) {
       emit(CustomerSearchError('Error searching customers: $e'));
+    }
+  }
+
+  void selectCustomer(Customer customer) {
+    selectedCustomer = customer;
+    final currentState = state;
+    if (currentState is CustomerSearchLoaded) {
+      CustomerSearchLoaded(currentState.customers);
     }
   }
 }

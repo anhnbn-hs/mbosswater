@@ -11,6 +11,7 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/address/province
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
@@ -79,6 +80,7 @@ void main() async {
         BlocProvider(create: (_) => sl<CustomerSearchBloc>()),
         BlocProvider(create: (_) => sl<CustomerGuaranteeBloc>()),
         BlocProvider(create: (_) => sl<FetchCustomersBloc>()),
+        BlocProvider(create: (_) => sl<AgencyBloc>()),
         // For step handling
         BlocProvider(create: (_) => StepBloc(0)),
         BlocProvider(create: (_) => ProductBloc(null)),

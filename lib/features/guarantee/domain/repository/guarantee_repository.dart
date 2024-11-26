@@ -1,4 +1,5 @@
 import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasource_impl.dart';
+import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 
@@ -8,6 +9,10 @@ abstract class GuaranteeRepository {
     Customer customer,
     ActionType actionType,
   );
+
+  Future<Agency> fetchAgency(String agencyID);
+
+  Future<List<Agency>> fetchAgencies();
 
   Future<Customer?> getCustomerExisted(String phoneNumber);
 }

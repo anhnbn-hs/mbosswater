@@ -7,6 +7,7 @@ import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_activate_page.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_history_page.dart';
+import 'package:mbosswater/features/guarantee/presentation/page/guarantee_request_page.dart';
 import 'package:mbosswater/features/home/home_page.dart';
 import 'package:mbosswater/features/login/presentation/page/login_page.dart';
 import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scanner_page.dart';
@@ -64,6 +65,10 @@ final GoRouter router = GoRouter(
         final data = state.extra as Guarantee;
         return GuaranteeHistoryPage(guarantee: data);
       },
+    ),
+    GoRoute(
+      path: '/guarantee-request',
+      builder: (context, state) => const GuaranteeRequestPage(),
     ),
     GoRoute(
       path: '/customer-list',

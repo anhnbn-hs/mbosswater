@@ -156,6 +156,7 @@ class DialogUtils {
                                   fontWeight: FontWeight.w400,
                                   color: Colors.white,
                                   fontSize: 15,
+                                  height: 1,
                                 ),
                               ),
                             ),
@@ -181,6 +182,7 @@ class DialogUtils {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w400,
                                   fontSize: 15,
+                                  height: 1,
                                   color: Colors.white,
                                 ),
                               ),
