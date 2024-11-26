@@ -1,4 +1,5 @@
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource.dart';
+import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
 import 'package:mbosswater/features/customer/domain/repository/customer_repository.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
@@ -25,6 +26,16 @@ import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
   @override
   Future<List<Guarantee>> fetchGuaranteesOfCustomer(String customerID) async {
     return await datasource.fetchGuaranteesOfCustomer(customerID);
+  }
+
+  @override
+  Future<List<CustomerEntity>> fetchCustomersOfAgency(String agencyID) async {
+    return await datasource.fetchCustomersOfAgency(agencyID);
+  }
+
+  @override
+  Future<List<Customer>> searchCustomersOfAgency(String phoneNumberQuery, String agencyID) async {
+   return await datasource.searchCustomersOfAgency(phoneNumberQuery, agencyID);
   }
 
 

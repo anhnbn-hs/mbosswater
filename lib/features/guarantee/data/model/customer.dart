@@ -4,6 +4,7 @@ class Customer {
   Address? address;
   String? phoneNumber;
   String? email;
+  String? agency;
   AdditionalInfo? additionalInfo;
 
   Customer({
@@ -13,6 +14,7 @@ class Customer {
     this.phoneNumber,
     this.email,
     this.additionalInfo,
+    this.agency,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Customer {
       additionalInfo: json['additionalInfo'] != null
           ? AdditionalInfo.fromJson(json['additionalInfo'])
           : null,
+      agency: json['agency'] as String?,
     );
   }
 
@@ -36,6 +39,7 @@ class Customer {
       'address': address?.toJson(),
       'phoneNumber': phoneNumber,
       'email': email,
+      'agency': agency,
       'additionalInfo': additionalInfo?.toJson(),
     };
   }

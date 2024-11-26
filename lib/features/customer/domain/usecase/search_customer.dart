@@ -6,7 +6,12 @@ class SearchCustomerUseCase {
 
   SearchCustomerUseCase(this.repository);
 
-  Future<List<Customer>> call(String phoneNumberQuery) async {
+  Future<List<Customer>> searchAll(String phoneNumberQuery) async {
     return await repository.searchCustomers(phoneNumberQuery);
+  }
+
+  Future<List<Customer>> searchByAgency(
+      String phoneNumberQuery, String agencyID) async {
+    return await repository.searchCustomersOfAgency(phoneNumberQuery, agencyID);
   }
 }

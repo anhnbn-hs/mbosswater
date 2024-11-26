@@ -9,6 +9,7 @@ class UserModel {
   final String? address;
   final String? role;
   final String? password;
+  final String? agency;
   final Timestamp? createdAt;
 
   UserModel({
@@ -20,6 +21,7 @@ class UserModel {
     required this.role,
     required this.createdAt,
     required this.address,
+    required this.agency,
     required this.password,
   });
 
@@ -35,6 +37,7 @@ class UserModel {
       role: json['role'] as String?,
       createdAt: json['createdAt'] as Timestamp?,
       password: json["password"] as String?,
+      agency: json["agency"] as String?,
     );
   }
 
@@ -50,6 +53,7 @@ class UserModel {
       'email': email,
       'password': password,
       'createdAt': createdAt,
+      'agency': agency,
     };
   }
 }

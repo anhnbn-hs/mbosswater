@@ -1,6 +1,14 @@
 abstract class CustomerSearchEvent {}
 
-class SearchCustomersByPhone extends CustomerSearchEvent {
+class SearchAllCustomersByPhone extends CustomerSearchEvent {
   final String query;
-  SearchCustomersByPhone(this.query);
+
+  SearchAllCustomersByPhone(this.query);
+}
+
+class SearchAgencyCustomersByPhone extends CustomerSearchEvent {
+  final String query;
+  final String agencyID;
+
+  SearchAgencyCustomersByPhone(this.query, this.agencyID);
 }

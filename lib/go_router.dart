@@ -37,6 +37,10 @@ final GoRouter router = GoRouter(
       builder: (context, state) => HomePage(),
     ),
     GoRoute(
+      path: '/qrcode-scanner',
+      builder: (context, state) => const QrcodeScannerPage(),
+    ),
+    GoRoute(
       path: '/guarantee-active',
       builder: (context, state) {
         final data = state.extra as Product?;

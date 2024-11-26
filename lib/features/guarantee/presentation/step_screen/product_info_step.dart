@@ -44,7 +44,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
     super.build(context);
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
     int? guaranteeDuration = widget.product?.duration;
-    DateTime endDate = calculateEndDateFromDuration(guaranteeDuration!);
+    DateTime endDate = calculateEndDateFromDuration(guaranteeDuration ?? 12);
     String endDateFormatted = DateFormat("dd/MM/yyyy").format(endDate);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24),

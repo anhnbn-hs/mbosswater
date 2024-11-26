@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mbosswater/core/constants/error_message.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
@@ -9,6 +8,8 @@ import 'package:mbosswater/core/widgets/custom_textfield.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_bloc.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_event.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_state.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_event.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,6 +23,7 @@ class _LoginPageState extends State<LoginPage> {
 
   // BLOC
   late LoginBloc loginBloc;
+  late UserInfoBloc userInfoBloc;
 
   @override
   void initState() {
@@ -30,6 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     passwordController = TextEditingController();
     // Init bloc
     loginBloc = BlocProvider.of<LoginBloc>(context);
+    userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
   }
 
   @override
@@ -96,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                   if (state is LoginSuccess) {
                     DialogUtils.hide(context);
                     // Get User Information
+                    userInfoBloc.add(FetchUserInfo(state.user.uid));
                     // Navigate
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       while (context.canPop()) {

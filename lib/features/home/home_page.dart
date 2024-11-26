@@ -13,6 +13,8 @@ import 'package:mbosswater/features/customer/presentation/bloc/search_customer_b
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_state.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -24,11 +26,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final searchController = TextEditingController();
   late CustomerSearchBloc bloc;
+  late UserInfoBloc userInfoBloc;
 
   @override
   void initState() {
     super.initState();
     bloc = BlocProvider.of<CustomerSearchBloc>(context);
+    userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
   }
 
   @override
@@ -136,8 +140,14 @@ class _HomePageState extends State<HomePage> {
                                   child: TypeAheadField<Customer>(
                                     suggestionsCallback: (search) async {
                                       if (search.isNotEmpty) {
-                                        bloc.add(SearchCustomersByPhone(
-                                            search.trim()));
+                                        String? agencyID =
+                                            userInfoBloc.user?.agency;
+                                        bloc.add(
+                                          SearchAgencyCustomersByPhone(
+                                            search.trim(),
+                                            agencyID!,
+                                          ),
+                                        );
                                         await for (final state in bloc.stream) {
                                           if (state is CustomerSearchLoaded) {
                                             return state.customers;
@@ -245,7 +255,8 @@ class _HomePageState extends State<HomePage> {
                                             const SizedBox(width: 10),
                                             Expanded(
                                               child: Align(
-                                                alignment: FractionalOffset.centerLeft,
+                                                alignment:
+                                                    FractionalOffset.centerLeft,
                                                 child: Text(
                                                   "${customer.fullName} (${customer.phoneNumber})",
                                                   style: const TextStyle(

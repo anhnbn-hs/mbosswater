@@ -5,8 +5,10 @@ import 'package:mbosswater/features/customer/data/datasource/customer_datasource
 import 'package:mbosswater/features/customer/data/repository/customer_repository_impl.dart';
 import 'package:mbosswater/features/customer/domain/repository/customer_repository.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_guarantee.dart';
+import 'package:mbosswater/features/customer/domain/usecase/list_customer_by_agency.dart';
 import 'package:mbosswater/features/customer/domain/usecase/search_customer.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/data/datasource/address_datasource.dart';
 import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasource.dart';
@@ -127,6 +129,10 @@ void initServiceLocator() {
         () => SearchCustomerUseCase(sl<CustomerRepository>()),
   );
 
+  sl.registerLazySingleton<ListCustomerByAgencyUseCase>(
+        () => ListCustomerByAgencyUseCase(sl<CustomerRepository>()),
+  );
+
   sl.registerLazySingleton<GetCustomerGuaranteeUseCase>(
         () => GetCustomerGuaranteeUseCase(sl<CustomerRepository>()),
   );
@@ -137,6 +143,10 @@ void initServiceLocator() {
 
   sl.registerLazySingleton<CustomerSearchBloc>(
         () => CustomerSearchBloc(sl<SearchCustomerUseCase>()),
+  );
+
+  sl.registerLazySingleton<FetchCustomersBloc>(
+        () => FetchCustomersBloc(sl<ListCustomerByAgencyUseCase>()),
   );
 
   // User

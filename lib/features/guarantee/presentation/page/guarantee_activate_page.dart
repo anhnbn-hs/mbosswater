@@ -300,7 +300,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
       DialogUtils.showConfirmationDialog(
         context: context,
         title: "",
-        labelTitle: "Bạn chắc chắn xác nhận thông tin trên ?",
+        labelTitle: "Bạn chắc chắn xác nhận\nthông tin trên ?",
         textCancelButton: "Hủy",
         textAcceptButton: "Xác nhận",
         acceptPressed: () async {

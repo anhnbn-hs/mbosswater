@@ -45,7 +45,6 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Start camera khi quay lại trang
     if (ModalRoute.of(context)?.isCurrent == true) {
       print("CAM START _______________");
       controller.start(); // Khởi động lại camera

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
@@ -77,6 +78,7 @@ void main() async {
         BlocProvider(create: (_) => sl<ActiveGuaranteeBloc>()),
         BlocProvider(create: (_) => sl<CustomerSearchBloc>()),
         BlocProvider(create: (_) => sl<CustomerGuaranteeBloc>()),
+        BlocProvider(create: (_) => sl<FetchCustomersBloc>()),
         // For step handling
         BlocProvider(create: (_) => StepBloc(0)),
         BlocProvider(create: (_) => ProductBloc(null)),
