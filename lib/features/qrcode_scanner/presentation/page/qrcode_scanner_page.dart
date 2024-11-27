@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
@@ -92,7 +93,7 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
     try {
       // Handle decrypt data in qr code
       String dataDecrypted =
-          EncryptionHelper.decryptData(code, EncryptionHelper.secretKey);
+          EncryptionHelper.decryptData(code, dotenv.env["SECRET_KEY_QR_CODE"]!);
       Map<String, dynamic> data = jsonDecode(dataDecrypted);
       if (data["code"] == "mbosswater") {
         if (widget.scanType == ScanType.activate) {

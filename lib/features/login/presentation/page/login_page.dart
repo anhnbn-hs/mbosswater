@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -123,12 +124,14 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void handleLogin() {
+  handleLogin() async {
     // Get text field value
     String email = emailController.text;
     String password = passwordController.text;
     // Show loading dialog
     DialogUtils.showLoadingDialog(context);
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("LOGIN TOKEN: ${token}");
     loginBloc.add(PressLogin(
       email: email,
       password: password,

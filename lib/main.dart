@@ -1,9 +1,11 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
@@ -33,6 +35,8 @@ import 'injection_container.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
+
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp();
   }
@@ -50,6 +54,7 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown
   ]);
+
   // Future<void> addMultipleUsers(List<UserModel> users) async {
   //   try {
   //     WriteBatch batch = FirebaseFirestore.instance.batch();
@@ -91,13 +96,6 @@ void main() async {
   // String dataEncri = EncryptionHelper.encryptData(data, EncryptionHelper.secretKey);
   //
   // print(dataEncri);
-  try {
-    HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('helloWorld');
-    final result = await callable();
-    print('Kết quả từ Cloud Function: ${result.data}');
-  } catch (e) {
-    print('Lỗi khi gọi Cloud Function: $e');
-  }
   runApp(
     MultiBlocProvider(
       providers: [
@@ -140,6 +138,7 @@ class MyApp extends StatelessWidget {
     //   'Welcome to MBossWater',
     //   'This is an instant notification',
     // );
+
     return MaterialApp.router(
       title: 'MBossWater',
       locale: DevicePreview.locale(context),

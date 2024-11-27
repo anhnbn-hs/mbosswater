@@ -2,8 +2,6 @@ import 'package:encrypt/encrypt.dart' as encrypt;
 
 
 class EncryptionHelper {
-  static get secretKey => "d1a39f24af928102cbba80a577d9989c";
-
   static String encryptData(String data, String secretKey) {
     try {
       final key = encrypt.Key.fromUtf8(secretKey.padRight(32, ' ').substring(0, 32)); // Đảm bảo độ dài 32 ký tự
