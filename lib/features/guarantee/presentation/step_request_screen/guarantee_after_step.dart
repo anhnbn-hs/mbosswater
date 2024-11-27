@@ -5,21 +5,17 @@ import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 
 class GuaranteeAfterStep extends StatefulWidget {
-  const GuaranteeAfterStep({super.key});
+  final VoidCallback onConfirm;
+  final TextEditingController stateAfterController;
+
+  const GuaranteeAfterStep(
+      {super.key, required this.onConfirm, required this.stateAfterController});
 
   @override
   State<GuaranteeAfterStep> createState() => _GuaranteeAfterStepState();
 }
 
 class _GuaranteeAfterStepState extends State<GuaranteeAfterStep> {
-  final TextEditingController stateAfterController = TextEditingController();
-
-  @override
-  void dispose() {
-    stateAfterController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -27,20 +23,20 @@ class _GuaranteeAfterStepState extends State<GuaranteeAfterStep> {
         buildBoxFieldAreaGuarantee(
           label: "Sau khi bảo hành",
           hint: "Mô tả tình trạng sản phẩm sau khi bảo hành ",
-          controller: stateAfterController,
+          controller: widget.stateAfterController,
         ),
         const Spacer(),
         CustomButton(
           onTap: () {
-            DialogUtils.showConfirmationDialog(
-              context: context,
-              title: "",
-              labelTitle: "Bạn chắc chắn xác nhận\nthông tin trên ?",
-              textCancelButton: "Huỷ",
-              textAcceptButton: "Xác nhận",
-              cancelPressed: () => Navigator.pop(context),
-              acceptPressed: () {},
-            );
+            if (widget.stateAfterController.text.trim().isEmpty) {
+              DialogUtils.showWarningDialog(
+                context: context,
+                title: "Hãy nhập tình trạng sau bảo hành!",
+                onClickOutSide: () {},
+              );
+              return;
+            }
+            widget.onConfirm();
           },
           textButton: "XÁC NHẬN",
         ),

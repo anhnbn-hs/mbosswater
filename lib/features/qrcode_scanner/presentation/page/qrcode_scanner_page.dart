@@ -4,12 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
+import 'package:mbosswater/features/qrcode_scanner/presentation/utils/guarantee_check.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+enum ScanType { activate, request }
+
 class QrcodeScannerPage extends StatefulWidget {
-  const QrcodeScannerPage({super.key});
+  final ScanType scanType;
+
+  const QrcodeScannerPage({super.key, required this.scanType});
 
   @override
   State<QrcodeScannerPage> createState() => _QrcodeScannerPageState();
@@ -84,29 +90,17 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
     isProcessingScan = true;
 
     try {
-      Map<String, dynamic> data = jsonDecode(code);
+      // Handle decrypt data in qr code
+      String dataDecrypted =
+          EncryptionHelper.decryptData(code, EncryptionHelper.secretKey);
+      Map<String, dynamic> data = jsonDecode(dataDecrypted);
       if (data["code"] == "mbosswater") {
-        // QR code valid
-        DialogUtils.showLoadingDialog(context);
-        // Extract data to get product
-        if (data["product"] != null) {
-          final productItem = Product.fromJson(data["product"]);
-          // Stop camera
-          await controller.stop().then((value) => controller.stop());
-          // Delay
-          await Future.delayed(const Duration(seconds: 2), () {
-            isProcessingScan = false;
-            isShowingDialog = false;
-          });
-          // Navigate
-          DialogUtils.hide(context);
-          context.push(
-            "/guarantee-active",
-            extra: productItem,
-          );
-          return;
+        if (widget.scanType == ScanType.activate) {
+          await handleActiveGuarantee(data);
         }
-        DialogUtils.hide(context);
+        if (widget.scanType == ScanType.request) {
+          await handleRequestGuarantee(data);
+        }
       } else {
         isShowingDialog = true;
         DialogUtils.showWarningDialog(
@@ -141,6 +135,98 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
       isProcessingScan = false;
       isShowingDialog = false;
     });
+  }
+
+  Future<void> handleActiveGuarantee(Map<String, dynamic> data) async {
+    // QR code valid
+    DialogUtils.showLoadingDialog(context);
+    // Extract data to get product
+    if (data["product"] != null) {
+      final productItem = Product.fromJson(data["product"]);
+      // Stop camera
+      await controller.stop().then((value) => controller.stop());
+      // Check guarantee product existed
+      GuaranteeCheck guaranteeCheck = GuaranteeCheck();
+      bool isActivated =
+          await guaranteeCheck.isProductGuaranteeActivated(productItem.id);
+      if (isActivated) {
+        isShowingDialog = true;
+        DialogUtils.showWarningDialog(
+          context: context,
+          title: "Sản phẩm đã được kích hoạt bảo hành trước đó!",
+          onClickOutSide: () {
+            isShowingDialog = false;
+            isProcessingScan = false;
+            DialogUtils.hide(context);
+          },
+        );
+        await Future.delayed(const Duration(seconds: 5), () {
+          if (isShowingDialog) DialogUtils.hide(context);
+          isProcessingScan = false;
+          isShowingDialog = false;
+        });
+        return;
+      }
+      // Delay
+      await Future.delayed(const Duration(seconds: 2), () {
+        isProcessingScan = false;
+        isShowingDialog = false;
+      });
+      // Navigate
+      DialogUtils.hide(context);
+      context.push(
+        "/guarantee-active",
+        extra: productItem,
+      );
+      return;
+    }
+    DialogUtils.hide(context);
+  }
+
+  Future<void> handleRequestGuarantee(Map<String, dynamic> data) async {
+    // QR code valid
+    DialogUtils.showLoadingDialog(context);
+    // Extract data to get product
+    if (data["product"] != null) {
+      final productItem = Product.fromJson(data["product"]);
+      // Stop camera
+      await controller.stop().then((value) => controller.stop());
+      // Check guarantee product existed
+      GuaranteeCheck guaranteeCheck = GuaranteeCheck();
+      bool isActivated =
+          await guaranteeCheck.isProductGuaranteeActivated(productItem.id);
+      if (!isActivated) {
+        isShowingDialog = true;
+        DialogUtils.showWarningDialog(
+          context: context,
+          title: "Sản phẩm chưa được kích hoạt bảo hành trước đó!",
+          onClickOutSide: () {
+            isShowingDialog = false;
+            isProcessingScan = false;
+            DialogUtils.hide(context);
+          },
+        );
+        await Future.delayed(const Duration(seconds: 5), () {
+          if (isShowingDialog) DialogUtils.hide(context);
+          isProcessingScan = false;
+          isShowingDialog = false;
+        });
+        return;
+      }
+      // Delay
+      await Future.delayed(const Duration(seconds: 2), () {
+        isProcessingScan = false;
+        isShowingDialog = false;
+      });
+      // Navigate
+      DialogUtils.hide(context);
+      context.push(
+        "/guarantee-request",
+        extra: productItem,
+      );
+      return;
+    }
+    DialogUtils.hide(context);
   }
 
   @override
@@ -183,24 +269,28 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
       ),
       body: Column(
         children: [
-          const Flexible(
+          Flexible(
             flex: 1,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    "Đặt mã QR vào trong vùng",
-                    style: TextStyle(
-                      fontFamily: 'BeVietNam',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff201E1E),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      widget.scanType == ScanType.activate ? "Đặt mã QR vào trong vùng" : "Đặt mã QR sản phẩm đã được kích hoạt bảo hành vào trong vùng" ,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: 'BeVietNam',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xff201E1E),
+                      ),
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
+                  const SizedBox(height: 8),
+                  const Text(
                     "Hệ thống sẽ quét mã tự động",
                     style: TextStyle(
                       fontFamily: 'BeVietNam',

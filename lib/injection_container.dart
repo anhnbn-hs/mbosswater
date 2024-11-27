@@ -4,10 +4,13 @@ import 'package:mbosswater/features/customer/data/datasource/customer_datasource
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource_impl.dart';
 import 'package:mbosswater/features/customer/data/repository/customer_repository_impl.dart';
 import 'package:mbosswater/features/customer/domain/repository/customer_repository.dart';
+import 'package:mbosswater/features/customer/domain/usecase/get_customer_by_product.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_guarantee.dart';
+import 'package:mbosswater/features/customer/domain/usecase/list_all_customer.dart';
 import 'package:mbosswater/features/customer/domain/usecase/list_customer_by_agency.dart';
 import 'package:mbosswater/features/customer/domain/usecase/search_customer.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/data/datasource/address_datasource.dart';
@@ -20,10 +23,12 @@ import 'package:mbosswater/features/guarantee/domain/repository/guarantee_reposi
 import 'package:mbosswater/features/guarantee/domain/usecase/active_guarantee.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/address_usecase.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/agency_usecase.dart';
+import 'package:mbosswater/features/guarantee/domain/usecase/guarantee_history.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource_impl.dart';
@@ -116,62 +121,85 @@ void initServiceLocator() {
     () => ActiveGuaranteeUseCase(sl<GuaranteeRepository>()),
   );
 
+  sl.registerLazySingleton<GuaranteeHistoryUseCase>(
+        () => GuaranteeHistoryUseCase(sl<GuaranteeRepository>()),
+  );
+
   sl.registerLazySingleton<ActiveGuaranteeBloc>(
     () => ActiveGuaranteeBloc(sl<ActiveGuaranteeUseCase>()),
   );
-  
-  // Customer 
+
+  sl.registerLazySingleton<GuaranteeHistoryBloc>(
+        () => GuaranteeHistoryBloc(sl<GuaranteeHistoryUseCase>()),
+  );
+
+  // Customer
   sl.registerLazySingleton<CustomerDatasource>(
-        () => CustomerDatasourceImpl(),
+    () => CustomerDatasourceImpl(),
   );
   sl.registerLazySingleton<CustomerRepository>(
-        () => CustomerRepositoryImpl(sl<CustomerDatasource>()),
+    () => CustomerRepositoryImpl(sl<CustomerDatasource>()),
   );
   sl.registerLazySingleton<SearchCustomerUseCase>(
-        () => SearchCustomerUseCase(sl<CustomerRepository>()),
+    () => SearchCustomerUseCase(sl<CustomerRepository>()),
   );
 
   sl.registerLazySingleton<ListCustomerByAgencyUseCase>(
-        () => ListCustomerByAgencyUseCase(sl<CustomerRepository>()),
+    () => ListCustomerByAgencyUseCase(sl<CustomerRepository>()),
+  );
+
+  sl.registerLazySingleton<ListAllCustomerUseCase>(
+    () => ListAllCustomerUseCase(sl<CustomerRepository>()),
   );
 
   sl.registerLazySingleton<GetCustomerGuaranteeUseCase>(
-        () => GetCustomerGuaranteeUseCase(sl<CustomerRepository>()),
+    () => GetCustomerGuaranteeUseCase(sl<CustomerRepository>()),
+  );
+
+  sl.registerLazySingleton<GetCustomerByProductUseCase>(
+        () => GetCustomerByProductUseCase(sl<CustomerRepository>()),
+  );
+
+  sl.registerLazySingleton<FetchCustomerBloc>(
+        () => FetchCustomerBloc(sl<GetCustomerByProductUseCase>()),
   );
 
   sl.registerLazySingleton<CustomerGuaranteeBloc>(
-        () => CustomerGuaranteeBloc(sl<GetCustomerGuaranteeUseCase>()),
+    () => CustomerGuaranteeBloc(sl<GetCustomerGuaranteeUseCase>()),
   );
 
   sl.registerLazySingleton<CustomerSearchBloc>(
-        () => CustomerSearchBloc(sl<SearchCustomerUseCase>()),
+    () => CustomerSearchBloc(sl<SearchCustomerUseCase>()),
   );
 
   sl.registerLazySingleton<FetchCustomersBloc>(
-        () => FetchCustomersBloc(sl<ListCustomerByAgencyUseCase>()),
+    () => FetchCustomersBloc(
+      sl<ListCustomerByAgencyUseCase>(),
+      sl<ListAllCustomerUseCase>(),
+    ),
   );
 
   // User
   sl.registerLazySingleton<UserDatasource>(
-        () => UserDatasourceImpl(),
+    () => UserDatasourceImpl(),
   );
   sl.registerLazySingleton<UserRepository>(
-        () => UserRepositoryImpl(sl<UserDatasource>()),
+    () => UserRepositoryImpl(sl<UserDatasource>()),
   );
   sl.registerLazySingleton<FetchUserInfoUseCase>(
-        () => FetchUserInfoUseCase(sl<UserRepository>()),
+    () => FetchUserInfoUseCase(sl<UserRepository>()),
   );
 
   sl.registerLazySingleton<UserInfoBloc>(
-        () => UserInfoBloc(sl<FetchUserInfoUseCase>()),
+    () => UserInfoBloc(sl<FetchUserInfoUseCase>()),
   );
 
   // Agency
   sl.registerLazySingleton<AgencyUseCase>(
-        () => AgencyUseCase(sl<GuaranteeRepository>()),
+    () => AgencyUseCase(sl<GuaranteeRepository>()),
   );
 
   sl.registerLazySingleton<AgencyBloc>(
-        () => AgencyBloc(sl<AgencyUseCase>()),
+    () => AgencyBloc(sl<AgencyUseCase>()),
   );
 }

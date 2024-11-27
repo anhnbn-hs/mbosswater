@@ -14,6 +14,7 @@ import 'package:mbosswater/features/customer/presentation/bloc/search_customer_b
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scanner_page.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_state.dart';
@@ -40,11 +41,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: CustomFloatingActionButton(
-        onTap: () {
-          context.push('/qrcode-scanner');
-        },
-      ),
+      floatingActionButton: buildCustomFloatingActionButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
@@ -85,19 +82,27 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.black,
                       ),
                     ),
-                    const CircleAvatar(
-                      backgroundColor: Color(0xff3F689D),
-                      radius: 20,
-                      child: Text(
-                        "T",
-                        style: TextStyle(
-                          fontFamily: 'BeVietnam',
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                          height: -.2,
-                        ),
-                      ),
+                    BlocBuilder(
+                      bloc: userInfoBloc,
+                      builder: (context, state) {
+                        if (state is UserInfoLoaded) {
+                          return CircleAvatar(
+                            backgroundColor: const Color(0xff3F689D),
+                            radius: 20,
+                            child: Text(
+                              state.user.fullName![0],
+                              style: const TextStyle(
+                                fontFamily: 'BeVietnam',
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                                height: -.2,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     )
                   ],
                 ),
@@ -157,8 +162,30 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget? buildCustomFloatingActionButton(BuildContext context) {
+    // Return null if user is C-S-K-H (Customer care)
+    return BlocBuilder(
+      bloc: userInfoBloc,
+      builder: (context, state) {
+        if (state is UserInfoLoaded) {
+          if (state.user.role == Roles.MBOSS_CUSTOMERCARE) {
+            return const SizedBox.shrink();
+          }
+          return CustomFloatingActionButton(
+            onTap: () {
+              context.push(
+                '/qrcode-scanner',
+                extra: ScanType.activate,
+              );
+            },
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
   Widget buildBodyByRole(UserModel user) {
-    print(user.role);
     Widget body = Container();
     switch (user.role) {
       case Roles.AGENCY_BOSS:
@@ -184,7 +211,10 @@ class _HomePageState extends State<HomePage> {
                 subtitle: "Quét mã sản phẩm tại đây",
                 assetIcon: AppAssets.icGuarantee,
                 onTap: () {
-                  context.push('/qrcode-scanner');
+                  context.push(
+                    '/qrcode-scanner',
+                    extra: ScanType.activate,
+                  );
                 },
               ),
             ),
@@ -209,7 +239,7 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: FeatureGridItem(
                     title: "Quản lý nhân viên",
-                    subtitle: "Quản lý thông tin nhân viên",
+                    subtitle: "Quản lý thông tin\nnhân viên",
                     assetIcon: AppAssets.icTeamManagement,
                     onTap: () {},
                   ),
@@ -218,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: FeatureGridItem(
                     title: "Mua bán hàng",
-                    subtitle: "Mua bán hàng với đại lý",
+                    subtitle: "Mua bán hàng với\nđại lý",
                     assetIcon: AppAssets.icCart,
                     onTap: () {},
                   ),
@@ -251,8 +281,9 @@ class _HomePageState extends State<HomePage> {
           ],
         );
         break;
-      case Roles.AGENCY_STAFF:
-      case Roles.AGENCY_TECHNICAL:
+      case Roles.AGENCY_TECHNICAL ||
+            Roles.AGENCY_STAFF ||
+            Roles.MBOSS_TECHNICAL:
         body = Column(
           children: <Widget>[
             const Align(
@@ -269,7 +300,6 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: FeatureGridItem(
@@ -277,7 +307,30 @@ class _HomePageState extends State<HomePage> {
                     subtitle: "Quét mã sản phẩm tại đây",
                     assetIcon: AppAssets.icGuarantee,
                     onTap: () {
-                      context.push('/qrcode-scanner');
+                      context.push(
+                        '/qrcode-scanner',
+                        extra: ScanType.activate,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                    child: Container(
+                  width: double.infinity,
+                )),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Cài đặt tài khoản",
+                    subtitle: "Thông tin tài khoản",
+                    assetIcon: AppAssets.icAccount,
+                    onTap: () {
+                      context.push('/setting-account');
                     },
                   ),
                 ),
@@ -288,7 +341,143 @@ class _HomePageState extends State<HomePage> {
                     subtitle: "Điền đơn yêu cầu tại đây",
                     assetIcon: AppAssets.icRequest,
                     onTap: () {
-                      context.push('/guarantee-request');
+                      context.push(
+                        '/qrcode-scanner',
+                        extra: ScanType.request,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            )
+          ],
+        );
+        break;
+      case Roles.MBOSS_ADMIN:
+        body = Column(
+          children: <Widget>[
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Dịch vụ",
+                style: TextStyle(
+                  fontFamily: "BeVietnam",
+                  color: Color(0xff201E1E),
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Kích hoạt bảo hành",
+                    subtitle: "Quét mã sản phẩm",
+                    assetIcon: AppAssets.icGuarantee,
+                    onTap: () {
+                      context.push(
+                        '/qrcode-scanner',
+                        extra: ScanType.activate,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Khách hàng",
+                    subtitle: "Thông tin khách hàng",
+                    assetIcon: AppAssets.icCustomer,
+                    onTap: () {
+                      context.push('/customer-list');
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Quản lý",
+                style: TextStyle(
+                  fontFamily: "BeVietnam",
+                  color: Color(0xff201E1E),
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Cài đặt tài khoản",
+                    subtitle: "Thông tin tài khoản",
+                    assetIcon: AppAssets.icAccount,
+                    onTap: () {
+                      context.push('/setting-account');
+                    },
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Quản lý nhân viên",
+                    subtitle: "Quản lý thông tin nhân viên",
+                    assetIcon: AppAssets.icTeamManagement,
+                    onTap: () {
+                      context.push('/staff-management');
+                    },
+                  ),
+                ),
+              ],
+            )
+          ],
+        );
+        break;
+      case Roles.MBOSS_CUSTOMERCARE:
+        body = Column(
+          children: <Widget>[
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Dịch vụ",
+                style: TextStyle(
+                  fontFamily: "BeVietnam",
+                  color: Color(0xff201E1E),
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "CSKH",
+                    subtitle: "Chăm sóc khách hàng",
+                    assetIcon: AppAssets.icCSKH,
+                    onTap: () {
+                      context.push('/customer-care');
+                    },
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Yêu cầu bảo hành",
+                    subtitle: "Điền đơn yêu cầu tại đây",
+                    assetIcon: AppAssets.icRequest,
+                    onTap: () {
+                      context.push(
+                        '/qrcode-scanner',
+                        extra: ScanType.request,
+                      );
                     },
                   ),
                 ),
@@ -308,7 +497,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(width: 20),
-                Expanded(child: Container(width: double.infinity,))
+                const Spacer(),
               ],
             )
           ],
@@ -334,13 +523,19 @@ class _HomePageState extends State<HomePage> {
               child: TypeAheadField<Customer>(
                 suggestionsCallback: (search) async {
                   if (search.isNotEmpty) {
-                    String? agencyID = userInfoBloc.user?.agency;
-                    bloc.add(
-                      SearchAgencyCustomersByPhone(
-                        search.trim(),
-                        agencyID ?? "",
-                      ),
-                    );
+                    if (Roles.LIST_ROLES_AGENCY
+                        .contains(userInfoBloc.user?.role)) {
+                      // Search for Agency user
+                      String? agencyID = userInfoBloc.user?.agency;
+                      bloc.add(
+                        SearchAgencyCustomersByPhone(
+                          search.trim(),
+                          agencyID ?? "",
+                        ),
+                      );
+                    } else {
+                      bloc.add(SearchAllCustomersByPhone(search.trim()));
+                    }
                     await for (final state in bloc.stream) {
                       if (state is CustomerSearchLoaded) {
                         return state.customers;
@@ -493,7 +688,7 @@ class _HomePageState extends State<HomePage> {
       while (context.canPop()) {
         context.pop();
       }
-      context.push("/login");
+      context.go("/login");
     } on Exception catch (e) {}
   }
 }

@@ -1,15 +1,22 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mbosswater/core/services/firebase_cloud_message.dart';
+import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
+import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
@@ -29,7 +36,20 @@ void main() async {
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp();
   }
+  // Initialize NotificationService
+  await NotificationService.init();
+
+  // Initialize FirebaseCloudMessage
+  final FirebaseCloudMessage fcm = FirebaseCloudMessage();
+  await fcm.initialize();
+
+  // Initialize Service Locator - GetIt Dependency Injection
   initServiceLocator();
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown
+  ]);
   // Future<void> addMultipleUsers(List<UserModel> users) async {
   //   try {
   //     WriteBatch batch = FirebaseFirestore.instance.batch();
@@ -65,6 +85,19 @@ void main() async {
   //   print('Error adding user: $e');
   // }
 
+  // String data =
+  //     '{"code":"mbosswater","product":{"id":"MLN1003","name":"Máy Lọc Nước Tạo Kiềm MBossWater 5 Chức Năng","category":"Máy lọc nước kiềm oxygen","guaranteeDuration":"24 tháng"}}';
+  //
+  // String dataEncri = EncryptionHelper.encryptData(data, EncryptionHelper.secretKey);
+  //
+  // print(dataEncri);
+  try {
+    HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('helloWorld');
+    final result = await callable();
+    print('Kết quả từ Cloud Function: ${result.data}');
+  } catch (e) {
+    print('Lỗi khi gọi Cloud Function: $e');
+  }
   runApp(
     MultiBlocProvider(
       providers: [
@@ -80,7 +113,9 @@ void main() async {
         BlocProvider(create: (_) => sl<CustomerSearchBloc>()),
         BlocProvider(create: (_) => sl<CustomerGuaranteeBloc>()),
         BlocProvider(create: (_) => sl<FetchCustomersBloc>()),
+        BlocProvider(create: (_) => sl<FetchCustomerBloc>()),
         BlocProvider(create: (_) => sl<AgencyBloc>()),
+        BlocProvider(create: (_) => sl<GuaranteeHistoryBloc>()),
         // For step handling
         BlocProvider(create: (_) => StepBloc(0)),
         BlocProvider(create: (_) => ProductBloc(null)),
@@ -101,6 +136,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // NotificationService.showInstantNotification(
+    //   'Welcome to MBossWater',
+    //   'This is an instant notification',
+    // );
     return MaterialApp.router(
       title: 'MBossWater',
       locale: DevicePreview.locale(context),

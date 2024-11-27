@@ -416,6 +416,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                 child: PageView(
                   controller: pageController,
                   scrollDirection: Axis.horizontal,
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 18),

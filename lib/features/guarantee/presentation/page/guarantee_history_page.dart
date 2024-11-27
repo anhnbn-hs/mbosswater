@@ -1,21 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_event.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_state.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 
 class GuaranteeHistoryPage extends StatefulWidget {
   final Guarantee guarantee;
+  final Customer customer;
 
-  const GuaranteeHistoryPage({super.key, required this.guarantee});
+  const GuaranteeHistoryPage({
+    super.key,
+    required this.guarantee,
+    required this.customer,
+  });
 
   @override
   State<GuaranteeHistoryPage> createState() => _GuaranteeHistoryPageState();
 }
 
 class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
+  late AgencyBloc agencyBloc;
+  late GuaranteeHistoryBloc guaranteeHistoryBloc;
+
+  @override
+  void initState() {
+    agencyBloc = BlocProvider.of<AgencyBloc>(context);
+    guaranteeHistoryBloc = BlocProvider.of<GuaranteeHistoryBloc>(context);
+    // Fetch data
+    agencyBloc.fetchAgency(widget.customer.agency ?? "");
+    guaranteeHistoryBloc.add(FetchListGuaranteeHistory(widget.guarantee.id));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     bool expired = isExpired(widget.guarantee.endDate);
@@ -52,13 +78,28 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
             const SizedBox(height: 16),
             buildGuaranteeInfoItem(
               label: "Tên sản phẩm",
-              value: widget.guarantee.product.name!,
+              value: widget.guarantee.product.name ??
+                  "Máy Lọc Nước Tạo Kiềm MBossWater",
             ),
             buildGuaranteeInfoItem(
-              label: "Mã sản phẩm",
-              value: widget.guarantee.product.id,
+              label: "Model máy",
+              value: widget.guarantee.product.model ?? "",
             ),
-            buildGuaranteeInfoItem(label: "Đại lý", value: "Đại lý Lạng Sơn"),
+            BlocBuilder(
+              bloc: agencyBloc,
+              builder: (context, state) {
+                if (state is AgencyLoaded) {
+                  return buildGuaranteeInfoItem(
+                    label: "Đại lý",
+                    value: state.agency.name,
+                  );
+                }
+                return buildGuaranteeInfoItem(
+                  label: "Đại lý",
+                  value: "",
+                );
+              },
+            ),
             const SizedBox(height: 16),
             const Align(
               alignment: FractionalOffset.centerLeft,
@@ -136,21 +177,64 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
               ),
             ),
             const SizedBox(height: 16),
-            buildGuaranteeInfoItem(
-              label: "Kỹ thuật viên",
-              value: "Nguyễn Văn A",
+            Expanded(
+              child: BlocBuilder(
+                bloc: guaranteeHistoryBloc,
+                builder: (context, state) {
+                  if (state is GuaranteeHistoryLoading) {
+                    return Center(
+                      child: Lottie.asset(AppAssets.aLoading, height: 50),
+                    );
+                  }
+                  if (state is GuaranteeHistoryListLoaded) {
+                    if (state.guaranteeHistories.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "Không có lịch sử bảo hành",
+                        ),
+                      );
+                    }
+                    return ListView.builder(
+                      itemCount: state.guaranteeHistories.length,
+                      itemBuilder: (context, index) {
+                        final dateFormat = DateFormat("dd/MM/yyyy").format(
+                            state.guaranteeHistories[index].date!.toDate());
+                        return SizedBox(
+                          child: Column(
+                            children: [
+                              buildGuaranteeInfoItem(
+                                label: "Kỹ thuật viên",
+                                value: state.guaranteeHistories[index]
+                                        .technicalName ??
+                                    "",
+                              ),
+                              buildGuaranteeInfoItem(
+                                label: "Ngày bảo hành",
+                                value: dateFormat,
+                              ),
+                              buildHistoryItem(
+                                label: "Nguyên nhân bảo hành",
+                                value: state.guaranteeHistories[index]
+                                        .beforeStatus ??
+                                    "",
+                              ),
+                              const SizedBox(height: 16),
+                              buildHistoryItem(
+                                label: "Sau khi bảo hành",
+                                value: state.guaranteeHistories[index]
+                                        .afterStatus ??
+                                    "",
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
-            buildGuaranteeInfoItem(
-              label: "Ngày bảo hành",
-              value: "20/11/2024",
-            ),
-            buildHistoryItem(
-                label: "Nguyên nhân bảo hành", value: "Nước bị rò rỉ, ..."),
-            const SizedBox(height: 16),
-            buildHistoryItem(
-              label: "Sau khi bảo hành",
-              value: "Đã khắc phục lỗi, máy chạy bình thường",
-            )
           ],
         ),
       ),
@@ -211,13 +295,14 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
               fontWeight: FontWeight.w400,
             ),
           ),
-          const SizedBox(width: 36),
+          const SizedBox(width: 50),
           Expanded(
             child: Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.bottomRight,
               child: Text(
                 value,
-                maxLines: 1,
+                maxLines: 2,
+                textAlign: TextAlign.end,
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 14,

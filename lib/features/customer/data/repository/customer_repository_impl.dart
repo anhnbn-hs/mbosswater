@@ -38,5 +38,15 @@ import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
    return await datasource.searchCustomersOfAgency(phoneNumberQuery, agencyID);
   }
 
+  @override
+  Future<List<CustomerEntity>> fetchCustomersEntity()async {
+    return await datasource.fetchCustomersEntity();
+  }
+
+  @override
+  Future<Customer> fetchCustomerByProductID(String productID) async {
+    return await datasource.fetchCustomerByProductID(productID);
+  }
+
 
 }

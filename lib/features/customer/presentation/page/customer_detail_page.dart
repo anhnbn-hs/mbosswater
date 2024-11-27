@@ -81,7 +81,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             ),
             buildCustomerInfoItem(
               label: "Địa chỉ",
-              value: widget.customer?.address!.displayAddress() ?? "---",
+              value: "${widget.customer?.address!.displayAddress()}" ?? "---",
             ),
             buildCustomerInfoItem(
               label: "Email",
@@ -132,7 +132,10 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
     bool expired = isExpired(guarantee.endDate);
     return GestureDetector(
       onTap: () {
-        context.push("/guarantee-history", extra: guarantee);
+        context.push(
+          '/guarantee-history',
+          extra: [guarantee, widget.customer],
+        );
       },
       child: Container(
         padding: const EdgeInsets.symmetric(
@@ -162,18 +165,19 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             const SizedBox(height: 12),
             buildCustomerInfoItem(
               label: "Sản phẩm",
-              value: guarantee.product.name ?? "",
+              value:
+                  guarantee.product.name ?? "Máy Lọc Nước Tạo Kiềm MBossWater",
             ),
             buildCustomerInfoItem(
-              label: "Mã sản phẩm",
-              value: guarantee.product.id,
+              label: "Model máy",
+              value: guarantee.product.model ?? "",
             ),
             buildCustomerInfoItem(
-              label: "Dòng sản phẩm",
-              value: guarantee.product.category ?? "",
+              label: "Seri màng lọc",
+              value: guarantee.product.seriDow ?? "",
             ),
             buildCustomerInfoItem(
-              label: "Ngày mua",
+              label: "Ngày kích hoạt",
               value: startDateFormatted,
             ),
             Padding(
@@ -234,13 +238,14 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
               fontWeight: FontWeight.w400,
             ),
           ),
-          const SizedBox(width: 36),
+          const SizedBox(width: 50),
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
               child: Text(
                 value,
-                maxLines: 1,
+                maxLines: 2,
+                textAlign: TextAlign.end,
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 14,

@@ -39,7 +39,10 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/qrcode-scanner',
-      builder: (context, state) => const QrcodeScannerPage(),
+      builder: (context, state) {
+        final type = state.extra as ScanType;
+        return QrcodeScannerPage(scanType: type);
+      },
     ),
     GoRoute(
       path: '/guarantee-active',
@@ -62,13 +65,22 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/guarantee-history',
       builder: (context, state) {
-        final data = state.extra as Guarantee;
-        return GuaranteeHistoryPage(guarantee: data);
+        final data = state.extra as List<dynamic>;
+        if (data.length < 2) throw Exception('Invalid route data');
+        final guarantee = data.first as Guarantee;
+        final customer = data[1] as Customer;
+        return GuaranteeHistoryPage(
+          guarantee: guarantee,
+          customer: customer,
+        );
       },
     ),
     GoRoute(
       path: '/guarantee-request',
-      builder: (context, state) => const GuaranteeRequestPage(),
+      builder: (context, state) {
+        final data = state.extra as Product;
+        return GuaranteeRequestPage(product: data);
+      },
     ),
     GoRoute(
       path: '/customer-list',

@@ -4,12 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_after_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_before_step.dart';
 
 class GuaranteeRequestPage extends StatefulWidget {
-  const GuaranteeRequestPage({super.key});
+  final Product product;
+
+  const GuaranteeRequestPage({super.key, required this.product});
 
   @override
   State<GuaranteeRequestPage> createState() => _GuaranteeRequestPageState();
@@ -18,6 +21,8 @@ class GuaranteeRequestPage extends StatefulWidget {
 class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
   late StepBloc stepBloc;
   final PageController pageController = PageController();
+  final reasonController = TextEditingController();
+  final stateAfterController = TextEditingController();
 
   @override
   void initState() {
@@ -51,9 +56,29 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
                   controller: pageController,
                   scrollDirection: Axis.horizontal,
                   onPageChanged: (index) => changeStep(index),
-                  children: const [
-                    GuaranteeBeforeStep(),
-                    GuaranteeAfterStep(),
+                  children: [
+                    GuaranteeBeforeStep(
+                      reasonController: reasonController,
+                      product: widget.product,
+                      onNextStep: () {
+                        changeStep(2);
+                      },
+                    ),
+                    GuaranteeAfterStep(
+                      stateAfterController: stateAfterController,
+                      onConfirm: () {
+                        DialogUtils.showConfirmationDialog(
+                          context: context,
+                          title: "",
+                          labelTitle:
+                              "Bạn chắc chắn xác nhận\nthông tin trên ?",
+                          textCancelButton: "Huỷ",
+                          textAcceptButton: "Xác nhận",
+                          cancelPressed: () => Navigator.pop(context),
+                          acceptPressed: () {},
+                        );
+                      },
+                    ),
                   ],
                 ),
               )
@@ -154,6 +179,20 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
   }
 
   changeStep(int index) {
+    if (reasonController.text.trim().isEmpty && index == 1) {
+      DialogUtils.showWarningDialog(
+        context: context,
+        title: "Hãy nhập nguyên nhân bảo hành tiếp tục!",
+        onClickOutSide: () {},
+      );
+      stepBloc.changeStep(0);
+      pageController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
     stepBloc.changeStep(index);
     pageController.animateToPage(
       index,

@@ -59,6 +59,12 @@ dependencies:
   flutter_typeahead: ^5.2.0
   azlistview: ^2.0.0
   alphabet_scroll_view: ^0.3.2
+  crypto: ^3.0.6
+  encrypt: ^5.0.3
+  cloud_functions: ^5.1.5
+  firebase_messaging: ^15.1.5
+  timezone: ^0.10.0
+  flutter_local_notifications: ^18.0.1
 
 
 

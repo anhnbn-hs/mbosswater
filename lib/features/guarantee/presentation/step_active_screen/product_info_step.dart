@@ -62,17 +62,17 @@ class ProductInfoStepState extends State<ProductInfoStep>
           children: [
             buildBoxItem(
               label: "Tên sản phẩm",
-              fieldValue: widget.product?.name ?? "",
+              fieldValue: "Máy Lọc Nước Tạo Kiềm MBossWater",
             ),
             const SizedBox(height: 12),
             buildBoxItem(
-              label: "Mã sản phẩm",
-              fieldValue: widget.product?.id ?? "",
+              label: "Model máy",
+              fieldValue: widget.product?.model ?? "",
             ),
             const SizedBox(height: 12),
             buildBoxItem(
-              label: "Dòng sản phẩm",
-              fieldValue: widget.product?.category ?? "",
+              label: "Seri màng lọc Dow",
+              fieldValue: widget.product?.seriDow ?? "",
             ),
             const SizedBox(height: 12),
             buildBoxItem(
@@ -101,7 +101,8 @@ class ProductInfoStepState extends State<ProductInfoStep>
             const SizedBox(height: 40),
             CustomButton(
               onTap: () {
-                if(agencyBloc.selectedAgency == null){
+                bool isAgency = Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role);
+                if(!isAgency && agencyBloc.selectedAgency == null){
                   DialogUtils.showWarningDialog(
                     context: context,
                     title: "Hãy chọn đại lý để tiếp tục!",

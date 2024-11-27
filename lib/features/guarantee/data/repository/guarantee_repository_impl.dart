@@ -3,6 +3,7 @@ import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasour
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee_history.dart';
 import 'package:mbosswater/features/guarantee/domain/repository/guarantee_repository.dart';
 
 class GuaranteeRepositoryImpl extends GuaranteeRepository {
@@ -29,5 +30,10 @@ class GuaranteeRepositoryImpl extends GuaranteeRepository {
   @override
   Future<List<Agency>> fetchAgencies() async {
     return await _datasource.fetchAgencies();
+  }
+
+  @override
+  Future<List<GuaranteeHistory>> fetchGuaranteeHistoryList(String guaranteeID)  async{
+    return await _datasource.fetchGuaranteeHistoryList(guaranteeID);
   }
 }

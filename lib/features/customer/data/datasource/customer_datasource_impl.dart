@@ -125,4 +125,74 @@ class CustomerDatasourceImpl extends CustomerDatasource {
       throw Exception('Failed to search customers: $e');
     }
   }
+
+  @override
+  Future<List<CustomerEntity>> fetchCustomersEntity() async {
+    List<CustomerEntity> customerEntities = [];
+    try {
+      final customersQuery =
+          await FirebaseFirestore.instance.collection('customers').get();
+
+      for (var customerDoc in customersQuery.docs) {
+        final customer = Customer.fromJson(customerDoc.data());
+
+        final guaranteesQuery = await FirebaseFirestore.instance
+            .collection('guarantees')
+            .where("customerID", isEqualTo: customer.id)
+            .get();
+
+        List<Guarantee> guarantees = guaranteesQuery.docs
+            .map((doc) => Guarantee.fromJson(doc.data()))
+            .toList();
+
+        customerEntities.add(CustomerEntity(customer, guarantees));
+      }
+      return customerEntities;
+    } catch (e) {
+      print("Lỗi khi lấy dữ liệu: $e");
+      throw Exception("Không thể lấy danh sách khách hàng và bảo hành");
+    }
+  }
+
+  @override
+  Future<Customer> fetchCustomerByProductID(String productID) async {
+    try {
+      // Fetch the guarantee document by product ID
+      final guaranteeDocs = await firebaseFirestore
+          .collection("guarantees")
+          .where("product.id", isEqualTo: productID)
+          .limit(1)
+          .get();
+
+      // Check if a guarantee document exists
+      if (guaranteeDocs.docs.isEmpty) {
+        throw Exception("No guarantee found for the given product ID.");
+      }
+
+      // Deserialize the guarantee document
+      final guarantee = Guarantee.fromJson(guaranteeDocs.docs.first.data());
+
+      // Fetch the customer document using the customer ID from the guarantee
+      final customerDocs = await firebaseFirestore
+          .collection("customers")
+          .where("id", isEqualTo: guarantee.customerID)
+          .limit(1)
+          .get();
+
+      // Check if a customer document exists
+      if (customerDocs.docs.isEmpty) {
+        throw Exception("No customer found for the given customer ID.");
+      }
+
+      // Deserialize the customer document
+      final customer = Customer.fromJson(customerDocs.docs.first.data());
+
+      return customer;
+    } catch (e) {
+      // Handle any errors appropriately
+      print("Error fetching customer by product ID: $e");
+      rethrow; // Re-throw the error to allow the caller to handle it
+    }
+  }
+
 }

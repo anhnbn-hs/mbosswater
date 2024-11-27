@@ -8,26 +8,21 @@ class FetchCustomersInitial extends FetchCustomersState {}
 class FetchCustomersLoading extends FetchCustomersState {}
 
 class FetchCustomersSuccess extends FetchCustomersState {
-  final List<Customer> customers;
-
-  FetchCustomersSuccess(this.customers);
-}
-
-class FetchCustomersAgencySuccess extends FetchCustomersState {
   final List<CustomerEntity> originalCustomers; // Danh sách gốc
   final List<CustomerEntity> filteredCustomers; // Danh sách đã lọc
 
-  FetchCustomersAgencySuccess(this.originalCustomers, [this.filteredCustomers = const []]);
+  FetchCustomersSuccess(this.originalCustomers, [this.filteredCustomers = const []]);
 
-  FetchCustomersAgencySuccess copyWith({
+  FetchCustomersSuccess copyWith({
     List<CustomerEntity>? filteredCustomers,
   }) {
-    return FetchCustomersAgencySuccess(
+    return FetchCustomersSuccess(
       originalCustomers,
       filteredCustomers ?? this.filteredCustomers,
     );
   }
 }
+
 
 class FetchCustomersError extends FetchCustomersState {
   String error;

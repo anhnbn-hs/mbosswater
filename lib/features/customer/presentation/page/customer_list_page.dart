@@ -1,13 +1,10 @@
 import 'dart:async';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
-import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_state.dart';
@@ -40,6 +37,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
       fetchCustomersBloc.add(FetchAllCustomersByAgency(user!.agency!));
     } else {
       // Fetch all customer (for MBoss)
+      fetchCustomersBloc.add(FetchAllCustomers());
     }
   }
 
@@ -110,15 +108,17 @@ class _CustomerListPageState extends State<CustomerListPage> {
               child: Lottie.asset(AppAssets.aLoading, height: 50),
             );
           }
-          if (state is FetchCustomersAgencySuccess) {
-            List<CustomerEntity> listCustomer = state.filteredCustomers;
+          if (state is FetchCustomersSuccess) {
+            final listCustomer = state.filteredCustomers;
+
             if (listCustomer.isEmpty) {
               return const Center(
                 child: Text("Không tìm thấy khách hàng!"),
               );
             }
-            return Padding(
+            return Container(
               padding: const EdgeInsets.symmetric(horizontal: 24),
+              margin: const EdgeInsets.only(bottom: 20),
               child: ListView.builder(
                 itemCount: listCustomer.length,
                 itemBuilder: (context, index) {

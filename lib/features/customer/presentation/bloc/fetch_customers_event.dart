@@ -8,6 +8,7 @@ class SearchCustomers extends FetchCustomersEvent {
   SearchCustomers(this.query);
 }
 
+
 class FetchAllCustomersByAgency extends FetchCustomersEvent {
   final String agency;
 

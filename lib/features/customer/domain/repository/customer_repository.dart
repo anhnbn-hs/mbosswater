@@ -6,6 +6,8 @@ abstract class CustomerRepository {
   // MBoss
   Future<Customer> fetchCustomer(String phoneNumber);
 
+  Future<List<CustomerEntity>> fetchCustomersEntity();
+
   Future<List<Customer>> fetchCustomers();
 
   Future<List<Customer>> searchCustomers(String phoneNumberQuery);
@@ -17,4 +19,5 @@ abstract class CustomerRepository {
       String phoneNumberQuery, String agencyID);
 
   Future<List<Guarantee>> fetchGuaranteesOfCustomer(String customerID);
+  Future<Customer> fetchCustomerByProductID(String productID);
 }

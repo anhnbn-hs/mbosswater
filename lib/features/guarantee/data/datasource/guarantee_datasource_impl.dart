@@ -3,6 +3,7 @@ import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasour
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee_history.dart';
 
 enum ActionType { update, create }
 
@@ -110,6 +111,25 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
     } catch (e) {
       // Handle any errors
       print('Error fetching agencies: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<GuaranteeHistory>> fetchGuaranteeHistoryList(
+      String guaranteeID) async {
+    try {
+      final historyDocs = await _firebaseFirestore
+          .collection("guarantee_histories")
+          .where("guaranteeID", isEqualTo: guaranteeID)
+          .orderBy("date", descending: true)
+          .get();
+
+      return historyDocs.docs
+          .map((doc) => GuaranteeHistory.fromJson(doc.data()))
+          .toList();
+    } catch (e) {
+      print('Error fetching guarantee histories: $e');
       return [];
     }
   }
