@@ -686,6 +686,8 @@ class _HomePageState extends State<HomePage> {
       DialogUtils.showLoadingDialog(context);
       await FirebaseAuth.instance.signOut();
       await FirebaseMessaging.instance.deleteToken();
+      String? newToken = await FirebaseMessaging.instance.getToken();
+      print("New token: $newToken");
       await Future.delayed(const Duration(milliseconds: 1000));
       while (context.canPop()) {
         context.pop();
