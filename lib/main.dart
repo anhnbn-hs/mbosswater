@@ -45,11 +45,11 @@ void main() async {
 
   // Initialize FirebaseCloudMessage
   final FirebaseCloudMessage fcm = FirebaseCloudMessage();
+
   await fcm.initialize();
 
   // Initialize Service Locator - GetIt Dependency Injection
   initServiceLocator();
-
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown
