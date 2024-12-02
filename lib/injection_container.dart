@@ -1,5 +1,9 @@
 // injection_container.dart
 import 'package:get_it/get_it.dart';
+import 'package:mbosswater/features/ageny/data/datasource/agency_datasource.dart';
+import 'package:mbosswater/features/ageny/data/datasource/agency_datasource_impl.dart';
+import 'package:mbosswater/features/ageny/data/repository/agency_repository_impl.dart';
+import 'package:mbosswater/features/ageny/domain/repository/agency_repository.dart';
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource.dart';
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource_impl.dart';
 import 'package:mbosswater/features/customer/data/repository/customer_repository_impl.dart';
@@ -122,7 +126,7 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<GuaranteeHistoryUseCase>(
-        () => GuaranteeHistoryUseCase(sl<GuaranteeRepository>()),
+    () => GuaranteeHistoryUseCase(sl<GuaranteeRepository>()),
   );
 
   sl.registerLazySingleton<ActiveGuaranteeBloc>(
@@ -130,7 +134,7 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<GuaranteeHistoryBloc>(
-        () => GuaranteeHistoryBloc(sl<GuaranteeHistoryUseCase>()),
+    () => GuaranteeHistoryBloc(sl<GuaranteeHistoryUseCase>()),
   );
 
   // Customer
@@ -157,11 +161,11 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<GetCustomerByProductUseCase>(
-        () => GetCustomerByProductUseCase(sl<CustomerRepository>()),
+    () => GetCustomerByProductUseCase(sl<CustomerRepository>()),
   );
 
   sl.registerLazySingleton<FetchCustomerBloc>(
-        () => FetchCustomerBloc(sl<GetCustomerByProductUseCase>()),
+    () => FetchCustomerBloc(sl<GetCustomerByProductUseCase>()),
   );
 
   sl.registerLazySingleton<CustomerGuaranteeBloc>(
@@ -201,5 +205,13 @@ void initServiceLocator() {
 
   sl.registerLazySingleton<AgencyBloc>(
     () => AgencyBloc(sl<AgencyUseCase>()),
+  );
+
+  sl.registerLazySingleton<AgencyDatasource>(
+    () => AgencyDatasourceImpl(sl<UserDatasource>()),
+  );
+
+  sl.registerLazySingleton<AgencyRepository>(
+    () => AgencyRepositoryImpl(sl<AgencyDatasource>()),
   );
 }

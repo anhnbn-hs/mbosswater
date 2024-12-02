@@ -23,4 +23,16 @@ class UserDatasourceImpl extends UserDatasource {
       throw Exception("Failed to fetch user information");
     }
   }
+
+  @override
+  Future<void> deleteUserInformation(String userID) {
+    // TODO: implement deleteUserInformation
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateUserInformation(UserModel userUpdate) {
+    // TODO: implement updateUserInformation
+    throw UnimplementedError();
+  }
 }
