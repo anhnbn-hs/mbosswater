@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -21,9 +23,19 @@ class AuthDatasourceImpl extends AuthDatasource {
       }
 
       // Get FCM Token
-      final token = await FirebaseMessaging.instance.getToken();
-      if (token == null) {
-        throw Exception("Không thể lấy FCM token.");
+      String? token = "";
+      if (Platform.isAndroid) {
+        token = await FirebaseMessaging.instance.getToken();
+        if (token == null) {
+          throw Exception("Không thể lấy FCM token.");
+        }
+      }
+
+      if (Platform.isIOS) {
+        token = await FirebaseMessaging.instance.getAPNSToken();
+        if (token == null) {
+          throw Exception("Không thể lấy FCM token.");
+        }
       }
 
       // Assign Token to user

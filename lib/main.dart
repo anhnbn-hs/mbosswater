@@ -35,6 +35,7 @@ import 'injection_container.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await dotenv.load();
 
   if (Firebase.apps.isEmpty) {
@@ -50,10 +51,8 @@ void main() async {
 
   // Initialize Service Locator - GetIt Dependency Injection
   initServiceLocator();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown
-  ]);
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   // Future<void> addMultipleUsers(List<UserModel> users) async {
   //   try {

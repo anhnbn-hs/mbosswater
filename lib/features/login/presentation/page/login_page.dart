@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -132,8 +134,20 @@ class _LoginPageState extends State<LoginPage> {
     String password = passwordController.text;
     // Show loading dialog
     DialogUtils.showLoadingDialog(context);
-    String? token = await FirebaseMessaging.instance.getToken();
-    print("LOGIN TOKEN: ${token}");
+    // Get FCM Token
+    if(Platform.isAndroid){
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token == null) {
+        throw Exception("Không thể lấy FCM token.");
+      }
+    }
+
+    if(Platform.isIOS){
+      final token = await FirebaseMessaging.instance.getAPNSToken();
+      if (token == null) {
+        throw Exception("Không thể lấy FCM token.");
+      }
+    }
     loginBloc.add(PressLogin(
       email: email,
       password: password,
