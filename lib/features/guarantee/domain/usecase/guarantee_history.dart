@@ -13,4 +13,8 @@ class GuaranteeHistoryUseCase {
       String guaranteeID) async {
     return await _repository.fetchGuaranteeHistoryList(guaranteeID);
   }
+
+  Future<void> create(GuaranteeHistory gHistory) async {
+    return await _repository.createGuaranteeHistory(gHistory);
+  }
 }

@@ -10,6 +10,7 @@ import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_state.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
@@ -26,14 +27,14 @@ class GuaranteeBeforeStep extends StatefulWidget {
   });
 
   @override
-  State<GuaranteeBeforeStep> createState() => _GuaranteeBeforeStepState();
+  State<GuaranteeBeforeStep> createState() => GuaranteeBeforeStepState();
 }
 
-class _GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
+class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
     with AutomaticKeepAliveClientMixin {
   late UserInfoBloc userInfoBloc;
   late FetchCustomerBloc fetchCustomerBloc;
-
+  Customer? customer;
   @override
   void initState() {
     super.initState();
@@ -55,6 +56,7 @@ class _GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
           );
         }
         if (state is FetchCustomerSuccess) {
+          customer = state.customer;
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -63,6 +65,7 @@ class _GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
                   value:
                       "${state.customer.fullName} - ${state.customer.phoneNumber}",
                 ),
+                const SizedBox(height: 20),
                 buildBoxFieldCannotEdit(
                   label: "Sản phẩm",
                   value: widget.product.name!,

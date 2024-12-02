@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/features/active_success/active_success_page.dart';
 import 'package:mbosswater/features/customer/presentation/page/customer_detail_page.dart';
@@ -47,8 +48,14 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/guarantee-active',
       builder: (context, state) {
-        final data = state.extra as Product?;
-        return GuaranteeActivatePage(product: data);
+        final extra = state.extra as Map<String, dynamic>?; // Cast to Map
+        final product = extra?['product'] as Product?;
+        final key = extra?['key'] as GlobalKey<GuaranteeActivatePageState>?;
+
+        return GuaranteeActivatePage(
+          product: product,
+          key: key, // Pass the key here
+        );
       },
     ),
     GoRoute(

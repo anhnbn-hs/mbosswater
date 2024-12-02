@@ -35,10 +35,10 @@ class GuaranteeActivatePage extends StatefulWidget {
   });
 
   @override
-  State<GuaranteeActivatePage> createState() => _GuaranteeActivatePageState();
+  State<GuaranteeActivatePage> createState() => GuaranteeActivatePageState();
 }
 
-class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
+class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
   // Keys
   final productStepKey = GlobalKey<ProductInfoStepState>();
   final customerStepKey = GlobalKey<CustomerInfoStepState>();
@@ -52,7 +52,10 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
   late UserInfoBloc userInfoBloc;
   late AgencyBloc agencyBloc;
 
-  late PageController _pageController;
+  late PageController pageController;
+
+  // Flag
+  bool isCustomerStepCompleted = false;
 
   @override
   void initState() {
@@ -65,7 +68,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
     agencyBloc = BlocProvider.of<AgencyBloc>(context);
     handleFetchAgencyInitial();
-    _pageController = PageController();
+    pageController = PageController();
   }
 
   handleFetchAgencyInitial() {
@@ -78,7 +81,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
   @override
   void dispose() {
     super.dispose();
-    _pageController.dispose();
+    pageController.dispose();
     stepBloc.reset();
     productBloc.reset();
     customerBloc.reset();
@@ -169,16 +172,16 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                       buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
                     ],
                     onStepReached: (index) {
-                      changeStep(index);
+                      animateToPage(index);
                     },
                   );
                 },
               ),
               Expanded(
                 child: PageView(
-                  controller: _pageController,
+                  controller: pageController,
                   scrollDirection: Axis.horizontal,
-                  onPageChanged: (index) => changeStep(index),
+                  onPageChanged: (index) => animateToPage(index),
                   children: [
                     ProductInfoStep(
                       key: productStepKey,
@@ -188,7 +191,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                           productBloc.emitProduct(widget.product!);
                         }
                         stepBloc.goToNextStep();
-                        _pageController.animateToPage(
+                        pageController.animateToPage(
                           stepBloc.currentStep,
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -197,17 +200,19 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                     ),
                     CustomerInfoStep(
                       key: customerStepKey,
+                      guaranteeActiveKey:
+                          widget.key as GlobalKey<GuaranteeActivatePageState>,
                       onPreStep: () {
                         stepBloc.goToPreviousStep();
-                        _pageController.animateToPage(
+                        pageController.animateToPage(
                           stepBloc.currentStep,
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
                         );
                       },
-                      onNextStep: () {
+                      onNextStep: (isHandleDuplicatePhone) {
                         stepBloc.goToNextStep();
-                        _pageController.animateToPage(
+                        pageController.animateToPage(
                           stepBloc.currentStep,
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -218,7 +223,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                       key: additionalStepKey,
                       onPreStep: () {
                         stepBloc.goToPreviousStep();
-                        _pageController.animateToPage(
+                        pageController.animateToPage(
                           stepBloc.currentStep,
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -311,7 +316,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     AdditionalInfo? additionalInfo = additionalInfoBloc.additionalInfo;
 
     if (product != null && customer != null && additionalInfo != null) {
-      if(Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role)){
+      if (Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role)) {
         customer.agency = userInfoBloc.user?.agency;
       } else {
         customer.agency = agencyBloc.selectedAgency?.id;
@@ -326,28 +331,32 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
         textAcceptButton: "Xác nhận",
         acceptPressed: () async {
           // Check customer exist
+
           DialogUtils.showLoadingDialog(context);
-          Customer? oldCustomer = await activeGuaranteeBloc
-              .getCustumerExist(customerBloc.customer!.phoneNumber!);
-          print(oldCustomer);
-          DialogUtils.hide(context);
-          if (oldCustomer != null) {
-            DialogUtils.showConfirmationDialog(
-              context: context,
-              title:
-                  "Khách hàng đã tồn tại trong hệ thống. Bạn muốn lấy thông tin cũ hay cập nhật thông tin mới?",
-              textCancelButton: "Giữ lại thông tin",
-              textAcceptButton: "Cập nhật mới",
-              acceptPressed: () {
-                activeGuarantee(product, customer, ActionType.update);
-              },
-              cancelPressed: () {
-                activeGuarantee(product, oldCustomer, ActionType.update);
-              },
-            );
-          } else {
-            activeGuarantee(product, customer, ActionType.create);
-          }
+          await Future.delayed(const Duration(milliseconds: 800));
+          activeGuarantee(product, customer, ActionType.create);
+
+          // Customer? oldCustomer = await activeGuaranteeBloc
+          //     .getCustumerExist(customerBloc.customer!.phoneNumber!);
+          // print(oldCustomer);
+          // DialogUtils.hide(context);
+          // if (oldCustomer != null) {
+          //   DialogUtils.showConfirmationDialog(
+          //     context: context,
+          //     title:
+          //         "Thông tin khách hàng đã tồn tại, bạn có muốn tự động cập nhật thông tin?",
+          //     textCancelButton: "Cập nhật",
+          //     textAcceptButton: "Nhập SĐT mới",
+          //     acceptPressed: () {
+          //       activeGuarantee(product, customer, ActionType.update);
+          //     },
+          //     cancelPressed: () {
+          //       activeGuarantee(product, oldCustomer, ActionType.update);
+          //     },
+          //   );
+          // } else {
+          //   activeGuarantee(product, customer, ActionType.create);
+          // }
         },
         cancelPressed: () => Navigator.pop(context),
       );
@@ -387,23 +396,17 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     }
   }
 
-  void changeStep(int index) {
+  void animateToPage(int index, {bool isOnlyJump = false}) {
     if (index == 1) {
       productStepKey.currentState?.widget.onNextStep();
+      isCustomerStepCompleted = false;
     }
     if (index == 2) {
-      if (customerStepKey.currentState == null) {
-        DialogUtils.showWarningDialog(
-          context: context,
-          title: "Hãy nhập thông tin khách hàng!",
-          onClickOutSide: () {},
-        );
-        return;
-      }
-
-      customerStepKey.currentState?.handleAndGoToNextStep();
-      if (!customerStepKey.currentState!.checkInput()) {
-        _pageController.animateToPage(
+      print(isCustomerStepCompleted);
+      if (!isCustomerStepCompleted) {
+        customerStepKey.currentState?.handleAndGoToNextStep();
+        stepBloc.changeStep(index);
+        pageController.animateToPage(
           1,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -412,7 +415,7 @@ class _GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
       }
     }
     stepBloc.changeStep(index);
-    _pageController.animateToPage(
+    pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,

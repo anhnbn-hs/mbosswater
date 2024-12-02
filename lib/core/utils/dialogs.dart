@@ -84,6 +84,7 @@ class DialogUtils {
     required String textAcceptButton,
     required VoidCallback cancelPressed,
     required VoidCallback acceptPressed,
+    VoidCallback? onClickOutSide,
   }) {
     showGeneralDialog(
       context: context,
@@ -199,7 +200,14 @@ class DialogUtils {
           ),
         );
       },
-    );
+    ).then((value) {
+// ìf click outside => value = null
+      if (value == null) {
+        if (onClickOutSide != null) {
+          onClickOutSide();
+        }
+      }
+    });
   }
 
   static void showWarningDialog({
@@ -262,7 +270,7 @@ class DialogUtils {
         );
       },
     ).then((value) {
-      // ìf click outside => value = null
+// ìf click outside => value = null
       if (value == null) {
         onClickOutSide();
       }

@@ -17,4 +17,6 @@ abstract class GuaranteeDatasource {
   Future<Customer?> getCustomerExisted(String phoneNumber);
 
   Future<List<GuaranteeHistory>> fetchGuaranteeHistoryList(String guaranteeID);
+
+  Future<void> createGuaranteeHistory(GuaranteeHistory gHistory);
 }

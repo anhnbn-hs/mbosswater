@@ -91,11 +91,12 @@ void main() async {
   // }
 
   // String data =
-  //     '{"code":"mbosswater","product":{"id":"MLN1003","name":"Máy Lọc Nước Tạo Kiềm MBossWater 5 Chức Năng","category":"Máy lọc nước kiềm oxygen","guaranteeDuration":"24 tháng"}}';
+  //     '{"code":"mbosswater","product":{"id":"MLN1008","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model08","seriDow":"SRD08","guaranteeDuration":"24 tháng"}}';
   //
-  // String dataEncri = EncryptionHelper.encryptData(data, EncryptionHelper.secretKey);
+  // String dataEncri = EncryptionHelper.encryptData(data, dotenv.env["SECRET_KEY_QR_CODE"]!);
   //
   // print(dataEncri);
+
   runApp(
     MultiBlocProvider(
       providers: [

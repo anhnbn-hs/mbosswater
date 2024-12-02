@@ -135,7 +135,7 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
                 hintStyle: AppStyle.boxField.copyWith(
                   fontStyle: FontStyle.italic,
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
               cursorColor: Colors.grey,
             ),

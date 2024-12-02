@@ -133,4 +133,14 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
       return [];
     }
   }
+
+  @override
+  Future<void> createGuaranteeHistory(GuaranteeHistory gHistory) async {
+    try {
+      await _firebaseFirestore.collection("guarantee_histories").add(gHistory.toJson());
+    } catch (e) {
+      print("Failed to create guarantee history: $e");
+      rethrow;
+    }
+  }
 }

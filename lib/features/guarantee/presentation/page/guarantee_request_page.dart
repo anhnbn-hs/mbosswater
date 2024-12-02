@@ -1,13 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee_history.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_event.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_state.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_after_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_before_step.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class GuaranteeRequestPage extends StatefulWidget {
   final Product product;
@@ -20,14 +27,27 @@ class GuaranteeRequestPage extends StatefulWidget {
 
 class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
   late StepBloc stepBloc;
+  late UserInfoBloc userInfoBloc;
+  late GuaranteeHistoryBloc guaranteeHistoryBloc;
   final PageController pageController = PageController();
   final reasonController = TextEditingController();
   final stateAfterController = TextEditingController();
+
+  // Keys
+  final beforeStepKey = GlobalKey<GuaranteeBeforeStepState>();
 
   @override
   void initState() {
     super.initState();
     stepBloc = BlocProvider.of<StepBloc>(context);
+    userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
+    guaranteeHistoryBloc = BlocProvider.of<GuaranteeHistoryBloc>(context);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    stepBloc.reset();
   }
 
   @override
@@ -37,52 +57,98 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
         backToPreviousPage();
         return true;
       },
-      child: Scaffold(
-        appBar: AppBar(
-          leading: LeadingBackButton(
-            onTap: backToPreviousPage,
+      child: BlocListener<GuaranteeHistoryBloc, GuaranteeHistoryState>(
+        listener: (context, state) async {
+          if (state is CreateGuaranteeHistorySuccess) {
+            await Future.delayed(const Duration(milliseconds: 800));
+            while (context.canPop()) {
+              context.pop();
+            }
+            context.push("/home");
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text(
+                "Đã lưu lại lịch sử bảo hành thành công",
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: AppColors.primaryColor,
+            ));
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            leading: LeadingBackButton(
+              onTap: backToPreviousPage,
+            ),
           ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const buildHeading(),
-              const SizedBox(height: 24),
-              buildStepper(),
-              Expanded(
-                child: PageView(
-                  controller: pageController,
-                  scrollDirection: Axis.horizontal,
-                  onPageChanged: (index) => changeStep(index),
-                  children: [
-                    GuaranteeBeforeStep(
-                      reasonController: reasonController,
-                      product: widget.product,
-                      onNextStep: () {
-                        changeStep(2);
-                      },
-                    ),
-                    GuaranteeAfterStep(
-                      stateAfterController: stateAfterController,
-                      onConfirm: () {
-                        DialogUtils.showConfirmationDialog(
-                          context: context,
-                          title: "",
-                          labelTitle:
-                              "Bạn chắc chắn xác nhận\nthông tin trên ?",
-                          textCancelButton: "Huỷ",
-                          textAcceptButton: "Xác nhận",
-                          cancelPressed: () => Navigator.pop(context),
-                          acceptPressed: () {},
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              )
-            ],
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const buildHeading(),
+                const SizedBox(height: 24),
+                buildStepper(),
+                Expanded(
+                  child: PageView(
+                    controller: pageController,
+                    scrollDirection: Axis.horizontal,
+                    onPageChanged: (index) => changeStep(index),
+                    children: [
+                      GuaranteeBeforeStep(
+                        key: beforeStepKey,
+                        reasonController: reasonController,
+                        product: widget.product,
+                        onNextStep: () {
+                          changeStep(2);
+                        },
+                      ),
+                      GuaranteeAfterStep(
+                        stateAfterController: stateAfterController,
+                        onConfirm: () {
+                          DialogUtils.showConfirmationDialog(
+                            context: context,
+                            title: "",
+                            labelTitle:
+                                "Bạn chắc chắn xác nhận\nthông tin trên ?",
+                            textCancelButton: "Huỷ",
+                            textAcceptButton: "Xác nhận",
+                            cancelPressed: () => Navigator.pop(context),
+                            acceptPressed: () async {
+                              DialogUtils.hide(context);
+                              DialogUtils.showLoadingDialog(context);
+                              // Get customer
+                              final customer =
+                                  beforeStepKey.currentState?.customer;
+
+                              // Save History Guarantees
+                              final gDocs = await FirebaseFirestore.instance
+                                  .collection("guarantees")
+                                  .where("customerID",
+                                      isEqualTo: customer?.id ?? "")
+                                  .limit(1)
+                                  .get();
+
+                              final gHistory = GuaranteeHistory(
+                                guaranteeID: gDocs.docs.first.id,
+                                afterStatus: stateAfterController.text.trim(),
+                                beforeStatus: reasonController.text.trim(),
+                                technicalID: userInfoBloc.user?.id ?? "",
+                                technicalName:
+                                    userInfoBloc.user?.fullName ?? "",
+                                date: Timestamp.now(),
+                              );
+
+                              guaranteeHistoryBloc
+                                  .add(CreateGuaranteeHistory(gHistory));
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),

@@ -9,6 +9,7 @@ class GuaranteeHistoryBloc
 
   GuaranteeHistoryBloc(this.useCase) : super(GuaranteeHistoryInitial()) {
     on<FetchListGuaranteeHistory>(_onFetchListHistory);
+    on<CreateGuaranteeHistory>(_onCreateHistory);
   }
 
   Future<void> _onFetchListHistory(FetchListGuaranteeHistory event,
@@ -20,6 +21,17 @@ class GuaranteeHistoryBloc
       emit(GuaranteeHistoryListLoaded(guaranteeHistories));
     } catch (e) {
       emit(GuaranteeHistoryError('Failed to add active guarantee: $e'));
+    }
+  }
+
+  Future<void> _onCreateHistory(CreateGuaranteeHistory event,
+      Emitter<GuaranteeHistoryState> emit) async {
+    try {
+      emit(GuaranteeHistoryLoading());
+      await useCase.create(event.guaranteeHistory);
+      emit(CreateGuaranteeHistorySuccess());
+    } catch (e) {
+      emit(GuaranteeHistoryError('Failed to add guarantee history: $e'));
     }
   }
 }

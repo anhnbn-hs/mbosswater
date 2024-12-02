@@ -33,7 +33,13 @@ class GuaranteeRepositoryImpl extends GuaranteeRepository {
   }
 
   @override
-  Future<List<GuaranteeHistory>> fetchGuaranteeHistoryList(String guaranteeID)  async{
+  Future<List<GuaranteeHistory>> fetchGuaranteeHistoryList(
+      String guaranteeID) async {
     return await _datasource.fetchGuaranteeHistoryList(guaranteeID);
+  }
+
+  @override
+  Future<void> createGuaranteeHistory(GuaranteeHistory gHistory) async {
+    return await _datasource.createGuaranteeHistory(gHistory);
   }
 }

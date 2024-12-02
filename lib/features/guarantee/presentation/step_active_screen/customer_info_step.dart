@@ -15,16 +15,20 @@ import 'package:mbosswater/features/guarantee/data/model/province.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/page/guarantee_activate_page.dart';
 
 class CustomerInfoStep extends StatefulWidget {
-  final VoidCallback onNextStep, onPreStep;
-
+  final VoidCallback onPreStep;
+  final Function(bool isDuplicatePhone) onNextStep;
+  final GlobalKey<GuaranteeActivatePageState> guaranteeActiveKey;
   const CustomerInfoStep({
     super.key,
     required this.onPreStep,
     required this.onNextStep,
+    required this.guaranteeActiveKey,
   });
 
   @override
@@ -45,6 +49,8 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
 
   var pageController = PageController();
 
+  final focusNodePhone = FocusNode();
+
   // Step Bloc
   late StepBloc stepBloc;
   late CustomerBloc customerBloc;
@@ -57,6 +63,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
   final provinceGlobalKey = GlobalKey();
   final districtGlobalKey = GlobalKey();
   final communeGlobalKey = GlobalKey();
+
 
   @override
   void initState() {
@@ -74,6 +81,12 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     provinceGlobalKey.currentState?.setState(() {});
     districtGlobalKey.currentState?.setState(() {});
     communeGlobalKey.currentState?.setState(() {});
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    focusNodePhone.dispose();
   }
 
   @override
@@ -98,16 +111,17 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 buildTextFieldItem(
-                  label: "Họ và tên khách hàng",
-                  hint: "Nhập họ tên khách hàng",
-                  controller: nameController,
+                  label: "Số điện thoại",
+                  hint: "SĐT",
+                  focusNode: focusNodePhone,
+                  inputType: TextInputType.number,
+                  controller: phoneController,
                 ),
                 const SizedBox(height: 12),
                 buildTextFieldItem(
-                  label: "Số điện thoại",
-                  hint: "SĐT",
-                  inputType: TextInputType.number,
-                  controller: phoneController,
+                  label: "Họ và tên khách hàng",
+                  hint: "Nhập họ tên khách hàng",
+                  controller: nameController,
                 ),
                 const SizedBox(height: 12),
                 Align(
@@ -248,6 +262,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     required String label,
     required String hint,
     bool isRequired = true,
+    FocusNode? focusNode,
     TextInputType inputType = TextInputType.text,
     required TextEditingController controller,
   }) {
@@ -289,6 +304,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
           child: TextFormField(
             controller: controller,
             keyboardType: inputType,
+            focusNode: focusNode,
             style: AppStyle.boxField.copyWith(),
             decoration: InputDecoration(
               border: const UnderlineInputBorder(
@@ -331,28 +347,72 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
   @override
   bool get wantKeepAlive => true;
 
-  void handleAndGoToNextStep() {
+  handleAndGoToNextStep() async {
+    final activeGuaranteeBloc = BlocProvider.of<ActiveGuaranteeBloc>(context);
     if (checkInput()) {
-      customerBloc.emitCustomer(
-        Customer(
-          id: generateRandomId(6),
-          fullName: nameController.text,
-          email: emailController.text,
-          phoneNumber: phoneController.text,
-          address: Address(
-            province: provincesBloc.selectedProvince?.name,
-            district: districtsBloc.selectedDistrict?.name,
-            commune: communesBloc.selectedCommune?.name,
-            detail: addressController.text,
+      Customer? oldCustomer = await activeGuaranteeBloc
+          .getCustumerExist(phoneController.text.trim());
+
+      if (oldCustomer != null) {
+        DialogUtils.showLoadingDialog(context);
+        DialogUtils.showConfirmationDialog(
+          context: context,
+          onClickOutSide: () => DialogUtils.hide(context),
+          title:
+              "Thông tin khách hàng đã tồn tại.\nBạn có muốn tự động cập nhật thông tin?",
+          textCancelButton: "Nhập SĐT mới",
+          textAcceptButton: "Cập nhật",
+          acceptPressed: () {
+            DialogUtils.hide(context);
+            customerBloc.emitCustomer(
+              Customer(
+                id: generateRandomId(6),
+                fullName: nameController.text,
+                email: emailController.text,
+                phoneNumber: phoneController.text,
+                address: Address(
+                  province: provincesBloc.selectedProvince?.name,
+                  district: districtsBloc.selectedDistrict?.name,
+                  commune: communesBloc.selectedCommune?.name,
+                  detail: addressController.text,
+                ),
+              ),
+            );
+            widget.guaranteeActiveKey.currentState?.isCustomerStepCompleted = true;
+            widget.guaranteeActiveKey.currentState?.pageController.jumpToPage(2);
+            return;
+          },
+          cancelPressed: () {
+            widget.guaranteeActiveKey.currentState?.isCustomerStepCompleted = true;
+            DialogUtils.hide(context);
+            focusNodePhone.requestFocus();
+          },
+        );
+      } else {
+        widget.guaranteeActiveKey.currentState?.isCustomerStepCompleted = true;
+        customerBloc.emitCustomer(
+          Customer(
+            id: generateRandomId(6),
+            fullName: nameController.text,
+            email: emailController.text,
+            phoneNumber: phoneController.text,
+            address: Address(
+              province: provincesBloc.selectedProvince?.name,
+              district: districtsBloc.selectedDistrict?.name,
+              commune: communesBloc.selectedCommune?.name,
+              detail: addressController.text,
+            ),
           ),
-        ),
-      );
-      widget.onNextStep();
+        );
+        widget.guaranteeActiveKey.currentState?.pageController.jumpToPage(2);
+      }
     } else {
+      widget.guaranteeActiveKey.currentState?.isCustomerStepCompleted = false;
       DialogUtils.showWarningDialog(
         context: context,
         title: "Hãy nhập đầy đủ thông tin khách hàng!",
-        onClickOutSide: () {},
+        onClickOutSide: () {
+        },
       );
     }
   }
@@ -833,7 +893,6 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
       },
     );
   }
-
 }
 
 enum AddressType { province, district, commune }

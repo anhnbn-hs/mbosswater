@@ -59,126 +59,125 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            const Align(
-              alignment: FractionalOffset.centerLeft,
-              child: Text(
-                "Sản phẩm",
-                style: TextStyle(
-                  color: Color(0xff820a1a),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              const Align(
+                alignment: FractionalOffset.centerLeft,
+                child: Text(
+                  "Sản phẩm",
+                  style: TextStyle(
+                    color: Color(0xff820a1a),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            buildGuaranteeInfoItem(
-              label: "Tên sản phẩm",
-              value: widget.guarantee.product.name ??
-                  "Máy Lọc Nước Tạo Kiềm MBossWater",
-            ),
-            buildGuaranteeInfoItem(
-              label: "Model máy",
-              value: widget.guarantee.product.model ?? "",
-            ),
-            BlocBuilder(
-              bloc: agencyBloc,
-              builder: (context, state) {
-                if (state is AgencyLoaded) {
+              const SizedBox(height: 16),
+              buildGuaranteeInfoItem(
+                label: "Model máy",
+                value: widget.guarantee.product.model ?? "",
+              ),
+              buildGuaranteeInfoItem(
+                label: "Seri màng lọc Dow",
+                value: widget.guarantee.product.seriDow ?? "SRDxxx",
+              ),
+              BlocBuilder(
+                bloc: agencyBloc,
+                builder: (context, state) {
+                  if (state is AgencyLoaded) {
+                    return buildGuaranteeInfoItem(
+                      label: "Đại lý",
+                      value: state.agency.name,
+                    );
+                  }
                   return buildGuaranteeInfoItem(
                     label: "Đại lý",
-                    value: state.agency.name,
+                    value: "",
                   );
-                }
-                return buildGuaranteeInfoItem(
-                  label: "Đại lý",
-                  value: "",
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            const Align(
-              alignment: FractionalOffset.centerLeft,
-              child: Text(
-                "Thông tin bảo hành",
-                style: TextStyle(
-                  color: Color(0xff820a1a),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                },
+              ),
+              const SizedBox(height: 16),
+              const Align(
+                alignment: FractionalOffset.centerLeft,
+                child: Text(
+                  "Thông tin bảo hành",
+                  style: TextStyle(
+                    color: Color(0xff820a1a),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Tình trạng",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Tình trạng",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 36),
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 3),
-                        child: CircleAvatar(
-                          backgroundColor: expired
-                              ? AppColors.primaryColor
-                              : const Color(0xff00B81C),
-                          radius: 4,
+                    const SizedBox(width: 36),
+                    Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: CircleAvatar(
+                            backgroundColor: expired
+                                ? AppColors.primaryColor
+                                : const Color(0xff00B81C),
+                            radius: 4,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        expired ? "Hết hạn" : "Còn hạn",
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
+                        const SizedBox(width: 3),
+                        Text(
+                          expired ? "Hết hạn" : "Còn hạn",
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            buildGuaranteeInfoItem(
-              label: "Ngày bắt đầu",
-              value: startDateFormatted,
-            ),
-            buildGuaranteeInfoItem(
-              label: "Ngày kết thúc",
-              value: endDateFormatted,
-            ),
-            buildGuaranteeInfoItem(
-              label: "Thời gian bảo hành",
-              value: "${widget.guarantee.product.duration} tháng",
-            ),
-            const SizedBox(height: 16),
-            const Align(
-              alignment: FractionalOffset.centerLeft,
-              child: Text(
-                "Lịch sử bảo hành",
-                style: TextStyle(
-                  color: Color(0xff820a1a),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: BlocBuilder(
+              buildGuaranteeInfoItem(
+                label: "Ngày bắt đầu",
+                value: startDateFormatted,
+              ),
+              buildGuaranteeInfoItem(
+                label: "Ngày kết thúc",
+                value: endDateFormatted,
+              ),
+              buildGuaranteeInfoItem(
+                label: "Thời gian bảo hành",
+                value: "${widget.guarantee.product.duration} tháng",
+              ),
+              const SizedBox(height: 16),
+              const Align(
+                alignment: FractionalOffset.centerLeft,
+                child: Text(
+                  "Lịch sử bảo hành",
+                  style: TextStyle(
+                    color: Color(0xff820a1a),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              BlocBuilder(
                 bloc: guaranteeHistoryBloc,
                 builder: (context, state) {
                   if (state is GuaranteeHistoryLoading) {
@@ -194,14 +193,37 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                         ),
                       );
                     }
-                    return ListView.builder(
+                    return ListView.separated(
                       itemCount: state.guaranteeHistories.length,
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      separatorBuilder: (context, index) {
+                        return const Divider(
+                          color: Colors.grey,
+                          thickness: .3,
+                          height: 16,
+                        );
+                      },
                       itemBuilder: (context, index) {
                         final dateFormat = DateFormat("dd/MM/yyyy").format(
                             state.guaranteeHistories[index].date!.toDate());
-                        return SizedBox(
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
                           child: Column(
                             children: [
+                              if (state.guaranteeHistories.length > 1)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    "Lần ${state.guaranteeHistories.length - index}",
+                                    style: AppStyle.boxFieldLabel.copyWith(
+                                      color: const Color(0xff820a1a),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(height: 8),
                               buildGuaranteeInfoItem(
                                 label: "Kỹ thuật viên",
                                 value: state.guaranteeHistories[index]
@@ -234,8 +256,8 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                   return const SizedBox.shrink();
                 },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

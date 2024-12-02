@@ -8,6 +8,7 @@ import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
+import 'package:mbosswater/features/guarantee/presentation/page/guarantee_activate_page.dart';
 import 'package:mbosswater/features/qrcode_scanner/presentation/utils/guarantee_check.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -174,10 +175,14 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
         isShowingDialog = false;
       });
       // Navigate
+      final guaranteeActiveKey = GlobalKey<GuaranteeActivatePageState>();
       DialogUtils.hide(context);
       context.push(
         "/guarantee-active",
-        extra: productItem,
+        extra: {
+          'product': productItem,
+          'key': guaranteeActiveKey,
+        },
       );
       return;
     }
@@ -280,7 +285,9 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: Text(
-                      widget.scanType == ScanType.activate ? "Đặt mã QR vào trong vùng" : "Đặt mã QR sản phẩm đã được kích hoạt bảo hành vào trong vùng" ,
+                      widget.scanType == ScanType.activate
+                          ? "Đặt mã QR vào trong vùng"
+                          : "Đặt mã QR sản phẩm đã được kích hoạt bảo hành vào trong vùng",
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'BeVietNam',

@@ -43,6 +43,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       floatingActionButton: buildCustomFloatingActionButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: SizedBox(
@@ -691,7 +692,7 @@ class _HomePageState extends State<HomePage> {
       while (context.canPop()) {
         context.pop();
       }
-      context.go("/login");
+      context.push("/login");
     } on Exception catch (e) {}
   }
 }
