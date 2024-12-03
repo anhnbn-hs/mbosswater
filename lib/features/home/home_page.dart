@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +15,7 @@ import 'package:mbosswater/features/customer/presentation/bloc/search_customer_b
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/login/presentation/page/login_page.dart';
 import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scanner_page.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
                           labelTitle: "Đăng xuất",
                           textCancelButton: "Hủy",
                           textAcceptButton: "Đăng xuất",
-                          acceptPressed: () => handleLogout(context),
+                          acceptPressed: () async => handleLogout(context),
                           cancelPressed: () => Navigator.pop(context),
                         );
                       },
@@ -194,19 +194,7 @@ class _HomePageState extends State<HomePage> {
       case Roles.AGENCY_BOSS:
         body = Column(
           children: <Widget>[
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Dịch vụ",
-                style: TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Color(0xff201E1E),
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Align(
               alignment: Alignment.centerLeft,
               child: FeatureGridItem(
@@ -222,19 +210,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             // Management
-            const SizedBox(height: 30),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Quản lý",
-                style: TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Color(0xff201E1E),
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -289,19 +264,7 @@ class _HomePageState extends State<HomePage> {
             Roles.MBOSS_TECHNICAL:
         body = Column(
           children: <Widget>[
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Dịch vụ",
-                style: TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Color(0xff201E1E),
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 70),
             Row(
               children: [
                 Expanded(
@@ -314,26 +277,6 @@ class _HomePageState extends State<HomePage> {
                         '/qrcode-scanner',
                         extra: ScanType.activate,
                       );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                    child: Container(
-                  width: double.infinity,
-                )),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Cài đặt tài khoản",
-                    subtitle: "Thông tin tài khoản",
-                    assetIcon: AppAssets.icAccount,
-                    onTap: () {
-                      context.push('/setting-account');
                     },
                   ),
                 ),
@@ -352,6 +295,26 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Cài đặt tài khoản",
+                    subtitle: "Thông tin tài khoản",
+                    assetIcon: AppAssets.icAccount,
+                    onTap: () {
+                      context.push('/setting-account');
+                    },
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                    child: Container(
+                  width: double.infinity,
+                )),
+              ],
             )
           ],
         );
@@ -359,19 +322,7 @@ class _HomePageState extends State<HomePage> {
       case Roles.MBOSS_ADMIN:
         body = Column(
           children: <Widget>[
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Dịch vụ",
-                style: TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Color(0xff201E1E),
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 70),
             Row(
               children: [
                 Expanded(
@@ -400,20 +351,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            const SizedBox(height: 30),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Quản lý",
-                style: TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Color(0xff201E1E),
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 70),
             Row(
               children: [
                 Expanded(
@@ -433,7 +371,7 @@ class _HomePageState extends State<HomePage> {
                     subtitle: "Quản lý thông tin nhân viên",
                     assetIcon: AppAssets.icTeamManagement,
                     onTap: () {
-                      context.push('/staff-management');
+                      context.push('/mboss-staff-management');
                     },
                   ),
                 ),
@@ -445,19 +383,7 @@ class _HomePageState extends State<HomePage> {
       case Roles.MBOSS_CUSTOMERCARE:
         body = Column(
           children: <Widget>[
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Dịch vụ",
-                style: TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Color(0xff201E1E),
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 50),
             Row(
               children: [
                 Expanded(
@@ -511,7 +437,10 @@ class _HomePageState extends State<HomePage> {
     return body;
   }
 
-  Container buildSearchSection(BuildContext context) {
+  Widget buildSearchSection(BuildContext context) {
+    if (userInfoBloc.user?.role == Roles.MBOSS_CUSTOMERCARE) {
+      return const SizedBox.shrink();
+    }
     return Container(
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -683,16 +612,18 @@ class _HomePageState extends State<HomePage> {
         ));
   }
 
-  handleLogout(BuildContext context) async {
+  Future<void> handleLogout(BuildContext context) async {
     try {
       DialogUtils.showLoadingDialog(context);
       await FirebaseAuth.instance.signOut();
       await FirebaseMessaging.instance.deleteToken();
-      await Future.delayed(const Duration(milliseconds: 1000));
-      while (context.canPop()) {
-        context.pop();
-      }
-      context.push("/login");
-    } on Exception catch (e) {}
+      await Future.delayed(const Duration(milliseconds: 800));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+
+    } on Exception catch (e) {
+      throw Exception(e);
+    }
   }
 }

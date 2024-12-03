@@ -8,10 +8,10 @@ class District {
   });
 
   final String? id;
-  final String? name;
-  final String? provinceId;
-  final int? type;
-  final String? typeText;
+  String? name;
+  String? provinceId;
+  int? type;
+  String? typeText;
 
   factory District.fromJson(Map<String, dynamic> json){
     return District(

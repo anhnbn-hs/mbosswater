@@ -6,6 +6,10 @@ class CustomerBloc extends Cubit<Customer?> {
 
   Customer? customer;
 
+  void fetchCustomer(String phoneNumber){
+
+  }
+
   void emitCustomer(Customer customer) {
     this.customer = customer;
     emit(customer);

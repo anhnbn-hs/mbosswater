@@ -63,6 +63,7 @@ dependencies:
   timezone: ^0.10.0
   flutter_local_notifications: ^18.0.1
   flutter_dotenv: ^5.2.1
+  flutter_launcher_icons: ^0.14.1
 
 
 
@@ -153,3 +154,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: "AppIcon"
+  image_path: "assets/icons/ic_launcher.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true

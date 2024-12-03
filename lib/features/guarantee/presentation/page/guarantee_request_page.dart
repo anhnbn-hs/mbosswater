@@ -61,10 +61,7 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
         listener: (context, state) async {
           if (state is CreateGuaranteeHistorySuccess) {
             await Future.delayed(const Duration(milliseconds: 800));
-            while (context.canPop()) {
-              context.pop();
-            }
-            context.push("/home");
+            context.go("/home");
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: const Text(
                 "Đã lưu lại lịch sử bảo hành thành công",

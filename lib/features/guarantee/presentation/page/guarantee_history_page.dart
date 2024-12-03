@@ -54,7 +54,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
       appBar: AppBar(
         leading: const LeadingBackButton(),
         title: Text(
-          "#${widget.guarantee.id}",
+          "#${widget.guarantee.id.toUpperCase()}",
           style: AppStyle.appBarTitle,
         ),
         centerTitle: true,

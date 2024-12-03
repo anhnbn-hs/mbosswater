@@ -130,6 +130,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
     final startDate = guarantee.createdAt.toDate();
     final startDateFormatted = DateFormat("dd/MM/yyyy").format(startDate);
     bool expired = isExpired(guarantee.endDate);
+    int remainingMonth = getRemainingMonths(guarantee.endDate);
     return GestureDetector(
       onTap: () {
         context.push(
@@ -154,7 +155,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             Align(
               alignment: FractionalOffset.centerLeft,
               child: Text(
-                "#${guarantee.id}",
+                "#${guarantee.id.toUpperCase()}",
                 style: const TextStyle(
                   color: Color(0xff820a1a),
                   fontWeight: FontWeight.w600,
@@ -206,7 +207,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                       ),
                       const SizedBox(width: 3),
                       Text(
-                        expired ? "Hết hạn bảo hành" : "Còn hạn bảo hành",
+                        expired ? "Hết hạn bảo hành" : "Còn $remainingMonth tháng bảo hành",
                         style: const TextStyle(
                           color: Colors.black,
                           fontSize: 14,

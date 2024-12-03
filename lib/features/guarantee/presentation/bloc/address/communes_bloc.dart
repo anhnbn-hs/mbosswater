@@ -80,4 +80,9 @@ class CommunesBloc extends Bloc<CommunesEvent, CommunesState> {
       emit(CommunesLoaded(currentState.communes));
     }
   }
+
+  void emitCommune(Commune commune){
+    selectedCommune = commune;
+    emit(CommunesInitial());
+  }
 }

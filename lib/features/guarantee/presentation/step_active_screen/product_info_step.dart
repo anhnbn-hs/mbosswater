@@ -100,6 +100,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
             ),
             const SizedBox(height: 40),
             CustomButton(
+              height: 56,
               onTap: () {
                 bool isAgency = Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role);
                 if(!isAgency && agencyBloc.selectedAgency == null){

@@ -14,8 +14,8 @@
         tools:targetApi="eclair" />
     <application
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:label="mbosswater">
+        android:icon="@mipmap/launcher_icon"
+        android:label="MBossWater">
         <receiver
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
             android:exported="false" />

@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
-  final String id;
+  String id;
   final String email;
   final String? fullName;
   final String? dob;
   final String? gender;
   final String? address;
+  final String? phoneNumber;
   final String? role;
   final String? password;
   final String? agency;
@@ -18,6 +19,7 @@ class UserModel {
     required this.dob,
     required this.email,
     required this.gender,
+    required this.phoneNumber,
     required this.role,
     required this.createdAt,
     required this.address,
@@ -37,6 +39,7 @@ class UserModel {
       role: json['role'] as String?,
       createdAt: json['createdAt'] as Timestamp?,
       password: json["password"] as String?,
+      phoneNumber: json['phoneNumber'] as String?,
       agency: json["agency"] as String?,
     );
   }
@@ -51,6 +54,7 @@ class UserModel {
       'gender': gender,
       'role': role,
       'email': email,
+      'phoneNumber': phoneNumber,
       'password': password,
       'createdAt': createdAt,
       'agency': agency,

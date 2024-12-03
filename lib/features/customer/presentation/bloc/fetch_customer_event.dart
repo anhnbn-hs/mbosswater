@@ -5,3 +5,9 @@ class FetchCustomerByProduct extends FetchCustomerEvent {
 
   FetchCustomerByProduct(this.productID);
 }
+
+class FetchCustomerByPhoneNumber extends FetchCustomerEvent {
+  final String phoneNumber;
+
+  FetchCustomerByPhoneNumber(this.phoneNumber);
+}

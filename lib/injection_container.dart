@@ -8,6 +8,7 @@ import 'package:mbosswater/features/customer/data/datasource/customer_datasource
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource_impl.dart';
 import 'package:mbosswater/features/customer/data/repository/customer_repository_impl.dart';
 import 'package:mbosswater/features/customer/domain/repository/customer_repository.dart';
+import 'package:mbosswater/features/customer/domain/usecase/get_customer_by_phone.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_by_product.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_guarantee.dart';
 import 'package:mbosswater/features/customer/domain/usecase/list_all_customer.dart';
@@ -37,6 +38,12 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_blo
 import 'package:mbosswater/features/login/data/datasource/auth_datasource.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource_impl.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_bloc.dart';
+import 'package:mbosswater/features/mboss/data/datasource/mboss_manager_datasource.dart';
+import 'package:mbosswater/features/mboss/data/datasource/mboss_manager_datasource_impl.dart';
+import 'package:mbosswater/features/mboss/data/repository/mboss_manager_repository_impl.dart';
+import 'package:mbosswater/features/mboss/domain/repository/mboss_manager_repository.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/recovery/data/datasource/recovery_datasource.dart';
 import 'package:mbosswater/features/recovery/data/datasource/recovery_datasource_impl.dart';
 import 'package:mbosswater/features/recovery/data/repository/recovery_repository_impl.dart';
@@ -164,8 +171,13 @@ void initServiceLocator() {
     () => GetCustomerByProductUseCase(sl<CustomerRepository>()),
   );
 
+  sl.registerLazySingleton<GetCustomerByPhoneUseCase>(
+    () => GetCustomerByPhoneUseCase(sl<CustomerRepository>()),
+  );
+
   sl.registerLazySingleton<FetchCustomerBloc>(
-    () => FetchCustomerBloc(sl<GetCustomerByProductUseCase>()),
+    () => FetchCustomerBloc(
+        sl<GetCustomerByProductUseCase>(), sl<GetCustomerByPhoneUseCase>()),
   );
 
   sl.registerLazySingleton<CustomerGuaranteeBloc>(
@@ -213,5 +225,22 @@ void initServiceLocator() {
 
   sl.registerLazySingleton<AgencyRepository>(
     () => AgencyRepositoryImpl(sl<AgencyDatasource>()),
+  );
+
+  // Mboss Management
+  sl.registerLazySingleton<MbossManagerDatasource>(
+    () => MbossManagerDatasourceImpl(sl<UserDatasource>()),
+  );
+
+  sl.registerLazySingleton<MbossManagerRepository>(
+    () => MbossManagerRepositoryImpl(sl<MbossManagerDatasource>()),
+  );
+
+  sl.registerLazySingleton<FetchMbossStaffBloc>(
+    () => FetchMbossStaffBloc(sl<MbossManagerRepository>()),
+  );
+
+  sl.registerLazySingleton<CreateMbossStaffBloc>(
+        () => CreateMbossStaffBloc(sl<MbossManagerRepository>()),
   );
 }

@@ -19,6 +19,19 @@ bool isExpired(DateTime endDate) {
   return endDate.isBefore(now);
 }
 
+int getRemainingMonths(DateTime endDate) {
+  final now = DateTime.now();
+
+  if (endDate.isBefore(now)) {
+    return 0;
+  }
+
+  int remainingYears = endDate.year - now.year;
+  int remainingMonths = endDate.month - now.month;
+
+  return (remainingYears * 12) + remainingMonths + 1;
+}
+
 // Duration unit = month
 DateTime calculateEndDateFromDuration(int duration) {
   DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));

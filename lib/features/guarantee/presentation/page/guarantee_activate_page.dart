@@ -334,29 +334,14 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
 
           DialogUtils.showLoadingDialog(context);
           await Future.delayed(const Duration(milliseconds: 800));
-          activeGuarantee(product, customer, ActionType.create);
-
-          // Customer? oldCustomer = await activeGuaranteeBloc
-          //     .getCustumerExist(customerBloc.customer!.phoneNumber!);
-          // print(oldCustomer);
-          // DialogUtils.hide(context);
-          // if (oldCustomer != null) {
-          //   DialogUtils.showConfirmationDialog(
-          //     context: context,
-          //     title:
-          //         "Thông tin khách hàng đã tồn tại, bạn có muốn tự động cập nhật thông tin?",
-          //     textCancelButton: "Cập nhật",
-          //     textAcceptButton: "Nhập SĐT mới",
-          //     acceptPressed: () {
-          //       activeGuarantee(product, customer, ActionType.update);
-          //     },
-          //     cancelPressed: () {
-          //       activeGuarantee(product, oldCustomer, ActionType.update);
-          //     },
-          //   );
-          // } else {
-          //   activeGuarantee(product, customer, ActionType.create);
-          // }
+          switch(customerStepKey.currentState?.actionType){
+            case ActionType.create:
+              activeGuarantee(product, customer, ActionType.create);
+            case ActionType.update:
+              activeGuarantee(product, customer, ActionType.create);
+            case null:
+              // TODO: Handle this case.
+          }
         },
         cancelPressed: () => Navigator.pop(context),
       );
@@ -405,13 +390,15 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
       print(isCustomerStepCompleted);
       if (!isCustomerStepCompleted) {
         customerStepKey.currentState?.handleAndGoToNextStep();
-        stepBloc.changeStep(index);
+        stepBloc.changeStep(1);
         pageController.animateToPage(
           1,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
         return;
+      } else {
+
       }
     }
     stepBloc.changeStep(index);

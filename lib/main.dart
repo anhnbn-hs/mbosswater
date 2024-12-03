@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mbosswater/core/services/firebase_cloud_functions.dart';
 import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
@@ -24,6 +25,8 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_blo
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
@@ -51,8 +54,10 @@ void main() async {
 
   // Initialize Service Locator - GetIt Dependency Injection
   initServiceLocator();
-  SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Future<void> addMultipleUsers(List<UserModel> users) async {
   //   try {
@@ -90,7 +95,7 @@ void main() async {
   // }
 
   // String data =
-  //     '{"code":"mbosswater","product":{"id":"MLN1008","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model08","seriDow":"SRD08","guaranteeDuration":"24 tháng"}}';
+  //     '{"code":"mbosswater","product":{"id":"MLN1009","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model09","seriDow":"SRD09","guaranteeDuration":"24 tháng"}}';
   //
   // String dataEncri = EncryptionHelper.encryptData(data, dotenv.env["SECRET_KEY_QR_CODE"]!);
   //
@@ -114,6 +119,8 @@ void main() async {
         BlocProvider(create: (_) => sl<FetchCustomerBloc>()),
         BlocProvider(create: (_) => sl<AgencyBloc>()),
         BlocProvider(create: (_) => sl<GuaranteeHistoryBloc>()),
+        BlocProvider(create: (_) => sl<FetchMbossStaffBloc>()),
+        BlocProvider(create: (_) => sl<CreateMbossStaffBloc>()),
         // For step handling
         BlocProvider(create: (_) => StepBloc(0)),
         BlocProvider(create: (_) => ProductBloc(null)),
@@ -138,7 +145,6 @@ class MyApp extends StatelessWidget {
     //   'Welcome to MBossWater',
     //   'This is an instant notification',
     // );
-
     return MaterialApp.router(
       title: 'MBossWater',
       locale: DevicePreview.locale(context),

@@ -87,4 +87,9 @@ class DistrictsBloc extends Bloc<DistrictsEvent, DistrictsState> {
     }
   }
 
+  void emitDistrict(District district){
+    selectedDistrict = district;
+    emit(DistrictsInitial());
+  }
+
 }

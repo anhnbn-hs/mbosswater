@@ -8,12 +8,12 @@ class Commune {
   });
 
   final String? id;
-  final String? name;
-  final String? districtId;
-  final int? type;
-  final String? typeText;
+  String? name;
+  String? districtId;
+  int? type;
+  String? typeText;
 
-  factory Commune.fromJson(Map<String, dynamic> json){
+  factory Commune.fromJson(Map<String, dynamic> json) {
     return Commune(
       id: json["id"],
       name: json["name"],
@@ -24,11 +24,10 @@ class Commune {
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "districtId": districtId,
-    "type": type,
-    "typeText": typeText,
-  };
-
+        "id": id,
+        "name": name,
+        "districtId": districtId,
+        "type": type,
+        "typeText": typeText,
+      };
 }

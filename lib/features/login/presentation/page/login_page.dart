@@ -100,17 +100,13 @@ class _LoginPageState extends State<LoginPage> {
                     );
                   }
                   if (state is LoginSuccess) {
-                    DialogUtils.hide(context);
                     // Save FCM Token
 
                     // Get User Information
                     userInfoBloc.add(FetchUserInfo(state.user.uid));
                     // Navigate
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      while (context.canPop()) {
-                        context.pop();
-                      }
-                      context.push("/home");
+                      context.go("/home");
                     });
                   }
                   return const SizedBox.shrink();

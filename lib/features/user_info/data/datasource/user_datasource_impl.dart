@@ -25,14 +25,15 @@ class UserDatasourceImpl extends UserDatasource {
   }
 
   @override
-  Future<void> deleteUserInformation(String userID) {
-    // TODO: implement deleteUserInformation
-    throw UnimplementedError();
+  Future<void> deleteUserInformation(String userID) async {
+    await _firebaseFirestore.collection("users").doc(userID).delete();
   }
 
   @override
-  Future<void> updateUserInformation(UserModel userUpdate) {
-    // TODO: implement updateUserInformation
-    throw UnimplementedError();
+  Future<void> updateUserInformation(UserModel userUpdate) async {
+    await _firebaseFirestore
+        .collection("users")
+        .doc(userUpdate.id)
+        .update(userUpdate.toJson());
   }
 }
