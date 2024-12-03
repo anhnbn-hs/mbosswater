@@ -16,6 +16,7 @@ import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scan
 import 'package:mbosswater/features/recovery/presentation/page/change_password_page.dart';
 import 'package:mbosswater/features/recovery/presentation/page/forgot_password_page.dart';
 import 'package:mbosswater/features/splash/presentation/page/splash_page.dart';
+import 'package:mbosswater/features/user_info/presentation/user_profile_page.dart';
 
 final GoRouter router = GoRouter(
   routes: [
@@ -97,6 +98,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/mboss-staff-management',
       builder: (context, state) => const MbossStaffManagement(),
+    ),
+    GoRoute(
+      path: '/user-profile',
+      builder: (context, state) => const UserProfilePage(),
     ),
   ],
 );

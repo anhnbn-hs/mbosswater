@@ -42,7 +42,7 @@ class AuthDatasourceImpl extends AuthDatasource {
       await assignFCMToken(user.uid, token);
 
       return user;
-    } on Exception catch (e) {
+    } on Exception {
       return null;
     }
   }

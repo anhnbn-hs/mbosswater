@@ -83,29 +83,21 @@ class _HomePageState extends State<HomePage> {
                       icon: const Icon(
                         Icons.logout,
                         color: Colors.black,
+                        size: 28,
                       ),
                     ),
-                    BlocBuilder(
-                      bloc: userInfoBloc,
-                      builder: (context, state) {
-                        if (state is UserInfoLoaded) {
-                          return CircleAvatar(
-                            backgroundColor: const Color(0xff3F689D),
-                            radius: 20,
-                            child: Text(
-                              state.user.fullName![0],
-                              style: const TextStyle(
-                                fontFamily: 'BeVietnam',
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 24,
-                                height: -.2,
-                              ),
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
+                    GestureDetector(
+                      onTap: () {
+                        context.push("/notification");
                       },
+                      child: const CircleAvatar(
+                          backgroundColor: Color(0xff3F689D),
+                          radius: 24,
+                          child: Icon(
+                            Icons.notifications,
+                            color: Colors.white,
+                            size: 30,
+                          )),
                     )
                   ],
                 ),
@@ -195,20 +187,26 @@ class _HomePageState extends State<HomePage> {
         body = Column(
           children: <Widget>[
             const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: FeatureGridItem(
-                title: "Kích hoạt bảo hành",
-                subtitle: "Quét mã sản phẩm tại đây",
-                assetIcon: AppAssets.icGuarantee,
-                onTap: () {
-                  context.push(
-                    '/qrcode-scanner',
-                    extra: ScanType.activate,
-                  );
-                },
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Kích hoạt bảo hành",
+                    subtitle: "Quét mã sản phẩm tại đây",
+                    assetIcon: AppAssets.icGuarantee,
+                    onTap: () {
+                      context.push(
+                        '/qrcode-scanner',
+                        extra: ScanType.activate,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 20),
+                const Spacer(),
+              ],
             ),
+
             // Management
             const SizedBox(height: 16),
             Row(
@@ -242,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                     title: "Cài đặt tài khoản",
                     subtitle: "Thông tin tài khoản",
                     assetIcon: AppAssets.icAccount,
-                    onTap: () {},
+                    onTap: () => context.push("/user-profile"),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -304,9 +302,7 @@ class _HomePageState extends State<HomePage> {
                     title: "Cài đặt tài khoản",
                     subtitle: "Thông tin tài khoản",
                     assetIcon: AppAssets.icAccount,
-                    onTap: () {
-                      context.push('/setting-account');
-                    },
+                    onTap: () => context.push("/user-profile"),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -359,9 +355,7 @@ class _HomePageState extends State<HomePage> {
                     title: "Cài đặt tài khoản",
                     subtitle: "Thông tin tài khoản",
                     assetIcon: AppAssets.icAccount,
-                    onTap: () {
-                      context.push('/setting-account');
-                    },
+                    onTap: () => context.push("/user-profile"),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -420,9 +414,7 @@ class _HomePageState extends State<HomePage> {
                     title: "Cài đặt tài khoản",
                     subtitle: "Thông tin tài khoản",
                     assetIcon: AppAssets.icAccount,
-                    onTap: () {
-                      context.push('/setting-account');
-                    },
+                    onTap: () => context.push("/user-profile"),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -621,7 +613,6 @@ class _HomePageState extends State<HomePage> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );
-
     } on Exception catch (e) {
       throw Exception(e);
     }

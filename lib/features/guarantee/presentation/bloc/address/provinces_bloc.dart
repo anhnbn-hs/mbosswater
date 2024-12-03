@@ -2,7 +2,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mbosswater/features/guarantee/data/model/province.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/address_usecase.dart';
-import 'package:collection/collection.dart';
 
 // Events
 abstract class ProvincesEvent {}
@@ -85,7 +84,7 @@ class ProvincesBloc extends Bloc<ProvincesEvent, ProvincesState> {
 
   void emitProvincesFullList(){
     if(provinces != null) {
-      emit(ProvincesLoaded(this.provinces!));
+      emit(ProvincesLoaded(provinces!));
     }
   }
 }

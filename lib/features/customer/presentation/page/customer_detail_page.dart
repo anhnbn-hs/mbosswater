@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
-import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
@@ -81,7 +80,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             ),
             buildCustomerInfoItem(
               label: "Địa chỉ",
-              value: "${widget.customer?.address!.displayAddress()}" ?? "---",
+              value: "${widget.customer?.address!.displayAddress()}",
             ),
             buildCustomerInfoItem(
               label: "Email",
@@ -96,7 +95,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                 builder: (context, state) {
                   if (state is CustomerGuaranteeLoading) {
                     return Center(
-                      child: Lottie.asset(AppAssets.aLoading, height: 50),
+                      child: Lottie.asset(AppAssets.aLoading, height: 70),
                     );
                   }
                   if (state is CustomerGuaranteeLoaded) {

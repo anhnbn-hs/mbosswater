@@ -52,7 +52,7 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
       builder: (context, state) {
         if (state is FetchCustomerLoading) {
           return Center(
-            child: Lottie.asset(AppAssets.aLoading, height: 50),
+            child: Lottie.asset(AppAssets.aLoading, height: 70),
           );
         }
         if (state is FetchCustomerSuccess) {

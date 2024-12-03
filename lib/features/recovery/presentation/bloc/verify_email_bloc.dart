@@ -24,7 +24,7 @@ class VerifyEmailBloc extends Bloc<VerifyEmailEvent, VerifyEmailState> {
       } else {
         emit(VerifyEmailError("Vui lòng nhập lại email"));
       }
-    } on Exception catch (e) {
+    } on Exception {
       emit(VerifyEmailError("Vui lòng nhập lại email"));
     }
   }

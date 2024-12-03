@@ -105,7 +105,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
         builder: (context, state) {
           if (state is FetchCustomersLoading) {
             return Center(
-              child: Lottie.asset(AppAssets.aLoading, height: 50),
+              child: Lottie.asset(AppAssets.aLoading, height: 70),
             );
           }
           if (state is FetchCustomersSuccess) {

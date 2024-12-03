@@ -39,6 +39,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    loginBloc.reset();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
@@ -100,13 +106,17 @@ class _LoginPageState extends State<LoginPage> {
                     );
                   }
                   if (state is LoginSuccess) {
-                    // Save FCM Token
-
-                    // Get User Information
-                    userInfoBloc.add(FetchUserInfo(state.user.uid));
-                    // Navigate
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      context.go("/home");
+                      // Make sure the context is valid here
+                      if (mounted) {
+                        while(context.canPop()){
+                          context.pop();
+                        }
+                        context.go("/home");
+                      }
+
+                      // Get User Information after navigation
+                      userInfoBloc.add(FetchUserInfo(state.user.uid));
                     });
                   }
                   return const SizedBox.shrink();
@@ -115,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 30),
               CustomElevatedButton(
                 text: "ĐĂNG NHẬP",
-                onTap: handleLogin,
+                onTap: () async => handleLogin(),
               )
             ],
           ),
@@ -131,14 +141,14 @@ class _LoginPageState extends State<LoginPage> {
     // Show loading dialog
     DialogUtils.showLoadingDialog(context);
     // Get FCM Token
-    if(Platform.isAndroid){
+    if (Platform.isAndroid) {
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null) {
         throw Exception("Không thể lấy FCM token.");
       }
     }
 
-    if(Platform.isIOS){
+    if (Platform.isIOS) {
       final token = await FirebaseMessaging.instance.getAPNSToken();
       if (token == null) {
         throw Exception("Không thể lấy FCM token.");
@@ -149,7 +159,6 @@ class _LoginPageState extends State<LoginPage> {
       password: password,
     ));
   }
-
 }
 
 class CustomElevatedButton extends StatelessWidget {

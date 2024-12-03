@@ -1,16 +1,12 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mbosswater/core/services/firebase_cloud_functions.dart';
 import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
-import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
@@ -32,7 +28,6 @@ import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 import 'package:mbosswater/go_router.dart';
-
 import 'features/login/presentation/bloc/login_bloc.dart';
 import 'injection_container.dart';
 
