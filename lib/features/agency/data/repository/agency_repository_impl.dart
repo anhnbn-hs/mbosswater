@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mbosswater/features/ageny/data/datasource/agency_datasource.dart';
-import 'package:mbosswater/features/ageny/domain/repository/agency_repository.dart';
-import 'package:mbosswater/features/user_info/data/datasource/user_datasource.dart';
+import 'package:mbosswater/features/agency/data/datasource/agency_datasource.dart';
+import 'package:mbosswater/features/agency/domain/repository/agency_repository.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
 class AgencyRepositoryImpl extends AgencyRepository {
@@ -15,8 +14,8 @@ class AgencyRepositoryImpl extends AgencyRepository {
   }
 
   @override
-  Future<List<UserModel>> fetchUsersOfAgency(String agencyID) async {
-    return await datasource.fetchUsersOfAgency(agencyID);
+  Future<List<UserModel>> fetchUsersOfAgencyForAdmin(String agencyID) async {
+    return await datasource.fetchUsersOfAgencyForAdmin(agencyID);
   }
 
   @override

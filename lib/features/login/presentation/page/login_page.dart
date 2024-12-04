@@ -149,10 +149,10 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     if (Platform.isIOS) {
-      final token = await FirebaseMessaging.instance.getAPNSToken();
-      if (token == null) {
-        throw Exception("Không thể lấy FCM token.");
-      }
+      // final token = await FirebaseMessaging.instance.getAPNSToken();
+      // if (token == null) {
+      //   throw Exception("Không thể lấy FCM token.");
+      // }
     }
     loginBloc.add(PressLogin(
       email: email,

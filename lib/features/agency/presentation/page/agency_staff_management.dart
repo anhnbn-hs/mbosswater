@@ -18,14 +18,14 @@ import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bl
 import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
-class MbossStaffManagement extends StatefulWidget {
-  const MbossStaffManagement({super.key});
+class AgencyStaffManagement extends StatefulWidget {
+  const AgencyStaffManagement({super.key});
 
   @override
-  State<MbossStaffManagement> createState() => _MbossStaffManagementState();
+  State<AgencyStaffManagement> createState() => _AgencyStaffManagementState();
 }
 
-class _MbossStaffManagementState extends State<MbossStaffManagement> {
+class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   late FetchMbossStaffBloc mbossStaffBloc;
   late CreateMbossStaffBloc createMbossStaffBloc;
   late UpdateMbossStaffBloc updateMbossStaffBloc;
@@ -39,8 +39,8 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
 
   ValueNotifier<String?> selectedRole = ValueNotifier(null);
   final List<String> dropdownItems = [
-    'Nhân viên kỹ thuật',
-    'Nhân viên chăm sóc khách hàng'
+    'Nhân viên bán hàng',
+    'Nhân viên kỹ thuật'
   ];
 
   @override

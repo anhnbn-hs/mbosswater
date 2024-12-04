@@ -44,10 +44,10 @@ class FirebaseCloudMessage {
     }
 
     if (Platform.isIOS) {
-      token = await FirebaseMessaging.instance.getAPNSToken();
-      if (token == null) {
-        throw Exception("Không thể lấy FCM token.");
-      }
+      // token = await FirebaseMessaging.instance.getAPNSToken();
+      // if (token == null) {
+      //   throw Exception("Không thể lấy FCM token.");
+      // }
     }
     print('FCM Token: $token');
   }

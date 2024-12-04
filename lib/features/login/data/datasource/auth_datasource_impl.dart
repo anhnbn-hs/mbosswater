@@ -29,17 +29,17 @@ class AuthDatasourceImpl extends AuthDatasource {
         if (token == null) {
           throw Exception("Không thể lấy FCM token.");
         }
+        await assignFCMToken(user.uid, token);
       }
 
       if (Platform.isIOS) {
-        token = await FirebaseMessaging.instance.getAPNSToken();
-        if (token == null) {
-          throw Exception("Không thể lấy FCM token.");
-        }
+        // token = await FirebaseMessaging.instance.getAPNSToken();
+        // if (token == null) {
+        //   throw Exception("Không thể lấy FCM token.");
+        // }
       }
 
       // Assign Token to user
-      await assignFCMToken(user.uid, token);
 
       return user;
     } on Exception {

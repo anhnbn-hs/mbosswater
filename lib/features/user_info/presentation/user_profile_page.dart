@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_state.dart';
@@ -25,7 +27,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
     super.initState();
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
     agencyBloc = BlocProvider.of<AgencyBloc>(context);
-    agencyBloc.fetchAgency(userInfoBloc.user?.agency ?? "");
+    if (Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role)) {
+      agencyBloc.fetchAgency(userInfoBloc.user?.agency ?? "");
+    }
   }
 
   @override
@@ -37,57 +41,77 @@ class _UserProfilePageState extends State<UserProfilePage> {
       body: BlocBuilder<AgencyBloc, AgencyState>(
         bloc: agencyBloc,
         builder: (context, state) {
+          Agency? agency;
           if (state is AgencyLoading) {
             return Center(
               child: Lottie.asset(AppAssets.aLoading, height: 70),
             );
           }
           if (state is AgencyLoaded) {
-            final agency = state;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: BlocBuilder(
-                bloc: userInfoBloc,
-                builder: (context, state) {
-                  if (state is UserInfoLoaded) {
-                    return Column(
-                      children: [
-                        const SizedBox(height: 20),
-                        const Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Thông Tin Tài Khoản",
-                            style: TextStyle(
-                              color: Color(0xff820A1A),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 24,
-                            ),
+            agency = state.agency;
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: BlocBuilder(
+              bloc: userInfoBloc,
+              builder: (context, state) {
+                if (state is UserInfoLoaded) {
+                  return Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      const Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Thông Tin Tài Khoản",
+                          style: TextStyle(
+                            color: Color(0xff820A1A),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 24,
                           ),
                         ),
-                        const SizedBox(height: 36),
-                        buildBoxInfoItem(value: state.user.fullName ?? ""),
-                        buildBoxInfoItem(value: state.user.phoneNumber ?? ""),
-                        buildBoxInfoItem(value: state.user.role ?? ""),
-                        buildBoxInfoItem(value: agency.agency.name),
+                      ),
+                      const SizedBox(height: 36),
+                      buildBoxInfoItem(value: state.user.fullName ?? ""),
+                      buildBoxInfoItem(value: state.user.phoneNumber ?? ""),
+                      buildBoxInfoItem(value: getRoleName(state.user.role ?? "")),
+                      if (agency != null) buildBoxInfoItem(value: agency.name),
+                      if (agency != null)
                         buildBoxInfoItem(value: state.user.address ?? ""),
-                        buildBoxInfoItem(value: state.user.email),
-                        const SizedBox(height: 56),
-                        CustomButton(
-                          onTap: () {},
-                          textButton: "ĐỔI MẬT KHẨU",
-                        ),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            );
-          }
-          return const SizedBox.shrink();
+                      buildBoxInfoItem(value: state.user.email),
+                      const SizedBox(height: 56),
+                      CustomButton(
+                        onTap: () {},
+                        textButton: "ĐỔI MẬT KHẨU",
+                      ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          );
         },
       ),
     );
+  }
+
+  String getRoleName(String role) {
+    if (role == Roles.MBOSS_ADMIN) {
+      return "Chủ MbossWater";
+    }
+    if (role == Roles.MBOSS_CUSTOMERCARE) {
+      return "Chăm sóc khách hàng";
+    }
+    if (role == Roles.MBOSS_TECHNICAL || role == Roles.AGENCY_TECHNICAL) {
+      return "Nhân viên kỹ thuật";
+    }
+    if (role == Roles.AGENCY_BOSS) {
+      return "Chủ đại lý";
+    }
+    if (role == Roles.AGENCY_STAFF) {
+      return "Nhân viên";
+    }
+    return "";
   }
 
   Container buildBoxInfoItem({required String value}) {
@@ -95,7 +119,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       height: 42,
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      margin: const EdgeInsets.only(bottom: 30),
+      margin: const EdgeInsets.only(bottom: 26),
       decoration: BoxDecoration(
         color: const Color(0xffF5F5F5),
         borderRadius: BorderRadius.circular(8),
