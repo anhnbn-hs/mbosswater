@@ -26,7 +26,9 @@ class UserDatasourceImpl extends UserDatasource {
 
   @override
   Future<void> deleteUserInformation(String userID) async {
-    await _firebaseFirestore.collection("users").doc(userID).delete();
+    await _firebaseFirestore.collection("users").doc(userID).update({
+      'isDelete': true,
+    });
   }
 
   @override

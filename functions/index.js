@@ -72,26 +72,32 @@ exports.sendNotificationWhenGuaranteeActivated = sendNotificationWhenGuaranteeAc
 //   }
 // });
 
-// exports.deleteUser = onCall(async (request) => {
-//   const { userId } = request.data;
+exports.deleteUser = onCall(async (request) => {
+  const { userId } = request.data;
 
-//   if (!userId) {
-//     throw new Error("User ID is required");
-//   }
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
 
-//   try {
-//     await admin.auth().deleteUser(userId);
-//     console.log(`User with UID ${userId} deleted from Authentication`);
+  try {
+    await admin.auth().updateUser(userId, {
+        disabled: true,
+    });
+    
+    console.log(`User with UID ${userId} disabled in Authentication`);
 
-//     await admin.firestore().collection("users").doc(userId).delete();
-//     console.log(`User with UID ${userId} deleted from Firestore`);
+    await admin.firestore().collection("users").doc(userId).update({
+        isDelete: true, 
+    });
 
-//     return { message: `User with UID ${userId} deleted successfully` };
-//   } catch (error) {
-//     console.error(`Error deleting user with UID ${userId}:`, error);
-//     throw new Error(error.message);
-//   }
-// });
+    console.log(`User with UID ${userId} marked as disabled in Firestore`);
+
+    return { message: `User with UID ${userId} deleted successfully` };
+  } catch (error) {
+    console.error(`Error deleting user with UID ${userId}:`, error);
+    throw new Error(error.message);
+  }
+});
 
 
 // exports.sendNotifications = onSchedule(

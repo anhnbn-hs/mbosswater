@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,10 +9,13 @@ import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
+import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/delete_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
 class MbossStaffManagement extends StatefulWidget {
@@ -24,6 +28,8 @@ class MbossStaffManagement extends StatefulWidget {
 class _MbossStaffManagementState extends State<MbossStaffManagement> {
   late FetchMbossStaffBloc mbossStaffBloc;
   late CreateMbossStaffBloc createMbossStaffBloc;
+  late UpdateMbossStaffBloc updateMbossStaffBloc;
+  late DeleteMbossStaffBloc deleteMbossStaffBloc;
 
   // Controller
   final nameController = TextEditingController();
@@ -42,6 +48,8 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     super.initState();
     mbossStaffBloc = BlocProvider.of<FetchMbossStaffBloc>(context);
     createMbossStaffBloc = BlocProvider.of<CreateMbossStaffBloc>(context);
+    updateMbossStaffBloc = BlocProvider.of<UpdateMbossStaffBloc>(context);
+    deleteMbossStaffBloc = BlocProvider.of<DeleteMbossStaffBloc>(context);
     mbossStaffBloc.fetchMbossStaffs();
   }
 
@@ -73,94 +81,134 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           ),
         ),
       ),
-      body: BlocBuilder<FetchMbossStaffBloc, List<UserModel>>(
-        bloc: mbossStaffBloc,
-        builder: (context, state) {
-          if (mbossStaffBloc.isLoading) {
-            return Center(
-              child: Lottie.asset(AppAssets.aLoading, height: 50),
-            );
-          }
-          if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
-            final listUser = state;
-            int ccCount = listUser
-                .where((user) => user.role == Roles.MBOSS_CUSTOMERCARE)
-                .length;
-            int techCount = listUser
-                .where((user) => user.role == Roles.MBOSS_TECHNICAL)
-                .length;
+      body: Column(
+        children: [
+          Expanded(
+            child: BlocBuilder<FetchMbossStaffBloc, List<UserModel>>(
+              bloc: mbossStaffBloc,
+              builder: (context, state) {
+                if (mbossStaffBloc.isLoading) {
+                  return Center(
+                    child: Lottie.asset(AppAssets.aLoading, height: 50),
+                  );
+                }
+                if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
+                  final listUser = state;
+                  int ccCount = listUser
+                      .where((user) => user.role == Roles.MBOSS_CUSTOMERCARE)
+                      .length;
+                  int techCount = listUser
+                      .where((user) => user.role == Roles.MBOSS_TECHNICAL)
+                      .length;
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Quản Lý Nhân Viên",
-                      style: TextStyle(
-                        color: Color(0xff820a1a),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 22,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  Container(
-                    height: 38,
-                    width: double.infinity,
+                  return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xffEEEEEE),
-                      borderRadius: BorderRadius.circular(10),
+                    child: Column(
+                      children: [
+                        const Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            "Quản Lý Nhân Viên",
+                            style: TextStyle(
+                              color: Color(0xff820a1a),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 22,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        Container(
+                          height: 38,
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffEEEEEE),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: SearchField(
+                            onSearch: (value) {},
+                          ),
+                        ),
+                        Divider(
+                          color: Colors.grey.shade400,
+                          height: 40,
+                          thickness: .2,
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                buildRowInfoItem(
+                                  label: "Tổng nhân viên",
+                                  value: listUser.length.toString(),
+                                ),
+                                buildRowInfoItem(
+                                  label: "Nhân viên CSKH",
+                                  value: ccCount.toString(),
+                                ),
+                                buildRowInfoItem(
+                                  label: "Nhân viên kỹ thuật",
+                                  value: techCount.toString(),
+                                ),
+                                const SizedBox(height: 24),
+                                ListView.builder(
+                                  itemCount: listUser.length,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 16),
+                                      child: buildStaffItem(listUser[index]),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
                     ),
-                    child: SearchField(
-                      onSearch: (value) {},
-                    ),
-                  ),
-                  Divider(
-                    color: Colors.grey.shade400,
-                    height: 40,
-                    thickness: .2,
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          buildRowInfoItem(
-                            label: "Tổng nhân viên",
-                            value: listUser.length.toString(),
-                          ),
-                          buildRowInfoItem(
-                            label: "Nhân viên CSKH",
-                            value: ccCount.toString(),
-                          ),
-                          buildRowInfoItem(
-                            label: "Nhân viên kỹ thuật",
-                            value: techCount.toString(),
-                          ),
-                          const SizedBox(height: 24),
-                          ListView.builder(
-                            itemCount: listUser.length,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: buildStaffItem(listUser[index]),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+          // Listener for create
+          BlocListener<CreateMbossStaffBloc, bool>(
+            listener: (context, state) async {
+              if (createMbossStaffBloc.isLoading == false && state == true) {
+                DialogUtils.hide(context);
+                DialogUtils.hide(context);
+                await mbossStaffBloc.fetchMbossStaffs();
+              }
+            },
+            child: const SizedBox.shrink(),
+          ),
+          // Listener for delete
+          BlocListener<DeleteMbossStaffBloc, bool>(
+            listener: (context, state) async {
+              if (deleteMbossStaffBloc.isLoading == false && state == true) {
+                DialogUtils.hide(context);
+                DialogUtils.hide(context);
+                await mbossStaffBloc.fetchMbossStaffs();
+              }
+            },
+            child: const SizedBox.shrink(),
+          ),
+          // Listener for update
+          BlocListener<UpdateMbossStaffBloc, bool>(
+            listener: (context, state) async {
+              if (updateMbossStaffBloc.isLoading == false && state == true) {
+                DialogUtils.hide(context);
+                DialogUtils.hide(context);
+                await mbossStaffBloc.fetchMbossStaffs();
+              }
+            },
+            child: const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
@@ -287,6 +335,11 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   }
 
   showStaffInformation({UserModel? user}) async {
+    nameController.text = user?.fullName ?? "";
+    phoneController.text = user?.phoneNumber ?? "";
+    addressController.text = user?.address ?? "";
+    emailController.text = user?.email ?? "";
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -327,7 +380,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                         const SizedBox(height: 24),
                         buildBoxFieldItem(
                           hintValue: "Họ và tên",
-                          initValue: user?.fullName ?? "",
+                          controller: nameController,
                         ),
                         const SizedBox(height: 26),
 
@@ -348,17 +401,17 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                         const SizedBox(height: 20),
                         buildBoxFieldItem(
                           hintValue: "Số điện thoại",
-                          initValue: user?.phoneNumber ?? "",
+                          controller: phoneController,
                         ),
                         const SizedBox(height: 26),
                         buildBoxFieldItem(
                           hintValue: "Email",
-                          initValue: user?.email ?? "",
+                          controller: emailController,
                         ),
                         const SizedBox(height: 26),
                         buildBoxFieldItem(
                           hintValue: "Địa chỉ",
-                          initValue: user?.address ?? "",
+                          controller: addressController,
                         ),
                         const SizedBox(height: 36),
                         Expanded(
@@ -387,7 +440,8 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: InkWell(
-                                      onTap: () {},
+                                      onTap: () async =>
+                                          handleDeleteStaff(user),
                                       borderRadius: BorderRadius.circular(4),
                                       child: Container(
                                         height: 40,
@@ -415,7 +469,8 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                                   const SizedBox(width: 50),
                                   Expanded(
                                     child: InkWell(
-                                      onTap: () {},
+                                      onTap: () async =>
+                                          handleUpdateStaff(user!),
                                       borderRadius: BorderRadius.circular(4),
                                       child: Container(
                                         height: 40,
@@ -477,11 +532,11 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   }
 
   Widget buildRoleSelection(String? role) {
-    if(role != null){
-      if(role == Roles.MBOSS_TECHNICAL){
+    if (role != null) {
+      if (role == Roles.MBOSS_TECHNICAL) {
         selectedRole.value = dropdownItems.first;
       }
-      if(role == Roles.MBOSS_CUSTOMERCARE){
+      if (role == Roles.MBOSS_CUSTOMERCARE) {
         selectedRole.value = dropdownItems.elementAt(1);
       }
     }
@@ -548,6 +603,11 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   }
 
   showStaffCreation() async {
+    nameController.text = "";
+    phoneController.text = "";
+    addressController.text = "";
+    emailController.text = "";
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -587,9 +647,11 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                         ),
                         const SizedBox(height: 24),
                         buildBoxFieldItem(
-                            hintValue: "Họ và tên", initValue: ""),
+                          hintValue: "Họ và tên",
+                          controller: nameController,
+                        ),
                         const SizedBox(height: 26),
-                        buildBoxFieldItem(hintValue: "NVKT", initValue: ""),
+                        buildRoleSelection(null),
                         const SizedBox(height: 36),
                         Align(
                           alignment: Alignment.center,
@@ -604,22 +666,20 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                         ),
                         const SizedBox(height: 20),
                         buildBoxFieldItem(
-                          hintValue: "Số điện thoại",
-                          initValue: "",
-                        ),
+                            hintValue: "Số điện thoại",
+                            controller: phoneController),
                         const SizedBox(height: 26),
                         buildBoxFieldItem(
                           hintValue: "Email",
-                          initValue: "",
+                          controller: emailController,
                         ),
                         const SizedBox(height: 26),
                         buildBoxFieldItem(
-                          hintValue: "Địa chỉ",
-                          initValue: "",
-                        ),
+                            hintValue: "Địa chỉ",
+                            controller: addressController),
                         const SizedBox(height: 36),
                         CustomButton(
-                          onTap: () {},
+                          onTap: () async => handleCreateStaff(),
                           height: 40,
                           textButton: "TẠO TÀI KHOẢN",
                         )
@@ -649,7 +709,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
 
   Container buildBoxFieldItem({
     required String hintValue,
-    required String? initValue,
     TextEditingController? controller,
   }) {
     return Container(
@@ -662,7 +721,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
       ),
       child: TextFormField(
         controller: controller,
-        initialValue: initValue,
         style: AppStyle.bodyText.copyWith(
           color: const Color(0xffB3B3B3),
           fontSize: 16,
@@ -679,6 +737,94 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           contentPadding: const EdgeInsets.symmetric(vertical: 9),
         ),
       ),
+    );
+  }
+
+  handleDeleteStaff(UserModel? user) async {
+    DialogUtils.showConfirmationDialog(
+      context: context,
+      title: "Bạn chắc chắn muốn xóa nhân viên: ${user?.fullName}?",
+      textCancelButton: "Hủy",
+      textAcceptButton: "Xóa",
+      cancelPressed: () => Navigator.pop(context),
+      acceptPressed: () async {
+        DialogUtils.hide(context);
+        DialogUtils.showLoadingDialog(context);
+        await deleteMbossStaffBloc.deleteStaff(user?.id ?? "");
+      },
+    );
+  }
+
+  handleUpdateStaff(UserModel user) async {
+    DialogUtils.showConfirmationDialog(
+      context: context,
+      title: "Bạn chắc chắn muốn cập nhật nhân viên: ${user.fullName}?",
+      textCancelButton: "Hủy",
+      textAcceptButton: "Cập nhật",
+      cancelPressed: () => Navigator.pop(context),
+      acceptPressed: () async {
+        DialogUtils.hide(context);
+        DialogUtils.showLoadingDialog(context);
+        // Get text field value
+        final userUpdate = user;
+        userUpdate.fullName = nameController.text.trim();
+        userUpdate.address = addressController.text.trim();
+
+        // Get role
+        String newRole = "";
+        if (selectedRole.value == dropdownItems.first) {
+          newRole = Roles.MBOSS_TECHNICAL;
+        }
+        if (selectedRole.value == dropdownItems.elementAt(1)) {
+          newRole = Roles.MBOSS_CUSTOMERCARE;
+        }
+        userUpdate.role = newRole;
+        await updateMbossStaffBloc.updateStaff(userUpdate);
+      },
+    );
+  }
+
+  handleCreateStaff() async {
+    String fullName = nameController.text.trim();
+    String phoneNumber = phoneController.text.trim();
+    String address = addressController.text.trim();
+    String email = emailController.text.trim();
+
+    DialogUtils.showConfirmationDialog(
+      context: context,
+      title: "Xác nhận thêm mới nhân viên: $fullName?",
+      textCancelButton: "Hủy",
+      textAcceptButton: "Thêm",
+      cancelPressed: () => Navigator.pop(context),
+      acceptPressed: () async {
+        DialogUtils.hide(context);
+        DialogUtils.showLoadingDialog(context);
+        // Get role
+        String newRole = "";
+        if (selectedRole.value == dropdownItems.first) {
+          newRole = Roles.MBOSS_TECHNICAL;
+        }
+        if (selectedRole.value == dropdownItems.elementAt(1)) {
+          newRole = Roles.MBOSS_CUSTOMERCARE;
+        }
+        // Get text field value
+        final user = UserModel(
+          id: "NO_NEED_FILL_ID",
+          fullName: fullName,
+          dob: null,
+          email: email,
+          gender: "Male",
+          phoneNumber: phoneNumber,
+          role: newRole,
+          createdAt: Timestamp.now(),
+          address: address,
+          agency: null,
+          password: "123456",
+          isDelete: false,
+        );
+
+        await createMbossStaffBloc.createStaff(user);
+      },
     );
   }
 }

@@ -3,15 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserModel {
   String id;
   final String email;
-  final String? fullName;
+  String? fullName;
   final String? dob;
   final String? gender;
-  final String? address;
-  final String? phoneNumber;
-  final String? role;
+  String? address;
+  String? phoneNumber;
+  String? role;
   final String? password;
   final String? agency;
   final Timestamp? createdAt;
+  final bool? isDelete;
 
   UserModel({
     required this.id,
@@ -25,6 +26,7 @@ class UserModel {
     required this.address,
     required this.agency,
     required this.password,
+    required this.isDelete,
   });
 
   // Factory constructor to create a UserModel from a JSON map
@@ -41,6 +43,7 @@ class UserModel {
       password: json["password"] as String?,
       phoneNumber: json['phoneNumber'] as String?,
       agency: json["agency"] as String?,
+      isDelete: json["isDelete"] as bool?,
     );
   }
 
@@ -58,6 +61,7 @@ class UserModel {
       'password': password,
       'createdAt': createdAt,
       'agency': agency,
+      'isDelete': isDelete,
     };
   }
 }

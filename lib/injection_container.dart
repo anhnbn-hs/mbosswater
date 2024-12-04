@@ -43,7 +43,9 @@ import 'package:mbosswater/features/mboss/data/datasource/mboss_manager_datasour
 import 'package:mbosswater/features/mboss/data/repository/mboss_manager_repository_impl.dart';
 import 'package:mbosswater/features/mboss/domain/repository/mboss_manager_repository.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/delete_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/recovery/data/datasource/recovery_datasource.dart';
 import 'package:mbosswater/features/recovery/data/datasource/recovery_datasource_impl.dart';
 import 'package:mbosswater/features/recovery/data/repository/recovery_repository_impl.dart';
@@ -242,5 +244,13 @@ void initServiceLocator() {
 
   sl.registerLazySingleton<CreateMbossStaffBloc>(
         () => CreateMbossStaffBloc(sl<MbossManagerRepository>()),
+  );
+
+  sl.registerLazySingleton<UpdateMbossStaffBloc>(
+        () => UpdateMbossStaffBloc(sl<MbossManagerRepository>()),
+  );
+
+  sl.registerLazySingleton<DeleteMbossStaffBloc>(
+        () => DeleteMbossStaffBloc(sl<MbossManagerRepository>()),
   );
 }

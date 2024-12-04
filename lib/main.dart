@@ -22,7 +22,9 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_b
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/delete_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
@@ -116,6 +118,8 @@ void main() async {
         BlocProvider(create: (_) => sl<GuaranteeHistoryBloc>()),
         BlocProvider(create: (_) => sl<FetchMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<CreateMbossStaffBloc>()),
+        BlocProvider(create: (_) => sl<UpdateMbossStaffBloc>()),
+        BlocProvider(create: (_) => sl<DeleteMbossStaffBloc>()),
         // For step handling
         BlocProvider(create: (_) => StepBloc(0)),
         BlocProvider(create: (_) => ProductBloc(null)),

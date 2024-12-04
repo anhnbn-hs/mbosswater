@@ -52,13 +52,10 @@ class MbossManagerDatasourceImpl extends MbossManagerDatasource {
   Future<void> deleteStaff(String userID) async {
     try {
       await cloudFunctions.deleteUser(userID);
-
-      await userDatasource.deleteUserInformation(userID);
-
       print('User $userID deleted successfully.');
     } catch (e) {
       print('Error deleting user $userID: $e');
-      rethrow; // Tùy chọn: Ném lỗi lên nếu cần xử lý thêm ở nơi khác
+      rethrow;
     }
   }
 
@@ -83,13 +80,17 @@ class MbossManagerDatasourceImpl extends MbossManagerDatasource {
 
   @override
   Future<List<UserModel>> fetchMBossStaffs() async {
-    final querySnapshot = await firebaseFirestore.collection("users").where(
-      "role",
-      whereIn: [
-        Roles.MBOSS_CUSTOMERCARE,
-        Roles.MBOSS_TECHNICAL,
-      ],
-    ).get();
+    final querySnapshot = await firebaseFirestore
+        .collection("users")
+        .where(
+          "role",
+          whereIn: [
+            Roles.MBOSS_CUSTOMERCARE,
+            Roles.MBOSS_TECHNICAL,
+          ],
+        )
+        .where("isDelete", isEqualTo: false)
+        .get();
 
     return querySnapshot.docs
         .map((doc) => UserModel.fromJson(doc.data()))
