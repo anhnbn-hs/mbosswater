@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -608,7 +610,9 @@ class _HomePageState extends State<HomePage> {
     try {
       DialogUtils.showLoadingDialog(context);
       await FirebaseAuth.instance.signOut();
-      await FirebaseMessaging.instance.deleteToken();
+      if (Platform.isAndroid) {
+        await FirebaseMessaging.instance.deleteToken();
+      }
       await Future.delayed(const Duration(milliseconds: 800));
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginPage()),
