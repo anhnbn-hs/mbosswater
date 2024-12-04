@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/constants/roles.dart';
+import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
+import 'package:mbosswater/core/utils/storage.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasource_impl.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
@@ -106,10 +108,14 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
         ),
         body: BlocListener(
           bloc: activeGuaranteeBloc,
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state is ActiveGuaranteeLoaded) {
               DialogUtils.hide(context);
               // Activated
+              await NotificationService.showInstantNotification(
+                "Thông báo kích hoạt bảo hành thành công",
+                "Bạn đã kích hoạt bảo hành thành công cho anh Nguyễn Văn A",
+              );
               context.go("/active-success");
             }
             if (state is ActiveGuaranteeError) {
@@ -334,13 +340,13 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
 
           DialogUtils.showLoadingDialog(context);
           await Future.delayed(const Duration(milliseconds: 800));
-          switch(customerStepKey.currentState?.actionType){
+          switch (customerStepKey.currentState?.actionType) {
             case ActionType.create:
-              activeGuarantee(product, customer, ActionType.create);
+              await activeGuarantee(product, customer, ActionType.create);
             case ActionType.update:
-              activeGuarantee(product, customer, ActionType.create);
+              await activeGuarantee(product, customer, ActionType.create);
             case null:
-              // TODO: Handle this case.
+            // TODO: Handle this case.
           }
         },
         cancelPressed: () => Navigator.pop(context),
@@ -354,17 +360,17 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     }
   }
 
-  void activeGuarantee(
-      Product product, Customer customer, ActionType actionType) {
+  activeGuarantee(
+      Product product, Customer customer, ActionType actionType) async {
     DialogUtils.showLoadingDialog(context);
     // handle active
-    final user = FirebaseAuth.instance.currentUser;
+    final userID = await PreferencesUtils.getString(loginSessionKey);
     final guarantee = Guarantee(
       id: generateRandomId(6),
       createdAt: Timestamp.now(),
       product: product,
       customerID: customer.id!,
-      technicalID: user!.uid,
+      technicalID: userID ?? "",
       endDate: DateTime.now().toUtc().add(
             const Duration(
               days: 365,
@@ -397,9 +403,7 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
           curve: Curves.easeInOut,
         );
         return;
-      } else {
-
-      }
+      } else {}
     }
     stepBloc.changeStep(index);
     pageController.animateToPage(

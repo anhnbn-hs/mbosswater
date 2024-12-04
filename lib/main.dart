@@ -7,6 +7,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
+import 'package:mbosswater/core/utils/encryption_helper.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
@@ -94,7 +96,7 @@ void main() async {
   // String data =
   //     '{"code":"mbosswater","product":{"id":"MLN1009","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model09","seriDow":"SRD09","guaranteeDuration":"24 tháng"}}';
   //
-  // String dataEncri = EncryptionHelper.encryptData(data, dotenv.env["SECRET_KEY_QR_CODE"]!);
+  // String dataEncri = EncryptionHelper.encryptData("123456", dotenv.env["SECRET_KEY_QR_CODE"]!);
   //
   // print(dataEncri);
 
@@ -120,6 +122,7 @@ void main() async {
         BlocProvider(create: (_) => sl<CreateMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<UpdateMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<DeleteMbossStaffBloc>()),
+        BlocProvider(create: (_) => sl<FetchAgencyStaffBloc>()),
         // For step handling
         BlocProvider(create: (_) => StepBloc(0)),
         BlocProvider(create: (_) => ProductBloc(null)),

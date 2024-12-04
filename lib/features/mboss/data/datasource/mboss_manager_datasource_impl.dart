@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/services/firebase_cloud_functions.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
@@ -10,7 +9,6 @@ import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 class MbossManagerDatasourceImpl extends MbossManagerDatasource {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseCloudFunctions cloudFunctions = FirebaseCloudFunctions.instance;
-  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final UserDatasource userDatasource;
 
   MbossManagerDatasourceImpl(this.userDatasource);
@@ -18,25 +16,10 @@ class MbossManagerDatasourceImpl extends MbossManagerDatasource {
   @override
   Future<void> createStaff(UserModel newStaff) async {
     try {
-      // Create user in Firebase Authentication
-      UserCredential userCredential =
-          await firebaseAuth.createUserWithEmailAndPassword(
-        email: newStaff.email,
-        password: newStaff.password ?? "",
-      );
-
-      if (userCredential.user != null) {
-        // Assign the user ID to newStaff
-        newStaff.id = userCredential.user!.uid;
-
-        // Save user information in Firestore
-        await firebaseFirestore
-            .collection("users")
-            .doc(newStaff.id)
-            .set(newStaff.toJson(), SetOptions(merge: true));
-      } else {
-        throw Exception("Failed to create user in Firebase Authentication.");
-      }
+      await firebaseFirestore
+          .collection("users")
+          .doc(newStaff.id)
+          .set(newStaff.toJson(), SetOptions(merge: true));
     } catch (e) {
       print("Error creating staff: $e");
       rethrow; // Propagate error if needed
@@ -51,7 +34,13 @@ class MbossManagerDatasourceImpl extends MbossManagerDatasource {
   @override
   Future<void> deleteStaff(String userID) async {
     try {
-      await cloudFunctions.deleteUser(userID);
+      await firebaseFirestore.collection("users").doc(userID).update({
+        "isDelete": true,
+        "fcmToken": "",
+        "phoneNumber": "",
+        "email": "",
+        "address": "",
+      });
       print('User $userID deleted successfully.');
     } catch (e) {
       print('Error deleting user $userID: $e');

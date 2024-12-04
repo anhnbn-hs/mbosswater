@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_event.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_state.dart';
+import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final AuthDatasource authDatasource;
@@ -13,16 +14,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         try {
           emit(LoginLoading());
 
-          User? user = await authDatasource.loginWithEmailAndPassword(
-            event.email,
+          UserModel user = await authDatasource.loginWithPhoneNumberAndPassword(
+            event.phone,
             event.password,
           );
 
-          if (user != null) {
-            emit(LoginSuccess(user));
-          } else {
-            emit(LoginError("User not found"));
-          }
+          emit(LoginSuccess(user));
         } on Exception catch (e) {
           emit(LoginError(e.toString()));
         }
@@ -30,7 +27,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
   }
 
-  void reset(){
+  void reset() {
     emit(LoginInitial());
   }
 }

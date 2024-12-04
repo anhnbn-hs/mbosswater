@@ -11,6 +11,7 @@ import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
+import 'package:mbosswater/core/utils/storage.dart';
 import 'package:mbosswater/core/widgets/feature_grid_item.dart';
 import 'package:mbosswater/core/widgets/floating_action_button.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
@@ -219,7 +220,9 @@ class _HomePageState extends State<HomePage> {
                     title: "Quản lý nhân viên",
                     subtitle: "Quản lý thông tin\nnhân viên",
                     assetIcon: AppAssets.icTeamManagement,
-                    onTap: () {},
+                    onTap: () {
+                      context.push("/agency-staff-management");
+                    },
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -609,7 +612,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> handleLogout(BuildContext context) async {
     try {
       DialogUtils.showLoadingDialog(context);
-      await FirebaseAuth.instance.signOut();
+      // await FirebaseAuth.instance.signOut();
+      await PreferencesUtils.deleteValue(loginSessionKey);
       if (Platform.isAndroid) {
         await FirebaseMessaging.instance.deleteToken();
       }

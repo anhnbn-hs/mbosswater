@@ -1,9 +1,8 @@
 // injection_container.dart
 import 'package:get_it/get_it.dart';
-import 'package:mbosswater/features/agency/data/datasource/agency_datasource.dart';
-import 'package:mbosswater/features/agency/data/datasource/agency_datasource_impl.dart';
-import 'package:mbosswater/features/agency/data/repository/agency_repository_impl.dart';
-import 'package:mbosswater/features/agency/domain/repository/agency_repository.dart';
+import 'package:mbosswater/features/agency/data/agency_datasource.dart';
+import 'package:mbosswater/features/agency/data/agency_datasource_impl.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource.dart';
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource_impl.dart';
 import 'package:mbosswater/features/customer/data/repository/customer_repository_impl.dart';
@@ -225,8 +224,8 @@ void initServiceLocator() {
     () => AgencyDatasourceImpl(sl<UserDatasource>()),
   );
 
-  sl.registerLazySingleton<AgencyRepository>(
-    () => AgencyRepositoryImpl(sl<AgencyDatasource>()),
+  sl.registerLazySingleton<FetchAgencyStaffBloc>(
+        () => FetchAgencyStaffBloc(sl<AgencyDatasource>()),
   );
 
   // Mboss Management
@@ -253,4 +252,7 @@ void initServiceLocator() {
   sl.registerLazySingleton<DeleteMbossStaffBloc>(
         () => DeleteMbossStaffBloc(sl<MbossManagerRepository>()),
   );
+
+
+
 }

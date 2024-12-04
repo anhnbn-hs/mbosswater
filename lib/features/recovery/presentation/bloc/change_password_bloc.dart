@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:mbosswater/core/constants/error_message.dart';
-import 'package:mbosswater/core/utils/storage.dart';
 import 'package:mbosswater/features/recovery/domain/usecase/change_password.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
@@ -36,7 +35,7 @@ class ChangePasswordBloc
       emit(ChangeLoading());
       UserModel userEntity =
           await _changePassword(event.email, event.newPassword);
-      await StorageUtils.storeValue(key: "role", value: userEntity.role!);
+      // await StorageUtils.storeValue(key: "role", value: userEntity.role!);
       emit(ChangeSuccess());
     } on Exception catch (e) {
       emit(ChangeError(e.toString()));

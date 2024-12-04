@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/features/active_success/active_success_page.dart';
+import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
 import 'package:mbosswater/features/customer/presentation/page/customer_detail_page.dart';
 import 'package:mbosswater/features/customer/presentation/page/customer_list_page.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
@@ -98,6 +99,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/mboss-staff-management',
       builder: (context, state) => const MbossStaffManagement(),
+    ),
+    GoRoute(
+      path: '/agency-staff-management',
+      builder: (context, state) => const AgencyStaffManagement(),
     ),
     GoRoute(
       path: '/user-profile',

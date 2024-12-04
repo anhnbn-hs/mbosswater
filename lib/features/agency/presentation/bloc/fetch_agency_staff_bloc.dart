@@ -1,21 +1,21 @@
 import 'package:bloc/bloc.dart';
-import 'package:mbosswater/features/mboss/domain/repository/mboss_manager_repository.dart';
+import 'package:mbosswater/features/agency/data/agency_datasource.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
-class FetchMbossStaffBloc extends Cubit<List<UserModel>> {
-  final MbossManagerRepository repository;
+class FetchAgencyStaffBloc extends Cubit<List<UserModel>> {
+  final AgencyDatasource repository;
 
   bool isLoading = false;
 
-  FetchMbossStaffBloc(this.repository) : super([]);
+  FetchAgencyStaffBloc(this.repository) : super([]);
 
-  Future<void> fetchAStaffs() async {
+  Future<void> fetchAgencyStaffs(String agencyID) async {
     if (isLoading) return;
     isLoading = true;
     emit([]);
 
     try {
-      final staffList = await repository.fetchMBossStaffs();
+      final staffList = await repository.fetchUsersOfAgencyForAdmin(agencyID);
       emit(staffList);
     } catch (e) {
       print("Error fetching MBoss Staff: $e");

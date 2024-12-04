@@ -34,7 +34,7 @@ class UserModel {
     return UserModel(
       id: json['id'] as String,
       fullName: json['fullName'] as String?,
-      dob: json['dob'] as String,
+      dob: json['dob'] as String?,
       gender: json['gender'] as String?,
       address: json['address'] as String?,
       email: json["email"] as String,

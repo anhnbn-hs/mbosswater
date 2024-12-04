@@ -4,12 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/utils/encryption_helper.dart';
+import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
@@ -37,6 +40,11 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   final emailController = TextEditingController();
   final addressController = TextEditingController();
 
+  // Focus node
+  final focusNodeName = FocusNode();
+  final focusNodePhone = FocusNode();
+  final focusNodeAddress = FocusNode();
+
   ValueNotifier<String?> selectedRole = ValueNotifier(null);
   final List<String> dropdownItems = [
     'Nhân viên kỹ thuật',
@@ -60,6 +68,9 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     phoneController.dispose();
     emailController.dispose();
     addressController.dispose();
+    focusNodeName.dispose();
+    focusNodePhone.dispose();
+    focusNodeAddress.dispose();
   }
 
   @override
@@ -267,7 +278,9 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           color: const Color(0xffFAFAFA),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: user.role == Roles.MBOSS_TECHNICAL ? const Color(0xff3F689D) : const Color(0xffDADADA),
+            color: user.role == Roles.MBOSS_TECHNICAL
+                ? const Color(0xff3F689D)
+                : const Color(0xffDADADA),
           ),
         ),
         child: Column(
@@ -381,6 +394,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                         buildBoxFieldItem(
                           hintValue: "Họ và tên",
                           controller: nameController,
+                          focusNode: focusNodeName,
                         ),
                         const SizedBox(height: 26),
 
@@ -402,6 +416,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                         buildBoxFieldItem(
                           hintValue: "Số điện thoại",
                           controller: phoneController,
+                          focusNode: focusNodePhone,
                         ),
                         const SizedBox(height: 26),
                         buildBoxFieldItem(
@@ -412,6 +427,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                         buildBoxFieldItem(
                           hintValue: "Địa chỉ",
                           controller: addressController,
+                          focusNode: focusNodeAddress,
                         ),
                         const SizedBox(height: 36),
                         Expanded(
@@ -710,6 +726,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   Container buildBoxFieldItem({
     required String hintValue,
     TextEditingController? controller,
+    FocusNode? focusNode,
   }) {
     return Container(
       height: 34,
@@ -719,8 +736,9 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xff757575)),
       ),
-      child: TextFormField(
+      child: TextField(
         controller: controller,
+        focusNode: focusNode,
         style: AppStyle.bodyText.copyWith(
           color: const Color(0xffB3B3B3),
           fontSize: 16,
@@ -799,31 +817,56 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
       acceptPressed: () async {
         DialogUtils.hide(context);
         DialogUtils.showLoadingDialog(context);
-        // Get role
-        String newRole = "";
-        if (selectedRole.value == dropdownItems.first) {
-          newRole = Roles.MBOSS_TECHNICAL;
-        }
-        if (selectedRole.value == dropdownItems.elementAt(1)) {
-          newRole = Roles.MBOSS_CUSTOMERCARE;
-        }
-        // Get text field value
-        final user = UserModel(
-          id: "NO_NEED_FILL_ID",
-          fullName: fullName,
-          dob: null,
-          email: email,
-          gender: "Male",
-          phoneNumber: phoneNumber,
-          role: newRole,
-          createdAt: Timestamp.now(),
-          address: address,
-          agency: null,
-          password: "123456",
-          isDelete: false,
-        );
 
-        await createMbossStaffBloc.createStaff(user);
+        final userDoc = await FirebaseFirestore.instance
+            .collection("users")
+            .where("phoneNumber", isEqualTo: phoneNumber)
+            .limit(1)
+            .get();
+
+        if (userDoc.docs.isEmpty) {
+          // Get role
+          String newRole = "";
+          if (selectedRole.value == dropdownItems.first) {
+            newRole = Roles.MBOSS_TECHNICAL;
+          }
+          if (selectedRole.value == dropdownItems.elementAt(1)) {
+            newRole = Roles.MBOSS_CUSTOMERCARE;
+          }
+
+          String newPassword = "123456";
+          String passwordEncrypted = EncryptionHelper.encryptData(
+            newPassword,
+            dotenv.env["SECRET_KEY_PASSWORD_HASH"]!,
+          );
+
+          // Get text field value
+
+          final user = UserModel(
+            id: generateRandomId(8),
+            fullName: fullName,
+            dob: null,
+            email: email,
+            gender: "Male",
+            phoneNumber: phoneNumber,
+            role: newRole,
+            createdAt: Timestamp.now(),
+            address: address,
+            agency: null,
+            password: passwordEncrypted,
+            isDelete: false,
+          );
+
+          await createMbossStaffBloc.createStaff(user);
+        } else {
+          DialogUtils.hide(context);
+          focusNodePhone.requestFocus();
+          DialogUtils.showWarningDialog(
+            context: context,
+            title: "Số điện thoại đã được sử dụng!",
+            onClickOutSide: () {},
+          );
+        }
       },
     );
   }

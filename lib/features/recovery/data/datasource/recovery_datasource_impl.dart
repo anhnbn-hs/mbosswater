@@ -37,7 +37,6 @@ class RecoveryDatasourceImpl extends RecoveryDatasource {
 
   @override
   Future<UserModel> changePassword(String email, String newPassword) async {
-    print("object");
     try {
       // Get user
       final docs = await _firebaseFirestore

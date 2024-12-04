@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/constants/error_message.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/utils/storage.dart';
 import 'package:mbosswater/core/widgets/custom_textfield.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_bloc.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_event.dart';
@@ -22,7 +23,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late TextEditingController emailController, passwordController;
+  late TextEditingController phoneController, passwordController;
 
   // BLOC
   late LoginBloc loginBloc;
@@ -31,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    emailController = TextEditingController();
+    phoneController = TextEditingController();
     passwordController = TextEditingController();
     // Init bloc
     loginBloc = BlocProvider.of<LoginBloc>(context);
@@ -63,8 +64,8 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 40),
               CustomTextField(
-                controller: emailController,
-                hintText: "Email",
+                controller: phoneController,
+                hintText: "Số điện thoại",
               ),
               const SizedBox(height: 15),
               CustomTextField(
@@ -109,14 +110,14 @@ class _LoginPageState extends State<LoginPage> {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       // Make sure the context is valid here
                       if (mounted) {
-                        while(context.canPop()){
+                        while (context.canPop()) {
                           context.pop();
                         }
                         context.go("/home");
                       }
 
                       // Get User Information after navigation
-                      userInfoBloc.add(FetchUserInfo(state.user.uid));
+                      userInfoBloc.add(FetchUserInfo(state.user.id));
                     });
                   }
                   return const SizedBox.shrink();
@@ -136,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
 
   handleLogin() async {
     // Get text field value
-    String email = emailController.text;
+    String phone = phoneController.text;
     String password = passwordController.text;
     // Show loading dialog
     DialogUtils.showLoadingDialog(context);
@@ -155,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
       // }
     }
     loginBloc.add(PressLogin(
-      email: email,
+      phone: phone,
       password: password,
     ));
   }

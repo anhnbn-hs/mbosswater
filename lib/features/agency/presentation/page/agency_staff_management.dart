@@ -10,13 +10,16 @@ import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/delete_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class AgencyStaffManagement extends StatefulWidget {
   const AgencyStaffManagement({super.key});
@@ -26,10 +29,8 @@ class AgencyStaffManagement extends StatefulWidget {
 }
 
 class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
-  late FetchMbossStaffBloc mbossStaffBloc;
-  late CreateMbossStaffBloc createMbossStaffBloc;
-  late UpdateMbossStaffBloc updateMbossStaffBloc;
-  late DeleteMbossStaffBloc deleteMbossStaffBloc;
+  late FetchAgencyStaffBloc fetchAgencyStaffBloc;
+  late UserInfoBloc userInfoBloc;
 
   // Controller
   final nameController = TextEditingController();
@@ -46,11 +47,9 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   @override
   void initState() {
     super.initState();
-    mbossStaffBloc = BlocProvider.of<FetchMbossStaffBloc>(context);
-    createMbossStaffBloc = BlocProvider.of<CreateMbossStaffBloc>(context);
-    updateMbossStaffBloc = BlocProvider.of<UpdateMbossStaffBloc>(context);
-    deleteMbossStaffBloc = BlocProvider.of<DeleteMbossStaffBloc>(context);
-    mbossStaffBloc.fetchMbossStaffs();
+    fetchAgencyStaffBloc = BlocProvider.of<FetchAgencyStaffBloc>(context);
+    userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
+    fetchAgencyStaffBloc.fetchAgencyStaffs(userInfoBloc.user?.agency ?? "");
   }
 
   @override
@@ -84,21 +83,31 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
       body: Column(
         children: [
           Expanded(
-            child: BlocBuilder<FetchMbossStaffBloc, List<UserModel>>(
-              bloc: mbossStaffBloc,
+            child: BlocBuilder<FetchAgencyStaffBloc, List<UserModel>>(
+              bloc: fetchAgencyStaffBloc,
               builder: (context, state) {
-                if (mbossStaffBloc.isLoading) {
+                print(state);
+                if (fetchAgencyStaffBloc.isLoading) {
                   return Center(
                     child: Lottie.asset(AppAssets.aLoading, height: 50),
                   );
                 }
-                if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
+                if (!fetchAgencyStaffBloc.isLoading) {
                   final listUser = state;
-                  int ccCount = listUser
-                      .where((user) => user.role == Roles.MBOSS_CUSTOMERCARE)
+                  if (listUser.isEmpty) {
+                    return Center(
+                      child: Text(
+                        "Đại lý của bạn chưa có nhân viên nào!",
+                        style: AppStyle.bodyText,
+                      ),
+                    );
+                  }
+
+                  int staffCount = listUser
+                      .where((user) => user.role == Roles.AGENCY_STAFF)
                       .length;
                   int techCount = listUser
-                      .where((user) => user.role == Roles.MBOSS_TECHNICAL)
+                      .where((user) => user.role == Roles.AGENCY_TECHNICAL)
                       .length;
 
                   return Padding(
@@ -143,8 +152,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                                   value: listUser.length.toString(),
                                 ),
                                 buildRowInfoItem(
-                                  label: "Nhân viên CSKH",
-                                  value: ccCount.toString(),
+                                  label: "Nhân viên bán hàng",
+                                  value: staffCount.toString(),
                                 ),
                                 buildRowInfoItem(
                                   label: "Nhân viên kỹ thuật",
@@ -176,38 +185,10 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
             ),
           ),
           // Listener for create
-          BlocListener<CreateMbossStaffBloc, bool>(
-            listener: (context, state) async {
-              if (createMbossStaffBloc.isLoading == false && state == true) {
-                DialogUtils.hide(context);
-                DialogUtils.hide(context);
-                await mbossStaffBloc.fetchMbossStaffs();
-              }
-            },
-            child: const SizedBox.shrink(),
-          ),
+
           // Listener for delete
-          BlocListener<DeleteMbossStaffBloc, bool>(
-            listener: (context, state) async {
-              if (deleteMbossStaffBloc.isLoading == false && state == true) {
-                DialogUtils.hide(context);
-                DialogUtils.hide(context);
-                await mbossStaffBloc.fetchMbossStaffs();
-              }
-            },
-            child: const SizedBox.shrink(),
-          ),
+
           // Listener for update
-          BlocListener<UpdateMbossStaffBloc, bool>(
-            listener: (context, state) async {
-              if (updateMbossStaffBloc.isLoading == false && state == true) {
-                DialogUtils.hide(context);
-                DialogUtils.hide(context);
-                await mbossStaffBloc.fetchMbossStaffs();
-              }
-            },
-            child: const SizedBox.shrink(),
-          ),
         ],
       ),
     );
@@ -267,7 +248,9 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
           color: const Color(0xffFAFAFA),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: user.role == Roles.MBOSS_TECHNICAL ? const Color(0xff3F689D) : const Color(0xffDADADA),
+            color: user.role == Roles.MBOSS_TECHNICAL
+                ? const Color(0xff3F689D)
+                : const Color(0xffDADADA),
           ),
         ),
         child: Column(
@@ -383,9 +366,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           controller: nameController,
                         ),
                         const SizedBox(height: 26),
-
                         buildRoleSelection(user?.role),
-
                         const SizedBox(height: 36),
                         Align(
                           alignment: Alignment.center,
@@ -414,99 +395,66 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           controller: addressController,
                         ),
                         const SizedBox(height: 36),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Align(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  "Lịch Sử Công Việc",
-                                  style: AppStyle.heading2.copyWith(
-                                    color: AppColors.primaryColor,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
+                        Row(
+                          children: [
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async => handleDeleteStaff(user),
+                                borderRadius: BorderRadius.circular(4),
+                                child: Container(
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.rectangle,
+                                    color: const Color(0xffC2C2C2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      textAlign: TextAlign.center,
+                                      "XÓA",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        height: 1,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              buildRowInfoItem(
-                                  label: "Tổng khách hàng", value: "99"),
-                              const SizedBox(height: 18),
-                              buildRowInfoItem(
-                                  label: "Nhiệm vụ hoàn thành", value: "25/30"),
-                              const Spacer(),
-                              Row(
-                                children: [
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: InkWell(
-                                      onTap: () async =>
-                                          handleDeleteStaff(user),
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
-                                          color: const Color(0xffC2C2C2),
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        child: const Center(
-                                          child: Text(
-                                            textAlign: TextAlign.center,
-                                            "XÓA",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              height: 1,
-                                            ),
-                                          ),
-                                        ),
+                            ),
+                            const SizedBox(width: 50),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async => handleUpdateStaff(user!),
+                                borderRadius: BorderRadius.circular(4),
+                                child: Container(
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.rectangle,
+                                    color: AppColors.primaryColor,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      textAlign: TextAlign.center,
+                                      "CẬP NHẬT",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                        height: 1,
+                                        color: Colors.white,
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 50),
-                                  Expanded(
-                                    child: InkWell(
-                                      onTap: () async =>
-                                          handleUpdateStaff(user!),
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
-                                          color: AppColors.primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        child: const Center(
-                                          child: Text(
-                                            textAlign: TextAlign.center,
-                                            "CẬP NHẬT",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 15,
-                                              height: 1,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                ],
+                                ),
                               ),
-                              const SizedBox(height: 26),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 16),
+                          ],
                         ),
-                        // CustomButton(
-                        //   onTap: () {},
-                        //   height: 40,
-                        //   textButton: "TẠO TÀI KHOẢN",
-                        // )
+                        const SizedBox(height: 26),
                       ],
                     ),
                   ),
@@ -750,7 +698,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
       acceptPressed: () async {
         DialogUtils.hide(context);
         DialogUtils.showLoadingDialog(context);
-        await deleteMbossStaffBloc.deleteStaff(user?.id ?? "");
+        // await deleteMbossStaffBloc.deleteStaff(user?.id ?? "");
       },
     );
   }
@@ -779,7 +727,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
           newRole = Roles.MBOSS_CUSTOMERCARE;
         }
         userUpdate.role = newRole;
-        await updateMbossStaffBloc.updateStaff(userUpdate);
+        // await updateMbossStaffBloc.updateStaff(userUpdate);
       },
     );
   }
@@ -809,7 +757,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
         }
         // Get text field value
         final user = UserModel(
-          id: "NO_NEED_FILL_ID",
+          id: generateRandomId(8),
           fullName: fullName,
           dob: null,
           email: email,
@@ -823,7 +771,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
           isDelete: false,
         );
 
-        await createMbossStaffBloc.createStaff(user);
+        // await createMbossStaffBloc.createStaff(user);
       },
     );
   }

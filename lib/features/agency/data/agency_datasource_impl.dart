@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mbosswater/core/constants/roles.dart';
-import 'package:mbosswater/features/agency/data/datasource/agency_datasource.dart';
+import 'package:mbosswater/features/agency/data/agency_datasource.dart';
 import 'package:mbosswater/features/user_info/data/datasource/user_datasource.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
