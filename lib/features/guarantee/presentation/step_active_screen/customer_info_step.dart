@@ -183,10 +183,12 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                       label: "Số điện thoại",
                       hint: "SĐT",
                       textButton: "GỬI MÃ",
+                      isPhoneField: true,
                       onTap: () {
                         isOTPSent.value = true;
                       },
-                      onTapOutSide: (phone) {},
+                      onTapOutSide: (phone) async =>
+                          handleCheckPhoneNumber(phone),
                       onCompleted: (phone) async =>
                           handleCheckPhoneNumber(phone),
                       isRequired: true,
@@ -214,6 +216,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                       label: "Nhập mã OTP",
                       hint: "",
                       textButton: "XÁC NHẬN",
+                      isPhoneField: false,
                       onTap: () async => verifyOTP(),
                       onTapOutSide: (p0) {},
                       focusNode: focusNodeOTP,
@@ -410,6 +413,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     required String textButton,
     required VoidCallback onTap,
     bool isRequired = true,
+    required bool isPhoneField,
     FocusNode? focusNode,
     TextInputType inputType = TextInputType.text,
     required TextEditingController controller,
@@ -458,8 +462,8 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                   controller: controller,
                   onEditingComplete: () => onCompleted(controller.text),
                   onTapOutside: (event) {
+                    FocusManager.instance.primaryFocus?.unfocus();
                     onTapOutSide(controller.text);
-
                   },
                   keyboardType: inputType,
                   focusNode: focusNode,
@@ -476,13 +480,30 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                   cursorColor: Colors.grey,
                 ),
               ),
-              SizedBox(
-                width: 90,
-                child: CustomButton(
-                  onTap: onTap,
-                  textButton: textButton,
-                  borderRadius: BorderRadius.circular(6),
+              if (isPhoneField)
+                SizedBox(
+                  width: 90,
+                  child: CustomButton(
+                    onTap: onTap,
+                    textButton: textButton,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 ),
+              ValueListenableBuilder(
+                valueListenable: isOTPSent,
+                builder: (context, value, child) {
+                  if (value == true && !isPhoneField) {
+                    return SizedBox(
+                      width: 90,
+                      child: CustomButton(
+                        onTap: onTap,
+                        textButton: textButton,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
             ],
           ),
