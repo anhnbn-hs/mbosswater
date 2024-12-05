@@ -68,6 +68,7 @@ class _GuaranteeAfterStepState extends State<GuaranteeAfterStep> {
                     Text(
                       " * ",
                       style: TextStyle(
+                        fontFamily: "BeVietnam",
                         color: AppColors.primaryColor,
                         fontSize: 16,
                       ),

@@ -35,6 +35,7 @@ class CustomerCardItem extends StatelessWidget {
               child: Text(
                 "KH: ${customerEntity.customer.phoneNumber}",
                 style: const TextStyle(
+                  fontFamily: "BeVietNam",
                   color: Color(0xff820a1a),
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
@@ -70,6 +71,7 @@ class CustomerCardItem extends StatelessWidget {
             label,
             style: const TextStyle(
               color: Colors.black,
+              fontFamily: "BeVietnam",
               fontSize: 14,
               fontWeight: FontWeight.w400,
             ),
@@ -82,6 +84,7 @@ class CustomerCardItem extends StatelessWidget {
                 value,
                 maxLines: 1,
                 style: const TextStyle(
+                  fontFamily: "BeVietnam",
                   color: Colors.black,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,

@@ -53,6 +53,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   ),
                   hintText: widget.hintText,
                   hintStyle: TextStyle(
+                    fontFamily: "BeVietnam",
                     color: AppColors.textInputColor,
                     fontWeight: FontWeight.w500,
                     fontSize: 15,
@@ -60,6 +61,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 ),
                 cursorColor: AppColors.textInputColor,
                 style: TextStyle(
+                  fontFamily: "BeVietnam",
                   color: AppColors.textInputColor,
                   fontWeight: FontWeight.w500,
                   fontSize: 15,

@@ -101,6 +101,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       child: Text(
                         state.message,
                         style: TextStyle(
+                          fontFamily: "BeVietnam",
                           color: AppColors.textErrorColor,
                           fontStyle: FontStyle.italic,
                           fontSize: 12,

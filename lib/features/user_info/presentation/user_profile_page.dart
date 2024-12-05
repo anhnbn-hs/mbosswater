@@ -50,44 +50,46 @@ class _UserProfilePageState extends State<UserProfilePage> {
           if (state is AgencyLoaded) {
             agency = state.agency;
           }
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: BlocBuilder(
-              bloc: userInfoBloc,
-              builder: (context, state) {
-                if (state is UserInfoLoaded) {
-                  return Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      const Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          "Thông Tin Tài Khoản",
-                          style: TextStyle(
-                            color: Color(0xff820A1A),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 24,
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: BlocBuilder(
+                bloc: userInfoBloc,
+                builder: (context, state) {
+                  if (state is UserInfoLoaded) {
+                    return Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        const Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            "Thông Tin Tài Khoản",
+                            style: TextStyle(
+                              color: Color(0xff820A1A),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 24,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 36),
-                      buildBoxInfoItem(value: state.user.fullName ?? ""),
-                      buildBoxInfoItem(value: state.user.phoneNumber ?? ""),
-                      buildBoxInfoItem(value: getRoleName(state.user.role ?? "")),
-                      if (agency != null) buildBoxInfoItem(value: agency.name),
-                      if (agency != null)
-                        buildBoxInfoItem(value: state.user.address ?? ""),
-                      buildBoxInfoItem(value: state.user.email),
-                      const SizedBox(height: 56),
-                      CustomButton(
-                        onTap: () {},
-                        textButton: "ĐỔI MẬT KHẨU",
-                      ),
-                    ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
+                        const SizedBox(height: 36),
+                        buildBoxInfoItem(value: state.user.fullName ?? ""),
+                        buildBoxInfoItem(value: state.user.phoneNumber ?? ""),
+                        buildBoxInfoItem(value: getRoleName(state.user.role ?? "")),
+                        if (agency != null) buildBoxInfoItem(value: agency.name),
+                        if (agency != null)
+                          buildBoxInfoItem(value: state.user.address ?? ""),
+                        buildBoxInfoItem(value: state.user.email),
+                        const SizedBox(height: 56),
+                        CustomButton(
+                          onTap: () {},
+                          textButton: "ĐỔI MẬT KHẨU",
+                        ),
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
           );
         },

@@ -54,6 +54,7 @@ class _ResendButtonState extends State<ResendButton> {
             TextSpan(
               text: "Gửi lại",
               style: TextStyle(
+                fontFamily: "BeVietnam",
                 color: AppColors.textErrorColor,
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
@@ -64,6 +65,7 @@ class _ResendButtonState extends State<ResendButton> {
               TextSpan(
                 text: ' $_start' 's',
                 style: TextStyle(
+                  fontFamily: "BeVietnam",
                   color: AppColors.textErrorColor,
                   fontSize: 14,
                   fontStyle: FontStyle.italic,

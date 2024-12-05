@@ -36,6 +36,7 @@ class WaterQualityRating extends StatelessWidget {
                     child: Text(
                       e.toString(),
                       style: TextStyle(
+                        fontFamily: "BeVietnam",
                         color:
                             isActive ? Colors.white : const Color(0xffD3DCE6),
                         fontSize: 11,

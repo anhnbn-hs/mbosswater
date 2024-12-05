@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             SizedBox(
               width: MediaQuery.of(context).size.width,
-              height: 253,
+              height: 190,
               child: ImageHelper.loadAssetImage(
                 AppAssets.imgBgHome,
                 fit: BoxFit.fill,
@@ -64,8 +64,8 @@ class _HomePageState extends State<HomePage> {
             ),
             Positioned(
               top: 36,
-              right: 16,
-              left: 10,
+              right: 24,
+              left: 16,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Row(
@@ -77,8 +77,8 @@ class _HomePageState extends State<HomePage> {
                           context: context,
                           title: "Bạn chắc chắc muốn đăng xuất?",
                           labelTitle: "Đăng xuất",
-                          textCancelButton: "Hủy",
-                          textAcceptButton: "Đăng xuất",
+                          textCancelButton: "HỦY",
+                          textAcceptButton: "ĐĂNG XUẤT",
                           acceptPressed: () async => handleLogout(context),
                           cancelPressed: () => Navigator.pop(context),
                         );
@@ -108,7 +108,7 @@ class _HomePageState extends State<HomePage> {
             ),
             Positioned(
               // top: MediaQuery.of(context).size.height * 0.27,
-              top: 253 - 24,
+              top: 190 - 24,
               left: 0,
               right: 0,
               bottom: 0,
@@ -189,13 +189,12 @@ class _HomePageState extends State<HomePage> {
       case Roles.AGENCY_BOSS:
         body = Column(
           children: <Widget>[
-            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
                   child: FeatureGridItem(
                     title: "Kích hoạt bảo hành",
-                    subtitle: "Quét mã sản phẩm tại đây",
+                    subtitle: "Quét mã sản phẩm\ntại đây",
                     assetIcon: AppAssets.icGuarantee,
                     onTap: () {
                       context.push(
@@ -206,36 +205,18 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(width: 20),
-                const Spacer(),
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Khách hàng",
+                    subtitle: "Danh sách khách hàng",
+                    assetIcon: AppAssets.icCustomer,
+                    onTap: () => context.push("/customer-list"),
+                  ),
+                ),
               ],
             ),
 
             // Management
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Quản lý nhân viên",
-                    subtitle: "Quản lý thông tin\nnhân viên",
-                    assetIcon: AppAssets.icTeamManagement,
-                    onTap: () {
-                      context.push("/agency-staff-management");
-                    },
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Mua bán hàng",
-                    subtitle: "Mua bán hàng với\nđại lý",
-                    assetIcon: AppAssets.icCart,
-                    onTap: () {},
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -251,10 +232,12 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(width: 20),
                 Expanded(
                   child: FeatureGridItem(
-                    title: "Khách hàng",
-                    subtitle: "Danh sách khách hàng",
-                    assetIcon: AppAssets.icCustomer,
-                    onTap: () => context.push("/customer-list"),
+                    title: "Quản lý nhân viên",
+                    subtitle: "Quản lý thông tin\nnhân viên",
+                    assetIcon: AppAssets.icTeamManagement,
+                    onTap: () {
+                      context.push("/agency-staff-management");
+                    },
                   ),
                 ),
               ],
@@ -267,13 +250,12 @@ class _HomePageState extends State<HomePage> {
             Roles.MBOSS_TECHNICAL:
         body = Column(
           children: <Widget>[
-            const SizedBox(height: 70),
             Row(
               children: [
                 Expanded(
                   child: FeatureGridItem(
                     title: "Kích hoạt bảo hành",
-                    subtitle: "Quét mã sản phẩm tại đây",
+                    subtitle: "Quét mã sản phẩm\ntại đây",
                     assetIcon: AppAssets.icGuarantee,
                     onTap: () {
                       context.push(
@@ -323,13 +305,12 @@ class _HomePageState extends State<HomePage> {
       case Roles.MBOSS_ADMIN:
         body = Column(
           children: <Widget>[
-            const SizedBox(height: 70),
             Row(
               children: [
                 Expanded(
                   child: FeatureGridItem(
                     title: "Kích hoạt bảo hành",
-                    subtitle: "Quét mã sản phẩm",
+                    subtitle: "Quét mã sản phẩm\tại đây",
                     assetIcon: AppAssets.icGuarantee,
                     onTap: () {
                       context.push(
@@ -352,7 +333,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            const SizedBox(height: 70),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -375,14 +356,13 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ],
-            )
+            ),
           ],
         );
         break;
       case Roles.MBOSS_CUSTOMERCARE:
         body = Column(
           children: <Widget>[
-            const SizedBox(height: 50),
             Row(
               children: [
                 Expanded(
@@ -435,9 +415,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildSearchSection(BuildContext context) {
-    if (userInfoBloc.user?.role == Roles.MBOSS_CUSTOMERCARE) {
-      return const SizedBox.shrink();
-    }
     return Container(
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 12),

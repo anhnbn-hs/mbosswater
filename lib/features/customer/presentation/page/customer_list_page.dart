@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
+import 'package:mbosswater/core/widgets/filter_dropdown.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_event.dart';
@@ -47,15 +48,94 @@ class _CustomerListPageState extends State<CustomerListPage> {
       appBar: AppBar(
         leading: const LeadingBackButton(),
       ),
-      body: Column(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            buildHeaderSection(),
+            Divider(
+              color: Colors.grey.shade400,
+              height: 40,
+              thickness: .2,
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              alignment: AlignmentDirectional.centerStart,
+              child: FilterDropdown(
+                selectedValue: 'Tháng',
+                onChanged: (value) {},
+                options: const ["Tháng", "Tháng này", "6 ngày trước"],
+              ),
+            ),
+            BlocBuilder<FetchCustomersBloc, FetchCustomersState>(
+              bloc: fetchCustomersBloc,
+              builder: (context, state) {
+                var customers = [];
+                int totalProductSold = 0;
+                if (state is FetchCustomersSuccess) {
+                  customers = state.filteredCustomers;
+                  totalProductSold = state.filteredCustomers.fold(
+                    0,
+                    (sum, c) => sum + c.guarantees.length,
+                  );
+                }
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      buildInfoItem(
+                        label: "Tổng khách hàng",
+                        value: customers.length.toString(),
+                      ),
+                      buildInfoItem(
+                        label: "Tổng sản phẩm đã bán",
+                        value: totalProductSold.toString(),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            buildListViewCustomer(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildInfoItem({required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          buildHeaderSection(),
-          Divider(
-            color: Colors.grey.shade400,
-            height: 40,
-            thickness: .2,
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: "BeVietnam",
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
           ),
-          buildListViewCustomer(),
+          const SizedBox(width: 36),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                value,
+                maxLines: 1,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontFamily: "BeVietnam",
+                  fontWeight: FontWeight.w400,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -72,6 +152,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
             child: Text(
               "Danh Sách Khách Hàng",
               style: TextStyle(
+                fontFamily: "BeVietnam",
                 color: Color(0xff820a1a),
                 fontWeight: FontWeight.w600,
                 fontSize: 22,
@@ -99,43 +180,43 @@ class _CustomerListPageState extends State<CustomerListPage> {
   }
 
   Widget buildListViewCustomer() {
-    return Expanded(
-      child: BlocBuilder(
-        bloc: fetchCustomersBloc,
-        builder: (context, state) {
-          if (state is FetchCustomersLoading) {
-            return Center(
-              child: Lottie.asset(AppAssets.aLoading, height: 70),
+    return BlocBuilder(
+      bloc: fetchCustomersBloc,
+      builder: (context, state) {
+        if (state is FetchCustomersLoading) {
+          return Center(
+            child: Lottie.asset(AppAssets.aLoading, height: 70),
+          );
+        }
+        if (state is FetchCustomersSuccess) {
+          final listCustomer = state.filteredCustomers;
+
+          if (listCustomer.isEmpty) {
+            return const Center(
+              child: Text("Không tìm thấy khách hàng!"),
             );
           }
-          if (state is FetchCustomersSuccess) {
-            final listCustomer = state.filteredCustomers;
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            margin: const EdgeInsets.only(bottom: 20),
+            child: ListView.builder(
+              itemCount: listCustomer.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: CustomerCardItem(
+                    customerEntity: listCustomer[index],
+                  ),
+                );
+              },
+            ),
+          );
+        }
 
-            if (listCustomer.isEmpty) {
-              return const Center(
-                child: Text("Không tìm thấy khách hàng!"),
-              );
-            }
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              margin: const EdgeInsets.only(bottom: 20),
-              child: ListView.builder(
-                itemCount: listCustomer.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: CustomerCardItem(
-                      customerEntity: listCustomer[index],
-                    ),
-                  );
-                },
-              ),
-            );
-          }
-
-          return const SizedBox.shrink();
-        },
-      ),
+        return const SizedBox.shrink();
+      },
     );
   }
 }
@@ -197,3 +278,5 @@ class _SearchFieldState extends State<SearchField> {
     );
   }
 }
+
+

@@ -65,7 +65,10 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: const Text(
                 "Đã lưu lại lịch sử bảo hành thành công",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: "BeVietnam",
+                ),
               ),
               backgroundColor: AppColors.primaryColor,
             ));
@@ -232,6 +235,7 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
       return Text(
         (stepIndex + 1).toString(),
         style: TextStyle(
+          fontFamily: "BeVietnam",
           fontWeight: FontWeight.w600,
           fontSize: 10,
           color: stepBloc.currentStep == stepIndex ? Colors.white : Colors.grey,

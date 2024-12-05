@@ -47,6 +47,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
     bool expired = isExpired(widget.guarantee.endDate);
     final startDate = widget.guarantee.createdAt.toDate();
     final startDateFormatted = DateFormat("dd/MM/yyyy").format(startDate);
+    int remainingMonth = getRemainingMonths(widget.guarantee.endDate);
     // end date
     final endDateFormatted =
         DateFormat("dd/MM/yyyy").format(widget.guarantee.endDate);
@@ -70,6 +71,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 child: Text(
                   "Sản phẩm",
                   style: TextStyle(
+                    fontFamily: "BeVietnam",
                     color: Color(0xff820a1a),
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
@@ -106,6 +108,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 child: Text(
                   "Thông tin bảo hành",
                   style: TextStyle(
+                    fontFamily: "BeVietnam",
                     color: Color(0xff820a1a),
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
@@ -121,6 +124,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                     const Text(
                       "Tình trạng",
                       style: TextStyle(
+                        fontFamily: "BeVietnam",
                         color: Colors.black,
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
@@ -140,7 +144,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                         ),
                         const SizedBox(width: 3),
                         Text(
-                          expired ? "Hết hạn" : "Còn hạn",
+                          expired ? "Hết hạn" : "Còn $remainingMonth tháng",
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 14,
@@ -312,6 +316,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
           Text(
             label,
             style: const TextStyle(
+              fontFamily: "BeVietnam",
               color: Colors.black,
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -326,6 +331,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 maxLines: 2,
                 textAlign: TextAlign.end,
                 style: const TextStyle(
+                  fontFamily: "BeVietnam",
                   color: Colors.black,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,

@@ -71,6 +71,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       child: Text(
                         state.error,
                         style: TextStyle(
+                          fontFamily: "BeVietNam",
                           color: AppColors.textErrorColor,
                           fontStyle: FontStyle.italic,
                           fontSize: 12,
@@ -99,6 +100,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         Text(
                           "Mã OTP đã được gửi đến email",
                           style: TextStyle(
+                            fontFamily: "BeVietnam",
                             color: AppColors.textErrorColor,
                             fontStyle: FontStyle.italic,
                             fontSize: 12,
@@ -141,6 +143,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         content: const Text(
                           "Vui lòng nhập lại mã OTP",
                           style: TextStyle(
+                            fontFamily: "BeVietnam",
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),

@@ -55,6 +55,7 @@ class DialogUtils {
           title: const Text(
             'Success',
             style: TextStyle(
+              fontFamily: "BeVietnam",
               color: Colors.green,
               fontWeight: FontWeight.bold,
             ),
@@ -100,7 +101,7 @@ class DialogUtils {
               height: 190,
               width: double.infinity,
               padding: const EdgeInsets.symmetric(
-                vertical: 16,
+                vertical: 24,
                 horizontal: 28,
               ),
               decoration: BoxDecoration(
@@ -154,6 +155,7 @@ class DialogUtils {
                                 textAlign: TextAlign.center,
                                 textCancelButton,
                                 style: const TextStyle(
+                                  fontFamily: "BeVietnam",
                                   fontWeight: FontWeight.w400,
                                   color: Colors.white,
                                   fontSize: 15,
@@ -183,6 +185,7 @@ class DialogUtils {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w400,
                                   fontSize: 15,
+                                  fontFamily: "BeVietnam",
                                   height: 1,
                                   color: Colors.white,
                                 ),

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
+import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
@@ -37,60 +38,51 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const LeadingBackButton(),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert),
+        title: Text(
+          "Lịch Sử Mua Hàng",
+          style: AppStyle.appBarTitle.copyWith(
+            color: AppColors.primaryColor,
           ),
-        ],
+        ),
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Align(
-              alignment: Alignment.center,
-              child: Text(
-                "Lịch Sử Mua Hàng",
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+              const Text(
+                "Khách hàng",
                 style: TextStyle(
+                  fontFamily: "BeVietnam",
                   color: Color(0xff820a1a),
                   fontWeight: FontWeight.w600,
-                  fontSize: 22,
+                  fontSize: 16,
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Khách hàng",
-              style: TextStyle(
-                color: Color(0xff820a1a),
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
+              const SizedBox(height: 20),
+              buildCustomerInfoItem(
+                label: "Họ tên",
+                value: widget.customer?.fullName ?? "---",
               ),
-            ),
-            const SizedBox(height: 20),
-            buildCustomerInfoItem(
-              label: "Họ tên",
-              value: widget.customer?.fullName ?? "---",
-            ),
-            buildCustomerInfoItem(
-              label: "Số điện thoại",
-              value: widget.customer?.phoneNumber ?? "---",
-            ),
-            buildCustomerInfoItem(
-              label: "Địa chỉ",
-              value: "${widget.customer?.address!.displayAddress()}",
-            ),
-            buildCustomerInfoItem(
-              label: "Email",
-              value: widget.customer?.email != ""
-                  ? widget.customer?.email ?? "---"
-                  : "Chưa có email",
-            ),
-            const SizedBox(height: 40),
-            Expanded(
-              child: BlocBuilder(
+              buildCustomerInfoItem(
+                label: "Số điện thoại",
+                value: widget.customer?.phoneNumber ?? "---",
+              ),
+              buildCustomerInfoItem(
+                label: "Địa chỉ",
+                value: "${widget.customer?.address!.displayAddress()}",
+              ),
+              buildCustomerInfoItem(
+                label: "Email",
+                value: widget.customer?.email != ""
+                    ? widget.customer?.email ?? "---"
+                    : "Chưa có email",
+              ),
+              const SizedBox(height: 40),
+              BlocBuilder(
                 bloc: customerGuaranteeBloc,
                 builder: (context, state) {
                   if (state is CustomerGuaranteeLoading) {
@@ -102,6 +94,8 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                     final guarantees = state.guarantees;
                     return ListView.builder(
                       itemCount: guarantees.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16),
@@ -118,8 +112,8 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                   return const SizedBox.shrink();
                 },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -206,7 +200,9 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                       ),
                       const SizedBox(width: 3),
                       Text(
-                        expired ? "Hết hạn bảo hành" : "Còn $remainingMonth tháng bảo hành",
+                        expired
+                            ? "Hết hạn bảo hành"
+                            : "Còn $remainingMonth tháng bảo hành",
                         style: const TextStyle(
                           color: Colors.black,
                           fontSize: 14,
@@ -229,6 +225,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,

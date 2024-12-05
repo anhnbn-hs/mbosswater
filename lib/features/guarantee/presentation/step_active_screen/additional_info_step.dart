@@ -100,6 +100,7 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
               "1 là chất lượng nước rất thấp\n5 là chất lượng nước rất tốt",
               textAlign: TextAlign.right,
               style: TextStyle(
+                fontFamily: "BeVietnam",
                 color: Color(0xff828282),
                 fontStyle: FontStyle.italic,
                 fontSize: 11,

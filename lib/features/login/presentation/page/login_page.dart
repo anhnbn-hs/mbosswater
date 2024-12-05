@@ -99,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         ErrorMessage.IUI_ERROR_INVALID_CREDENTIALS,
                         style: TextStyle(
+                          fontFamily: "BeVietnam",
                           color: AppColors.textErrorColor,
                           fontStyle: FontStyle.italic,
                           fontSize: 12,
