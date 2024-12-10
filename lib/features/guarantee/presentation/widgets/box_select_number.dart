@@ -5,20 +5,17 @@ class BoxSelectNumber extends StatelessWidget {
   const BoxSelectNumber({
     super.key,
     required this.numberNotifier,
-    required this.numberController,
     required this.hint,
   });
 
   final String hint;
   final ValueNotifier<int> numberNotifier;
-  final TextEditingController numberController;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: numberNotifier,
       builder: (context, value, child) {
-        if (value != 0) numberController.text = value.toString();
         return Container(
           height: 38,
           decoration: BoxDecoration(
@@ -26,7 +23,11 @@ class BoxSelectNumber extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: PopupMenuButton<String>(
+            position: PopupMenuPosition.under,
+            tooltip: "Chọn số lượng",
+            splashRadius: 8,
             color: Colors.white,
+            elevation: 1,
             style: ButtonStyle(
               textStyle: WidgetStatePropertyAll(AppStyle.boxField),
             ),
@@ -37,7 +38,7 @@ class BoxSelectNumber extends StatelessWidget {
               return List.generate(10, (index) =>(index++ + 1).toString()).map((value) {
                 return PopupMenuItem<String>(
                   value: value,
-                  height: 30,
+                  height: 38,
                   child: Text(
                     value,
                     style: AppStyle.boxField,
@@ -52,21 +53,7 @@ class BoxSelectNumber extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      maxLines: 1,
-                      controller: numberController,
-                      keyboardType: TextInputType.number,
-                      style: AppStyle.boxField.copyWith(height: 2),
-                      cursorColor: Colors.grey,
-                      decoration: InputDecoration(
-                        border: UnderlineInputBorder(
-                          borderSide: BorderSide.none,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        hintText: hint,
-                        hintStyle: AppStyle.boxField,
-                      ),
-                    ),
+                    child: Text(value.toString()),
                   ),
                   const Icon(
                     Icons.arrow_drop_down,

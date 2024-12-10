@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/custom_textfield.dart';
-import 'package:mbosswater/features/login/presentation/page/login_page.dart';
+import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_event.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_state.dart';
@@ -13,8 +14,6 @@ import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_event.
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_state.dart';
 import 'package:mbosswater/features/recovery/presentation/widget/otp_input_field.dart';
 import 'package:mbosswater/features/recovery/presentation/widget/resend_button.dart';
-
-import '../../../../injection_container.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -41,6 +40,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: const LeadingBackButton(),
+        backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.only(
@@ -58,7 +63,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               const SizedBox(height: 40),
               CustomTextField(
                 controller: emailController,
-                hintText: "Email",
+                hintText: "Số điện thoại",
               ),
               BlocBuilder(
                 bloc: verifyEmailBloc,
@@ -83,8 +88,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 },
               ),
               const SizedBox(height: 40),
-              CustomElevatedButton(
-                text: "GỬI MÃ OTP",
+              CustomButton(
+                textButton: "GỬI MÃ OTP",
                 onTap: () => handleSendOTP(context),
               ),
               BlocBuilder(
@@ -162,11 +167,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   void handleSendOTP(BuildContext context) {
-    DialogUtils.showLoadingDialog(context);
-    if (emailController.text.isEmpty) {
-      verifyEmailBloc.emitError("Vui lòng nhập lại email");
-    } else {
-      verifyEmailBloc.add(PressedVerifyEmail(emailController.text));
-    }
+    DialogUtils.showWarningDialog(
+      context: context,
+      title: "Tính năng đang được phát triển do chuyển từ Email -> SDT",
+      onClickOutSide: () {},
+    );
+
+    // DialogUtils.showLoadingDialog(context);
+
+    // if (emailController.text.isEmpty) {
+    //   verifyEmailBloc.emitError("Vui lòng nhập lại email");
+    // } else {
+    //   // verifyEmailBloc.add(PressedVerifyEmail(emailController.text));
+    // }
   }
 }

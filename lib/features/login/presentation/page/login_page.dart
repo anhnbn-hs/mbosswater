@@ -8,6 +8,7 @@ import 'package:mbosswater/core/constants/error_message.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/storage.dart';
+import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/custom_textfield.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_bloc.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_event.dart';
@@ -83,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontFamily: "BeVietnam",
                       color: Color(0xff6A707C),
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
@@ -125,8 +126,8 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
               const SizedBox(height: 30),
-              CustomElevatedButton(
-                text: "ĐĂNG NHẬP",
+              CustomButton(
+                textButton: "ĐĂNG NHẬP",
                 onTap: () async => handleLogin(),
               )
             ],
@@ -163,41 +164,4 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class CustomElevatedButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onTap;
 
-  const CustomElevatedButton({
-    super.key,
-    required this.text,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      splashColor: Colors.grey,
-      child: Ink(
-        height: 56,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColors.primaryColor,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: "BeVietnam",
-              fontWeight: FontWeight.w500,
-              fontSize: 15,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

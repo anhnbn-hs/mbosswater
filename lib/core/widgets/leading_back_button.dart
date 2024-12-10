@@ -16,10 +16,7 @@ class LeadingBackButton extends StatelessWidget {
       onPressed: onTap ?? () => context.pop(),
       icon: ImageHelper.loadAssetImage(
         AppAssets.icArrowLeft,
-        fit: BoxFit.fill,
-        width: 26,
-        height: 24,
-        tintColor: Colors.black87,
+        tintColor: const Color(0xff111827),
       ),
     );
   }

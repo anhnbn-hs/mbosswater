@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
+import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
+import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
@@ -37,6 +40,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return Scaffold(
       appBar: AppBar(
         leading: const LeadingBackButton(),
+        title: Text(
+          "Thông Tin Tài Khoản",
+          style: AppStyle.appBarTitle.copyWith(
+            color: AppColors.appBarTitleColor,
+            fontSize: 24,
+          ),
+        ),
+        centerTitle: true,
+        scrolledUnderElevation: 0,
       ),
       body: BlocBuilder<AgencyBloc, AgencyState>(
         bloc: agencyBloc,
@@ -59,29 +71,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   if (state is UserInfoLoaded) {
                     return Column(
                       children: [
-                        const SizedBox(height: 20),
-                        const Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Thông Tin Tài Khoản",
-                            style: TextStyle(
-                              color: Color(0xff820A1A),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 24,
-                            ),
-                          ),
-                        ),
                         const SizedBox(height: 36),
                         buildBoxInfoItem(value: state.user.fullName ?? ""),
                         buildBoxInfoItem(value: state.user.phoneNumber ?? ""),
-                        buildBoxInfoItem(value: getRoleName(state.user.role ?? "")),
-                        if (agency != null) buildBoxInfoItem(value: agency.name),
-                        if (agency != null)
+                        buildBoxInfoItem(
+                            value: getRoleName(state.user.role ?? "")),
+                        if (state.user.agency != null && agency != null)
+                          buildBoxInfoItem(value: agency.name),
+                        if (state.user.agency != null && agency != null)
                           buildBoxInfoItem(value: state.user.address ?? ""),
                         buildBoxInfoItem(value: state.user.email),
-                        const SizedBox(height: 56),
+                        const SizedBox(height: 40),
                         CustomButton(
-                          onTap: () {},
+                          onTap: () {
+                            context.push("/forgot-password");
+                          },
                           textButton: "ĐỔI MẬT KHẨU",
                         ),
                       ],

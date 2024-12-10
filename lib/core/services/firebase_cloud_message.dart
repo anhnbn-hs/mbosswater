@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'notification_service.dart';
+import 'package:mbosswater/core/services/notification_service.dart';
 
 class FirebaseCloudMessage {
   final FirebaseMessaging messaging = FirebaseMessaging.instance;

@@ -50,7 +50,11 @@ class MbossManagerDatasourceImpl extends MbossManagerDatasource {
 
   @override
   Future<List<Agency>> fetchAgencies() async {
-    final querySnapshot = await firebaseFirestore.collection("agency").get();
+    final querySnapshot = await firebaseFirestore
+        .collection("agency")
+        .where("isDelete", isEqualTo: false)
+        .orderBy("createdAt", descending: true)
+        .get();
     return querySnapshot.docs
         .map((doc) => Agency.fromJson(doc.data(), doc.id))
         .toList();

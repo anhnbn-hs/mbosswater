@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
@@ -12,12 +13,10 @@ import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
+import 'package:mbosswater/core/widgets/fullname_formatter.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
-import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
-import 'package:mbosswater/features/mboss/presentation/bloc/delete_mboss_staff_bloc.dart';
-import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
-import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/page/mboss_staff_management.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
@@ -37,12 +36,18 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
   final addressController = TextEditingController();
-
+  ValueNotifier<bool> isShowFab = ValueNotifier(true);
   ValueNotifier<String?> selectedRole = ValueNotifier(null);
   final List<String> dropdownItems = [
     'Nhân viên bán hàng',
     'Nhân viên kỹ thuật'
   ];
+  final scrollController = ScrollController();
+
+  // Focus node
+  final focusNodeName = FocusNode();
+  final focusNodePhone = FocusNode();
+  final focusNodeAddress = FocusNode();
 
   @override
   void initState() {
@@ -59,34 +64,74 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     phoneController.dispose();
     emailController.dispose();
     addressController.dispose();
+    focusNodeName.dispose();
+    focusNodePhone.dispose();
+    focusNodeAddress.dispose();
+    scrollController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: const LeadingBackButton()),
-      floatingActionButton: GestureDetector(
-        onTap: () async => await showStaffCreation(),
-        child: Container(
-          margin: const EdgeInsets.only(right: 5, bottom: 8),
-          decoration: BoxDecoration(
-            color: AppColors.primaryColor,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 46,
-          ),
+      appBar: AppBar(
+        scrolledUnderElevation: 0,
+        leading: const LeadingBackButton(),
+        centerTitle: true,
+        title: Text(
+          "Quản Lý Nhân Viên",
+          style:
+              AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: BlocBuilder<FetchAgencyStaffBloc, List<UserModel>>(
+      floatingActionButton: ValueListenableBuilder(
+        valueListenable: isShowFab,
+        builder: (context, value, child) {
+          if (!value) return const SizedBox.shrink();
+          return GestureDetector(
+            onTap: () async => await showStaffCreation(),
+            child: Container(
+              margin: const EdgeInsets.only(right: 10, bottom: 16),
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 46,
+              ),
+            ),
+          );
+        },
+      ),
+      body: SingleChildScrollView(
+        controller: scrollController,
+        child: Column(
+          children: [
+            const SizedBox(height: 30),
+            Container(
+              height: 38,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xffEEEEEE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SearchField(
+                onSearch: (value) {
+                  // fetchAgencyStaffBloc.searchStaff(value);
+                },
+              ),
+            ),
+            Divider(
+              color: Colors.grey.shade400,
+              height: 44,
+              thickness: .2,
+            ),
+            BlocBuilder<FetchAgencyStaffBloc, List<UserModel>>(
               bloc: fetchAgencyStaffBloc,
               builder: (context, state) {
-                print(state);
                 if (fetchAgencyStaffBloc.isLoading) {
                   return Center(
                     child: Lottie.asset(AppAssets.aLoading, height: 50),
@@ -95,7 +140,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                 if (!fetchAgencyStaffBloc.isLoading) {
                   final listUser = state;
                   if (listUser.isEmpty) {
-                    return Center(
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 100),
                       child: Text(
                         "Đại lý của bạn chưa có nhân viên nào!",
                         style: AppStyle.bodyText,
@@ -114,68 +160,31 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       children: [
-                        const Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Quản Lý Nhân Viên",
-                            style: TextStyle(
-                              color: Color(0xff820a1a),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 22,
-                            ),
-                          ),
+                        buildRowInfoItem(
+                          label: "Tổng nhân viên",
+                          value: listUser.length.toString(),
                         ),
-                        const SizedBox(height: 28),
-                        Container(
-                          height: 38,
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffEEEEEE),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: SearchField(
-                            onSearch: (value) {},
-                          ),
+                        buildRowInfoItem(
+                          label: "Nhân viên CSKH",
+                          value: staffCount.toString(),
                         ),
-                        Divider(
-                          color: Colors.grey.shade400,
-                          height: 40,
-                          thickness: .2,
+                        buildRowInfoItem(
+                          label: "Nhân viên kỹ thuật",
+                          value: techCount.toString(),
                         ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                buildRowInfoItem(
-                                  label: "Tổng nhân viên",
-                                  value: listUser.length.toString(),
-                                ),
-                                buildRowInfoItem(
-                                  label: "Nhân viên bán hàng",
-                                  value: staffCount.toString(),
-                                ),
-                                buildRowInfoItem(
-                                  label: "Nhân viên kỹ thuật",
-                                  value: techCount.toString(),
-                                ),
-                                const SizedBox(height: 24),
-                                ListView.builder(
-                                  itemCount: listUser.length,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    return Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 16),
-                                      child: buildStaffItem(listUser[index]),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
+                        const SizedBox(height: 30),
+                        ListView.builder(
+                          itemCount: listUser.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 22),
+                              child: buildStaffItem(listUser[index]),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 10),
                       ],
                     ),
                   );
@@ -183,13 +192,13 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                 return const SizedBox.shrink();
               },
             ),
-          ),
-          // Listener for create
+            // Listener for create
 
-          // Listener for delete
+            // Listener for delete
 
-          // Listener for update
-        ],
+            // Listener for update
+          ],
+        ),
       ),
     );
   }
@@ -255,11 +264,12 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
         ),
         child: Column(
           children: [
-            const Align(
+            Align(
               alignment: FractionalOffset.centerLeft,
               child: Text(
-                "Mã nhân viên: #111",
-                style: TextStyle(
+                "Mã nhân viên: #${user.id.substring(0, 6).toUpperCase()}",
+                style: const TextStyle(
+                  fontFamily: "BeVietnam",
                   color: Color(0xff820a1a),
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
@@ -305,6 +315,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                 textAlign: TextAlign.end,
                 style: const TextStyle(
                   color: Colors.black,
+                  fontFamily: "BeVietnam",
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   overflow: TextOverflow.ellipsis,
@@ -323,18 +334,18 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     addressController.text = user?.address ?? "";
     emailController.text = user?.email ?? "";
 
-    showGeneralDialog(
+    await showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: '',
       pageBuilder: (BuildContext context, _, __) {
         return Container(
-          margin: const EdgeInsets.only(left: 12, right: 12),
-          alignment: Alignment.center,
+          margin: const EdgeInsets.only(left: 0, right: 0),
+          alignment: Alignment.bottomCenter,
           child: Material(
             borderRadius: BorderRadius.circular(14),
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.8,
+              height: MediaQuery.of(context).size.height - 70,
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -342,120 +353,132 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
               ),
               child: Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Thông Tin Nhân Viên",
-                            style: AppStyle.heading2.copyWith(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 36),
+                          Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Thông Tin Nhân Viên",
+                              style: AppStyle.heading2.copyWith(
+                                color: AppColors.appBarTitleColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 22,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        buildBoxFieldItem(
-                          hintValue: "Họ và tên",
-                          controller: nameController,
-                        ),
-                        const SizedBox(height: 26),
-                        buildRoleSelection(user?.role),
-                        const SizedBox(height: 36),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Thông Tin Liên Hệ",
-                            style: AppStyle.heading2.copyWith(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
+                            hintValue: "Họ và tên",
+                            controller: nameController,
+                            focusNode: focusNodeName,
+                            formatter: [
+                              FullNameInputFormatter(),
+                            ],
+                          ),
+                          const SizedBox(height: 23),
+                          buildRoleSelection(user?.role),
+                          const SizedBox(height: 23),
+                          Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Thông Tin Liên Hệ",
+                              style: AppStyle.heading2.copyWith(
+                                color: AppColors.appBarTitleColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 22,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        buildBoxFieldItem(
-                          hintValue: "Số điện thoại",
-                          controller: phoneController,
-                        ),
-                        const SizedBox(height: 26),
-                        buildBoxFieldItem(
-                          hintValue: "Email",
-                          controller: emailController,
-                        ),
-                        const SizedBox(height: 26),
-                        buildBoxFieldItem(
-                          hintValue: "Địa chỉ",
-                          controller: addressController,
-                        ),
-                        const SizedBox(height: 36),
-                        Row(
-                          children: [
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: InkWell(
-                                onTap: () async => handleDeleteStaff(user),
-                                borderRadius: BorderRadius.circular(4),
-                                child: Container(
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    color: const Color(0xffC2C2C2),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      textAlign: TextAlign.center,
-                                      "XÓA",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        height: 1,
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
+                            hintValue: "Số điện thoại",
+                            controller: phoneController,
+                            focusNode: focusNodePhone,
+                            keyboardType: TextInputType.phone,
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
+                          ),
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
+                            hintValue: "Email",
+                            controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
+                            hintValue: "Địa chỉ",
+                            controller: addressController,
+                            focusNode: focusNodeAddress,
+                          ),
+                          const SizedBox(height: 36),
+                          Row(
+                            children: [
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () async => handleDeleteStaff(user),
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Container(
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.rectangle,
+                                      color: const Color(0xffC2C2C2),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        textAlign: TextAlign.center,
+                                        "XÓA",
+                                        style: TextStyle(
+                                          fontFamily: "BeVietnam",
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          height: 1,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 50),
-                            Expanded(
-                              child: InkWell(
-                                onTap: () async => handleUpdateStaff(user!),
-                                borderRadius: BorderRadius.circular(4),
-                                child: Container(
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    color: AppColors.primaryColor,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      textAlign: TextAlign.center,
-                                      "CẬP NHẬT",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 15,
-                                        height: 1,
-                                        color: Colors.white,
+                              const SizedBox(width: 50),
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () async => handleUpdateStaff(user!),
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Container(
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.rectangle,
+                                      color: AppColors.primaryColor,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        textAlign: TextAlign.center,
+                                        "CẬP NHẬT",
+                                        style: TextStyle(
+                                          fontFamily: "BeVietnam",
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          height: 1,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                          ],
-                        ),
-                        const SizedBox(height: 26),
-                      ],
+                              const SizedBox(width: 16),
+                            ],
+                          ),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
                     ),
                   ),
                   Positioned(
@@ -514,9 +537,9 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                     ),
                   ),
                   Text(
-                    "*",
+                    " * ",
                     style: TextStyle(
-                      color: CupertinoColors.destructiveRed,
+                      color: Color(0xff820a1a),
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -562,76 +585,90 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
       barrierLabel: '',
       pageBuilder: (BuildContext context, _, __) {
         return Container(
-          margin: const EdgeInsets.only(left: 12, right: 12),
-          alignment: Alignment.center,
+          alignment: Alignment.bottomCenter,
           child: Material(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(8),
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.8,
               width: double.infinity,
+              height: MediaQuery.of(context).size.height - 70,
+              padding: const EdgeInsets.only(bottom: 50),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Thêm Nhân Viên",
-                            style: AppStyle.heading2.copyWith(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Thêm Nhân Viên",
+                              style: AppStyle.heading2.copyWith(
+                                color: AppColors.appBarTitleColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 22,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        buildBoxFieldItem(
-                          hintValue: "Họ và tên",
-                          controller: nameController,
-                        ),
-                        const SizedBox(height: 26),
-                        buildRoleSelection(null),
-                        const SizedBox(height: 36),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Thông Tin Liên Hệ",
-                            style: AppStyle.heading2.copyWith(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
+                            hintValue: "Họ và tên",
+                            isRequired: true,
+                            controller: nameController,
+                            formatter: [
+                              FullNameInputFormatter(),
+                            ],
+                            focusNode: focusNodeName,
+                          ),
+                          const SizedBox(height: 23),
+                          buildRoleSelection(null),
+                          const SizedBox(height: 23),
+                          Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Thông Tin Liên Hệ",
+                              style: AppStyle.heading2.copyWith(
+                                color: AppColors.appBarTitleColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 22,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        buildBoxFieldItem(
-                            hintValue: "Số điện thoại",
-                            controller: phoneController),
-                        const SizedBox(height: 26),
-                        buildBoxFieldItem(
-                          hintValue: "Email",
-                          controller: emailController,
-                        ),
-                        const SizedBox(height: 26),
-                        buildBoxFieldItem(
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
+                              hintValue: "Số điện thoại",
+                              isRequired: true,
+                              controller: phoneController,
+                              focusNode: focusNodePhone,
+                              keyboardType: TextInputType.phone,
+                              formatter: [
+                                FilteringTextInputFormatter.digitsOnly
+                              ]),
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
+                            hintValue: "Email",
+                            controller: emailController,
+                          ),
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
                             hintValue: "Địa chỉ",
-                            controller: addressController),
-                        const SizedBox(height: 36),
-                        CustomButton(
-                          onTap: () async => handleCreateStaff(),
-                          height: 40,
-                          textButton: "TẠO TÀI KHOẢN",
-                        )
-                      ],
+                            controller: addressController,
+                          ),
+                          const SizedBox(height: 36),
+                          CustomButton(
+                            onTap: () async => handleCreateStaff(),
+                            height: 40,
+                            textButton: "TẠO TÀI KHOẢN",
+                          )
+                        ],
+                      ),
                     ),
                   ),
                   Positioned(
@@ -652,39 +689,6 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
           ),
         );
       },
-    );
-  }
-
-  Container buildBoxFieldItem({
-    required String hintValue,
-    TextEditingController? controller,
-  }) {
-    return Container(
-      height: 34,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xff757575)),
-      ),
-      child: TextFormField(
-        controller: controller,
-        style: AppStyle.bodyText.copyWith(
-          color: const Color(0xffB3B3B3),
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          border: const UnderlineInputBorder(borderSide: BorderSide.none),
-          hintText: hintValue,
-          hintStyle: AppStyle.bodyText.copyWith(
-            color: const Color(0xffB3B3B3),
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 9),
-        ),
-      ),
     );
   }
 
@@ -832,7 +836,7 @@ class _SearchFieldState extends State<SearchField> {
           fontFamily: 'BeVietNam',
           color: Colors.grey.shade500,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(vertical: 11),
       ),
     );
   }

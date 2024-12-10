@@ -28,10 +28,6 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
 
   final TextEditingController phController = TextEditingController();
 
-  final TextEditingController childNumberController = TextEditingController();
-
-  final TextEditingController adultNumberController = TextEditingController();
-
   // Value notifier
   ValueNotifier<int> adultNumber = ValueNotifier(0);
   ValueNotifier<int> childNumber = ValueNotifier(0);
@@ -71,7 +67,6 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
                 child: BoxSelectNumber(
                   hint: "Người lớn",
                   numberNotifier: adultNumber,
-                  numberController: adultNumberController,
                 ),
               ),
               const SizedBox(width: 18),
@@ -79,7 +74,6 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
                 child: BoxSelectNumber(
                   hint: "Trẻ em",
                   numberNotifier: childNumber,
-                  numberController: childNumberController,
                 ),
               ),
             ],

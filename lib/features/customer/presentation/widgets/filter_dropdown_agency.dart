@@ -1,33 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 
-class FilterDropdown extends StatefulWidget {
-  final String selectedValue;
-  final List<String> options;
-  final ValueChanged<String?> onChanged;
+class FilterDropdownAgency extends StatefulWidget {
+  final List<Agency> options;
+  final ValueChanged<Agency?> onChanged;
 
-  const FilterDropdown({
+  const FilterDropdownAgency({
     Key? key,
-    required this.selectedValue,
     required this.options,
     required this.onChanged,
   }) : super(key: key);
 
   @override
-  State<FilterDropdown> createState() => _FilterDropdownState();
+  State<FilterDropdownAgency> createState() => _FilterDropdownAgencyState();
 }
 
-class _FilterDropdownState extends State<FilterDropdown> {
-  String selected = "";
+class _FilterDropdownAgencyState extends State<FilterDropdownAgency> {
+  Agency? selected;
   @override
   void initState() {
     super.initState();
-    selected = widget.selectedValue;
   }
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
+    return PopupMenuButton<Agency>(
       color: Colors.white,
-      initialValue: widget.selectedValue,
       onSelected: (value) {
         widget.onChanged(value);
         setState(() {
@@ -37,16 +34,25 @@ class _FilterDropdownState extends State<FilterDropdown> {
       position: PopupMenuPosition.under,
       itemBuilder: (BuildContext context) {
         return widget.options.map((value) {
-          return PopupMenuItem<String>(
+          final isSelected = value == selected; // Kiểm tra mục được chọn
+          return PopupMenuItem<Agency>(
             value: value,
             height: 40,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontFamily: "BeVietnam",
-                overflow: TextOverflow.ellipsis,
-                color: Colors.black,
-                fontSize: 14,
+            padding: EdgeInsets.zero, // Loại bỏ padding mặc định của PopupMenuItem
+            child: Container(
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.grey[300] : Colors.white,
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value.name,
+                style: const TextStyle(
+                  fontFamily: "BeVietnam",
+                  overflow: TextOverflow.ellipsis,
+                  color: Colors.black,
+                  fontSize: 14,
+                ),
               ),
             ),
           );
@@ -54,7 +60,7 @@ class _FilterDropdownState extends State<FilterDropdown> {
       },
       child: Container(
         height: 29,
-        width: MediaQuery.of(context).size.width / 2 - 24,
+        width: MediaQuery.of(context).size.width / 2 - 24 - 3,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -65,7 +71,7 @@ class _FilterDropdownState extends State<FilterDropdown> {
           children: [
             Expanded(
               child: Text(
-               selected,
+                selected?.name ?? "Đại lý",
                 maxLines: 1,
                 style: const TextStyle(
                   fontFamily: "BeVietnam",

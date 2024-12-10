@@ -35,6 +35,7 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
   late UserInfoBloc userInfoBloc;
   late FetchCustomerBloc fetchCustomerBloc;
   Customer? customer;
+
   @override
   void initState() {
     super.initState();
@@ -62,8 +63,12 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
               children: [
                 buildBoxFieldCannotEdit(
                   label: "Khách hàng",
-                  value:
-                      "${state.customer.fullName} - ${state.customer.phoneNumber}",
+                  value: state.customer.fullName ?? "",
+                ),
+                const SizedBox(height: 20),
+                buildBoxFieldCannotEdit(
+                  label: "Số điện thoại",
+                  value: state.customer.phoneNumber ?? "",
                 ),
                 const SizedBox(height: 20),
                 buildBoxFieldCannotEdit(
@@ -130,10 +135,8 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
         ),
         const SizedBox(height: 12),
         Container(
-          height: 40,
           width: double.infinity,
-          padding: const EdgeInsets.only(left: 12),
-          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: const Color(0xffF6F6F6),
             borderRadius: BorderRadius.circular(8),
@@ -147,7 +150,7 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
             style: AppStyle.boxField.copyWith(
               fontSize: 15,
               color: Colors.grey,
-              height: 1,
+              height: 1.4,
             ),
           ),
         ),

@@ -41,7 +41,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
         title: Text(
           "Lịch Sử Mua Hàng",
           style: AppStyle.appBarTitle.copyWith(
-            color: AppColors.primaryColor,
+            color: AppColors.appBarTitleColor,
           ),
         ),
         centerTitle: true,
@@ -73,13 +73,14 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
               ),
               buildCustomerInfoItem(
                 label: "Địa chỉ",
+                maxLine: 2,
                 value: "${widget.customer?.address!.displayAddress()}",
               ),
               buildCustomerInfoItem(
                 label: "Email",
                 value: widget.customer?.email != ""
                     ? widget.customer?.email ?? "---"
-                    : "Chưa có email",
+                    : "",
               ),
               const SizedBox(height: 40),
               BlocBuilder(
@@ -220,7 +221,8 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
     );
   }
 
-  Widget buildCustomerInfoItem({required String label, required String value}) {
+  Widget buildCustomerInfoItem(
+      {required String label, required String value, int maxLine = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -241,7 +243,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
               alignment: Alignment.centerRight,
               child: Text(
                 value,
-                maxLines: 2,
+                maxLines: maxLine,
                 textAlign: TextAlign.end,
                 style: const TextStyle(
                   color: Colors.black,

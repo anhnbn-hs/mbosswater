@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lottie/lottie.dart';
@@ -15,6 +16,7 @@ import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
+import 'package:mbosswater/core/widgets/fullname_formatter.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/delete_mboss_staff_bloc.dart';
@@ -61,6 +63,10 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   ];
 
   ValueNotifier<String?> selectedFilter = ValueNotifier(null);
+  ValueNotifier<bool> isShowFab = ValueNotifier(true);
+
+  // Scroll
+  final scrollController = ScrollController();
 
   @override
   void initState() {
@@ -70,6 +76,15 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     updateMbossStaffBloc = BlocProvider.of<UpdateMbossStaffBloc>(context);
     deleteMbossStaffBloc = BlocProvider.of<DeleteMbossStaffBloc>(context);
     mbossStaffBloc.fetchMbossStaffs();
+    scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (scrollController.position.pixels > 50) {
+      isShowFab.value = false;
+    } else {
+      isShowFab.value = true;
+    }
   }
 
   @override
@@ -82,158 +97,165 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     focusNodeName.dispose();
     focusNodePhone.dispose();
     focusNodeAddress.dispose();
+    scrollController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         leading: const LeadingBackButton(),
-        title: const Text(
+        centerTitle: true,
+        title: Text(
           "Quản Lý Nhân Viên",
-          style: TextStyle(
-            fontFamily: 'BeVietnam',
-            color: Color(0xff820a1a),
-            fontWeight: FontWeight.w600,
-            fontSize: 24,
-          ),
+          style:
+              AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
         ),
       ),
-      floatingActionButton: GestureDetector(
-        onTap: () async => await showStaffCreation(),
-        child: Container(
-          margin: const EdgeInsets.only(right: 5, bottom: 8),
-          decoration: BoxDecoration(
-            color: AppColors.primaryColor,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 46,
-          ),
-        ),
+      floatingActionButton: ValueListenableBuilder(
+        valueListenable: isShowFab,
+        builder: (context, value, child) {
+          if (!value) return const SizedBox.shrink();
+          return GestureDetector(
+            onTap: () async => await showStaffCreation(),
+            child: Container(
+              margin: const EdgeInsets.only(right: 10, bottom: 16),
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 46,
+              ),
+            ),
+          );
+        },
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 28),
-          Container(
-            height: 38,
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              color: const Color(0xffEEEEEE),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: SearchField(
-              onSearch: (value) {
-                mbossStaffBloc.searchStaff(value);
-              },
-            ),
-          ),
-          Divider(
-            color: Colors.grey.shade400,
-            height: 40,
-            thickness: .2,
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: BlocBuilder<FetchMbossStaffBloc, List<UserModel>>(
-                bloc: mbossStaffBloc,
-                builder: (context, state) {
-                  if (mbossStaffBloc.isLoading) {
-                    return Center(
-                      child: Lottie.asset(AppAssets.aLoading, height: 50),
-                    );
-                  }
-                  if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
-                    final listUser = state;
-                    int ccCount = listUser
-                        .where((user) => user.role == Roles.MBOSS_CUSTOMERCARE)
-                        .length;
-                    int techCount = listUser
-                        .where((user) => user.role == Roles.MBOSS_TECHNICAL)
-                        .length;
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        children: [
-                          buildRowInfoItem(
-                            label: "Tổng nhân viên",
-                            value: listUser.length.toString(),
-                          ),
-                          buildRowInfoItem(
-                            label: "Nhân viên CSKH",
-                            value: ccCount.toString(),
-                          ),
-                          buildRowInfoItem(
-                            label: "Nhân viên kỹ thuật",
-                            value: techCount.toString(),
-                          ),
-                          const SizedBox(height: 24),
-                          ListView.builder(
-                            itemCount: listUser.length,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: buildStaffItem(listUser[index]),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
+      body: SingleChildScrollView(
+        controller: scrollController,
+        child: Column(
+          children: [
+            const SizedBox(height: 30),
+            Container(
+              height: 38,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xffEEEEEE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SearchField(
+                onSearch: (value) {
+                  mbossStaffBloc.searchStaff(value);
                 },
               ),
             ),
-          ),
-          // Listener for create
-          BlocListener<CreateMbossStaffBloc, bool>(
-            listener: (context, state) async {
-              if (createMbossStaffBloc.isLoading == false && state == true) {
-                DialogUtils.hide(context);
-                DialogUtils.hide(context);
-                await mbossStaffBloc.fetchMbossStaffs();
-              }
-            },
-            child: const SizedBox.shrink(),
-          ),
-          // Listener for delete
-          BlocListener<DeleteMbossStaffBloc, bool>(
-            listener: (context, state) async {
-              if (deleteMbossStaffBloc.isLoading == false && state == true) {
-                DialogUtils.hide(context);
-                DialogUtils.hide(context);
-                await mbossStaffBloc.fetchMbossStaffs();
-              }
-            },
-            child: const SizedBox.shrink(),
-          ),
-          // Listener for update
-          BlocListener<UpdateMbossStaffBloc, bool>(
-            listener: (context, state) async {
-              if (updateMbossStaffBloc.isLoading == false && state == true) {
-                DialogUtils.hide(context);
-                DialogUtils.hide(context);
-                await mbossStaffBloc.fetchMbossStaffs();
-              }
-            },
-            child: const SizedBox.shrink(),
-          ),
-        ],
+            Divider(
+              color: Colors.grey.shade400,
+              height: 44,
+              thickness: .2,
+            ),
+            BlocBuilder<FetchMbossStaffBloc, List<UserModel>>(
+              bloc: mbossStaffBloc,
+              builder: (context, state) {
+                if (mbossStaffBloc.isLoading) {
+                  return Center(
+                    child: Lottie.asset(AppAssets.aLoading, height: 50),
+                  );
+                }
+                if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
+                  final userOriginal = mbossStaffBloc.getStaffsOriginal;
+                  final listUser = state;
+                  int ccCount = userOriginal
+                      .where((user) => user.role == Roles.MBOSS_CUSTOMERCARE)
+                      .length;
+                  int techCount = userOriginal
+                      .where((user) => user.role == Roles.MBOSS_TECHNICAL)
+                      .length;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        buildRowInfoItem(
+                          label: "Tổng nhân viên",
+                          value: userOriginal.length.toString(),
+                        ),
+                        buildRowInfoItem(
+                          label: "Nhân viên CSKH",
+                          value: ccCount.toString(),
+                        ),
+                        buildRowInfoItem(
+                          label: "Nhân viên kỹ thuật",
+                          value: techCount.toString(),
+                        ),
+                        const SizedBox(height: 30),
+                        ListView.builder(
+                          itemCount: listUser.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 22),
+                              child: buildStaffItem(listUser[index]),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            // Listener for create
+            BlocListener<CreateMbossStaffBloc, bool>(
+              listener: (context, state) async {
+                if (createMbossStaffBloc.isLoading == false && state == true) {
+                  DialogUtils.hide(context);
+                  DialogUtils.hide(context);
+                  await mbossStaffBloc.fetchMbossStaffs();
+                }
+              },
+              child: const SizedBox.shrink(),
+            ),
+            // Listener for delete
+            BlocListener<DeleteMbossStaffBloc, bool>(
+              listener: (context, state) async {
+                if (deleteMbossStaffBloc.isLoading == false && state == true) {
+                  DialogUtils.hide(context);
+                  DialogUtils.hide(context);
+                  await mbossStaffBloc.fetchMbossStaffs();
+                }
+              },
+              child: const SizedBox.shrink(),
+            ),
+            // Listener for update
+            BlocListener<UpdateMbossStaffBloc, bool>(
+              listener: (context, state) async {
+                if (updateMbossStaffBloc.isLoading == false && state == true) {
+                  DialogUtils.hide(context);
+                  DialogUtils.hide(context);
+                  await mbossStaffBloc.fetchMbossStaffs();
+                }
+              },
+              child: const SizedBox.shrink(),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget buildRowInfoItem({required String label, required String value}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 5),
+      padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
           Expanded(
@@ -292,11 +314,11 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
         ),
         child: Column(
           children: [
-            const Align(
+            Align(
               alignment: FractionalOffset.centerLeft,
               child: Text(
-                "Mã nhân viên: #111",
-                style: TextStyle(
+                "Mã nhân viên: #${user.id.substring(0, 6).toUpperCase()}",
+                style: const TextStyle(
                   fontFamily: "BeVietnam",
                   color: Color(0xff820a1a),
                   fontWeight: FontWeight.w600,
@@ -368,12 +390,12 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
       barrierLabel: '',
       pageBuilder: (BuildContext context, _, __) {
         return Container(
-          margin: const EdgeInsets.only(left: 12, right: 12),
-          alignment: Alignment.center,
+          margin: const EdgeInsets.only(left: 0, right: 0),
+          alignment: Alignment.bottomCenter,
           child: Material(
             borderRadius: BorderRadius.circular(14),
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.8,
+              height: MediaQuery.of(context).size.height - 70,
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -383,131 +405,136 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                 children: [
                   SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 36),
                           Align(
                             alignment: Alignment.center,
                             child: Text(
                               "Thông Tin Nhân Viên",
                               style: AppStyle.heading2.copyWith(
-                                color: AppColors.primaryColor,
+                                color: AppColors.appBarTitleColor,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                                fontSize: 22,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          buildBoxFieldItem(
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
                             hintValue: "Họ và tên",
                             controller: nameController,
                             focusNode: focusNodeName,
+                            keyboardType: TextInputType.name,
+                            formatter: [
+                              FilteringTextInputFormatter.deny(RegExp(r'\d')),
+                            ],
                           ),
-                          const SizedBox(height: 26),
+                          const SizedBox(height: 23),
                           buildRoleSelection(user?.role),
-                          const SizedBox(height: 36),
+                          const SizedBox(height: 23),
                           Align(
                             alignment: Alignment.center,
                             child: Text(
                               "Thông Tin Liên Hệ",
                               style: AppStyle.heading2.copyWith(
-                                color: AppColors.primaryColor,
+                                color: AppColors.appBarTitleColor,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                                fontSize: 22,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          buildBoxFieldItem(
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
                             hintValue: "Số điện thoại",
                             controller: phoneController,
                             focusNode: focusNodePhone,
+                            keyboardType: TextInputType.phone,
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
                           ),
-                          const SizedBox(height: 26),
-                          buildBoxFieldItem(
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
                             hintValue: "Email",
                             controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
                           ),
-                          const SizedBox(height: 26),
-                          buildBoxFieldItem(
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
                             hintValue: "Địa chỉ",
                             controller: addressController,
                             focusNode: focusNodeAddress,
                           ),
+                          // const SizedBox(height: 23),
+                          // Align(
+                          //   alignment: Alignment.center,
+                          //   child: Text(
+                          //     "Lịch Sử Công Việc",
+                          //     style: AppStyle.heading2.copyWith(
+                          //       color: AppColors.appBarTitleColor,
+                          //       fontWeight: FontWeight.w600,
+                          //       fontSize: 22,
+                          //     ),
+                          //   ),
+                          // ),
+                          // const SizedBox(height: 24),
+                          // Container(
+                          //   alignment: Alignment.centerRight,
+                          //   child: FilterDropdown(
+                          //     selectedValue: 'Tháng',
+                          //     onChanged: (value) =>
+                          //         selectedFilter.value = value,
+                          //     options: dropdownWorkHistoryItems,
+                          //   ),
+                          // ),
+                          // const SizedBox(height: 12),
+                          // ValueListenableBuilder(
+                          //   valueListenable: selectedFilter,
+                          //   builder: (context, value, child) {
+                          //     Future<int> future = Future(() => 0);
+                          //     if (value != null) {
+                          //       future = StatsUtils.instance
+                          //           .getCustomerOfStaffCountWithFilter(
+                          //         staffID: user?.id ?? "",
+                          //         filterValue: value,
+                          //       );
+                          //     }
+                          //     if (value == null) {
+                          //       future = StatsUtils.instance
+                          //           .getCustomerOfStaffCount(user?.id ?? "");
+                          //     }
+                          //     return Column(
+                          //       children: [
+                          //         FutureBuilder<int>(
+                          //           future: future,
+                          //           builder: (context, snapshot) {
+                          //             if (snapshot.hasData &&
+                          //                 snapshot.connectionState ==
+                          //                     ConnectionState.done) {
+                          //               return buildRowInfoItem(
+                          //                 label: "Tổng khách hàng",
+                          //                 value:
+                          //                     (snapshot.data ?? 0).toString(),
+                          //               );
+                          //             }
+                          //             return const SizedBox.shrink();
+                          //           },
+                          //         ),
+                          //         const SizedBox(height: 4),
+                          //         if (user?.role == Roles.MBOSS_CUSTOMERCARE)
+                          //           Padding(
+                          //             padding:
+                          //                 const EdgeInsets.only(bottom: 16),
+                          //             child: buildRowInfoItem(
+                          //               label: "Nhiệm vụ hoàn thành",
+                          //               value: "0/30",
+                          //             ),
+                          //           ),
+                          //       ],
+                          //     );
+                          //   },
+                          // ),
                           const SizedBox(height: 36),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              "Lịch Sử Công Việc",
-                              style: AppStyle.heading2.copyWith(
-                                color: AppColors.primaryColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: FilterDropdown(
-                              selectedValue: 'Tháng',
-                              onChanged: (value) =>
-                                  selectedFilter.value = value,
-                              options: dropdownWorkHistoryItems,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ValueListenableBuilder(
-                            valueListenable: selectedFilter,
-                            builder: (context, value, child) {
-                              Future<int> future = Future(() => 0);
-                              if (value != null) {
-                                future = StatsUtils.instance
-                                    .getCustomerOfStaffCountWithFilter(
-                                  staffID: user?.id ?? "",
-                                  filterValue: value,
-                                );
-                              }
-                              if (value == null) {
-                                future = StatsUtils.instance
-                                    .getCustomerOfStaffCount(user?.id ?? "");
-                              }
-                              return Column(
-                                children: [
-                                  FutureBuilder<int>(
-                                    future: future,
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData &&
-                                          snapshot.connectionState ==
-                                              ConnectionState.done) {
-                                        return buildRowInfoItem(
-                                          label: "Tổng khách hàng",
-                                          value:
-                                              (snapshot.data ?? 0).toString(),
-                                        );
-                                      }
-                                      return const SizedBox.shrink();
-                                    },
-                                  ),
-                                  const SizedBox(height: 14),
-                                  if (user?.role == Roles.MBOSS_CUSTOMERCARE)
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 16),
-                                      child: buildRowInfoItem(
-                                        label: "Nhiệm vụ hoàn thành",
-                                        value: "0/30",
-                                      ),
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
                           Row(
                             children: [
                               const SizedBox(width: 16),
@@ -528,7 +555,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                                         "XÓA",
                                         style: TextStyle(
                                           fontFamily: "BeVietnam",
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                           fontSize: 15,
                                           height: 1,
@@ -556,7 +583,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                                         "CẬP NHẬT",
                                         style: TextStyle(
                                           fontFamily: "BeVietnam",
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.bold,
                                           fontSize: 15,
                                           height: 1,
                                           color: Colors.white,
@@ -569,7 +596,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                               const SizedBox(width: 16),
                             ],
                           ),
-                          const SizedBox(height: 26),
+                          const SizedBox(height: 40),
                         ],
                       ),
                     ),
@@ -633,16 +660,16 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                       fontFamily: "BeVietnam",
                       color: Color(0xffB3B3B3),
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                   Text(
                     " * ",
                     style: TextStyle(
                       fontFamily: "BeVietnam",
-                      color: Color(0xff900B09),
+                      color: Color(0xff820a1a),
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                     ),
                   )
                 ],
@@ -660,7 +687,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                       color: Color(0xffB3B3B3),
                       fontFamily: "BeVietnam",
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 );
@@ -687,16 +714,16 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
       barrierLabel: '',
       pageBuilder: (BuildContext context, _, __) {
         return Container(
-          margin: const EdgeInsets.only(left: 12, right: 12),
-          alignment: Alignment.center,
+          alignment: Alignment.bottomCenter,
           child: Material(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(8),
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.8,
               width: double.infinity,
+              height: MediaQuery.of(context).size.height - 70,
+              padding: const EdgeInsets.only(bottom: 50),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Stack(
                 children: [
@@ -713,47 +740,53 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                             child: Text(
                               "Thêm Nhân Viên",
                               style: AppStyle.heading2.copyWith(
-                                color: AppColors.primaryColor,
+                                color: AppColors.appBarTitleColor,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                                fontSize: 22,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          buildBoxFieldItem(
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
                             hintValue: "Họ và tên",
                             isRequired: true,
                             controller: nameController,
+                            formatter: [
+                              FullNameInputFormatter(),
+                            ],
                             focusNode: focusNodeName,
                           ),
-                          const SizedBox(height: 26),
+                          const SizedBox(height: 23),
                           buildRoleSelection(null),
-                          const SizedBox(height: 36),
+                          const SizedBox(height: 23),
                           Align(
                             alignment: Alignment.center,
                             child: Text(
                               "Thông Tin Liên Hệ",
                               style: AppStyle.heading2.copyWith(
-                                color: AppColors.primaryColor,
+                                color: AppColors.appBarTitleColor,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                                fontSize: 22,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          buildBoxFieldItem(
-                            hintValue: "Số điện thoại",
-                            isRequired: true,
-                            controller: phoneController,
-                            focusNode: focusNodePhone,
-                          ),
-                          const SizedBox(height: 26),
-                          buildBoxFieldItem(
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
+                              hintValue: "Số điện thoại",
+                              isRequired: true,
+                              controller: phoneController,
+                              focusNode: focusNodePhone,
+                              keyboardType: TextInputType.phone,
+                              formatter: [
+                                FilteringTextInputFormatter.digitsOnly
+                              ]),
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
                             hintValue: "Email",
                             controller: emailController,
                           ),
-                          const SizedBox(height: 26),
-                          buildBoxFieldItem(
+                          const SizedBox(height: 23),
+                          BoxFieldItem(
                             hintValue: "Địa chỉ",
                             controller: addressController,
                           ),
@@ -788,81 +821,10 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     );
   }
 
-  Container buildBoxFieldItem({
-    required String hintValue,
-    bool isRequired = false,
-    TextEditingController? controller,
-    FocusNode? focusNode,
-  }) {
-    return Container(
-      height: 34,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xff757575)),
-      ),
-      child: Stack(
-        children: [
-          TextField(
-            controller: controller,
-            focusNode: focusNode,
-            style: AppStyle.bodyText.copyWith(
-              color: const Color(0xffB3B3B3),
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-            decoration: InputDecoration(
-              border: const UnderlineInputBorder(borderSide: BorderSide.none),
-              hintText: isRequired ? "" : hintValue,
-              hintStyle: isRequired
-                  ? null
-                  : AppStyle.bodyText.copyWith(
-                      color: const Color(0xffB3B3B3),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 9),
-            ),
-          ),
-          if (isRequired)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 3),
-                  child: RichText(
-                    text: TextSpan(
-                      text: hintValue,
-                      style: AppStyle.bodyText.copyWith(
-                        color: const Color(0xffB3B3B3),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      children: const [
-                        TextSpan(
-                          text: ' * ',
-                          style: TextStyle(
-                            fontFamily: "BeVietnam",
-                            color: Color(0xff900B09),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   handleDeleteStaff(UserModel? user) async {
     DialogUtils.showConfirmationDialog(
       context: context,
-      title: "Bạn chắc chắn muốn xoá nhân viên này ?",
+      title: "Bạn chắc chắn muốn\nxoá nhân viên này ?",
       textCancelButton: "HỦY",
       textAcceptButton: "XÁC NHẬN",
       cancelPressed: () => Navigator.pop(context),
@@ -886,8 +848,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
         DialogUtils.showLoadingDialog(context);
         // Get text field value
         final userUpdate = user;
-        userUpdate.fullName = nameController.text.trim();
-        userUpdate.address = addressController.text.trim();
 
         // Get role
         String newRole = "";
@@ -898,7 +858,62 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           newRole = Roles.MBOSS_CUSTOMERCARE;
         }
         userUpdate.role = newRole;
-        await updateMbossStaffBloc.updateStaff(userUpdate);
+
+        userUpdate.fullName = nameController.text.trim();
+        userUpdate.address = addressController.text.trim();
+        userUpdate.phoneNumber = phoneController.text.trim();
+        userUpdate.email = emailController.text.trim();
+
+        // Check email and phone exist
+        bool isPhoneExisted = false;
+        bool isEmailExisted = false;
+
+        try {
+          // Check if phone number exists
+          final phoneQuerySnapshot = await FirebaseFirestore.instance
+              .collection("users")
+              .where("phoneNumber", isEqualTo: userUpdate.phoneNumber)
+              .limit(1)
+              .get();
+
+          isPhoneExisted = phoneQuerySnapshot.docs.isNotEmpty &&
+              phoneQuerySnapshot.docs.first.id != user.id;
+
+          // Check if email exists
+          final emailQuerySnapshot = await FirebaseFirestore.instance
+              .collection("users")
+              .where("email", isEqualTo: userUpdate.email)
+              .limit(1)
+              .get();
+
+          isEmailExisted = emailQuerySnapshot.docs.isNotEmpty &&
+              emailQuerySnapshot.docs.first.id != user.id;
+        } on Exception catch (e) {
+          throw Exception(e);
+        } finally {
+          DialogUtils.hide(context);
+        }
+
+        if (isPhoneExisted && isEmailExisted) {
+          print("Both phone number and email already exist.");
+        } else if (isPhoneExisted) {
+          DialogUtils.showWarningDialog(
+            context: context,
+            title: "Số điện thoại đã được đăng ký!",
+            onClickOutSide: () {},
+          );
+          focusNodePhone.requestFocus();
+          return;
+        } else if (isEmailExisted) {
+          DialogUtils.showWarningDialog(
+            context: context,
+            title: "Email đã được đăng ký!",
+            onClickOutSide: () {},
+          );
+        } else {
+          DialogUtils.showLoadingDialog(context);
+          await updateMbossStaffBloc.updateStaff(userUpdate);
+        }
       },
     );
   }
@@ -993,7 +1008,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           focusNodePhone.requestFocus();
           DialogUtils.showWarningDialog(
             context: context,
-            title: "Số điện thoại đã được sử dụng!",
+            title: "Số điện thoại đã được đăng ký!",
             onClickOutSide: () {},
           );
         }
@@ -1048,6 +1063,8 @@ class _SearchFieldState extends State<SearchField> {
         fontFamily: 'BeVietNam',
         color: Color(0xff3C3C43),
       ),
+      cursorHeight: 22,
+      cursorColor: Colors.grey,
       decoration: InputDecoration(
         border: const UnderlineInputBorder(borderSide: BorderSide.none),
         hintText: 'Tìm kiếm',
@@ -1057,7 +1074,120 @@ class _SearchFieldState extends State<SearchField> {
           fontFamily: 'BeVietNam',
           color: Colors.grey.shade500,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 11, horizontal: 10),
+      ),
+    );
+  }
+}
+
+class BoxFieldItem extends StatefulWidget {
+  final String hintValue;
+  final bool isRequired;
+  final TextEditingController controller;
+  final FocusNode? focusNode;
+  final TextInputType keyboardType;
+  final List<TextInputFormatter> formatter;
+
+  const BoxFieldItem({
+    Key? key,
+    required this.hintValue,
+    this.isRequired = false,
+    required this.controller,
+    this.focusNode,
+    this.keyboardType = TextInputType.text,
+    this.formatter = const [],
+  }) : super(key: key);
+
+  @override
+  _BoxFieldItemState createState() => _BoxFieldItemState();
+}
+
+class _BoxFieldItemState extends State<BoxFieldItem> {
+  late VoidCallback _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _listener = () {
+      if (mounted) {
+        setState(() {});
+      }
+    };
+    widget.controller.addListener(_listener);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_listener);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 34,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xff757575)),
+      ),
+      child: Stack(
+        children: [
+          TextField(
+            controller: widget.controller,
+            focusNode: widget.focusNode,
+            keyboardType: widget.keyboardType,
+            inputFormatters: widget.formatter,
+            style: AppStyle.bodyText.copyWith(
+              color: const Color(0xffB3B3B3),
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+            ),
+            decoration: InputDecoration(
+              border: const UnderlineInputBorder(borderSide: BorderSide.none),
+              hintText: widget.isRequired ? "" : widget.hintValue,
+              hintStyle: widget.isRequired
+                  ? null
+                  : AppStyle.bodyText.copyWith(
+                      color: const Color(0xffB3B3B3),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 9),
+            ),
+          ),
+          if (widget.isRequired && widget.controller.text.isEmpty)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: RichText(
+                    text: TextSpan(
+                      text: widget.hintValue,
+                      style: AppStyle.bodyText.copyWith(
+                        color: const Color(0xffB3B3B3),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      children: const [
+                        TextSpan(
+                          text: ' * ',
+                          style: TextStyle(
+                            fontFamily: "BeVietnam",
+                            color: Color(0xff820a1a),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

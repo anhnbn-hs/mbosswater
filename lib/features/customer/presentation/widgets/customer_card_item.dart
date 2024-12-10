@@ -66,6 +66,7 @@ class CustomerCardItem extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
@@ -82,7 +83,8 @@ class CustomerCardItem extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: Text(
                 value,
-                maxLines: 1,
+                maxLines: 2,
+                textAlign: TextAlign.right,
                 style: const TextStyle(
                   fontFamily: "BeVietnam",
                   color: Colors.black,

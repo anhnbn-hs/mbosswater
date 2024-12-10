@@ -4,6 +4,8 @@ import 'package:mbosswater/features/active_success/active_success_page.dart';
 import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
 import 'package:mbosswater/features/customer/presentation/page/customer_detail_page.dart';
 import 'package:mbosswater/features/customer/presentation/page/customer_list_page.dart';
+import 'package:mbosswater/features/customer_care/page/customer_care_page.dart';
+import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
@@ -12,6 +14,8 @@ import 'package:mbosswater/features/guarantee/presentation/page/guarantee_histor
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_request_page.dart';
 import 'package:mbosswater/features/home/home_page.dart';
 import 'package:mbosswater/features/login/presentation/page/login_page.dart';
+import 'package:mbosswater/features/mboss/presentation/page/mboss_agency_management.dart';
+import 'package:mbosswater/features/mboss/presentation/page/mboss_edit_agency_page.dart';
 import 'package:mbosswater/features/mboss/presentation/page/mboss_staff_management.dart';
 import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scanner_page.dart';
 import 'package:mbosswater/features/recovery/presentation/page/change_password_page.dart';
@@ -101,12 +105,27 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const MbossStaffManagement(),
     ),
     GoRoute(
+      path: '/mboss-agency-management',
+      builder: (context, state) => const MbossAgencyManagement(),
+    ),
+    GoRoute(
       path: '/agency-staff-management',
       builder: (context, state) => const AgencyStaffManagement(),
     ),
     GoRoute(
       path: '/user-profile',
       builder: (context, state) => const UserProfilePage(),
+    ),
+    GoRoute(
+      path: '/mboss-edit-agency',
+      builder: (context, state) {
+        final data = state.extra as Agency;
+        return MbossEditAgencyPage(agency: data);
+      },
+    ),
+    GoRoute(
+      path: '/customer-care',
+      builder: (context, state) => const CustomerCarePage(),
     ),
   ],
 );

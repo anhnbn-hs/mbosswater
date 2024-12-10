@@ -269,8 +269,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                                   Text(
                                     " * ",
                                     style: AppStyle.boxFieldLabel.copyWith(
-                                      color: AppColors.primaryColor,
-                                    ),
+                                        color: const Color(0xff8A0E1E)),
                                   ),
                                 ],
                               ),
@@ -393,11 +392,24 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: Text(
-                label,
-                style: AppStyle.boxField.copyWith(
-                    // fontStyle: FontStyle.italic,
-                    ),
+              child: RichText(
+                text: TextSpan(
+                  text: label,
+                  style: AppStyle.boxField.copyWith(
+                    color: const Color(0xff828282),
+                    fontWeight: FontWeight.w400,
+                    fontSize: ["Tỉnh/TP", "Quận/Huyện", "Phường/Xã"].contains(label) ? 11 : 12,
+                  ),
+                  children: [
+                    if (["Tỉnh/TP", "Quận/Huyện", "Phường/Xã"].contains(label))
+                      const TextSpan(
+                        text: " * ",
+                        style: TextStyle(
+                          color: Color(0xff8A0E1E),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
             const Icon(Icons.arrow_drop_down)
@@ -435,7 +447,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                         ? Text(
                             " * ",
                             style: AppStyle.boxFieldLabel.copyWith(
-                              color: AppColors.primaryColor,
+                              color: const Color(0xff8A0E1E),
                             ),
                           )
                         : const SizedBox.shrink(),
@@ -473,9 +485,11 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                       borderSide: BorderSide.none,
                     ),
                     hintText: hint,
-                    hintStyle: AppStyle.boxField
-                        .copyWith(fontStyle: FontStyle.italic, fontSize: 13),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    hintStyle: AppStyle.boxField.copyWith(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                        color: const Color(0xff828282)),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   cursorColor: Colors.grey,
                 ),
@@ -568,9 +582,12 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                 borderSide: BorderSide.none,
               ),
               hintText: hint,
-              hintStyle: AppStyle.boxField
-                  .copyWith(fontStyle: FontStyle.italic, fontSize: 13),
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              hintStyle: AppStyle.boxField.copyWith(
+                color: const Color(0xff828282),
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
             cursorColor: Colors.grey,
           ),

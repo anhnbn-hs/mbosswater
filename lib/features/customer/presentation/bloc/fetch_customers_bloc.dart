@@ -59,4 +59,49 @@ class FetchCustomersBloc
       emit(currentState.copyWith(filteredCustomers: filtered));
     }
   }
+
+  void filterCustomer(String filterValue) {
+    final currentState = state;
+    if (currentState is FetchCustomersSuccess) {
+      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+      DateTime? startDate;
+      switch (filterValue) {
+        case "Tháng này":
+          // Lấy ngày đầu tiên của tháng hiện tại
+          startDate = DateTime(now.year, now.month, 1);
+
+          break;
+
+        case "30 ngày gần đây":
+          startDate = now.subtract(const Duration(days: 30));
+          break;
+
+        case "90 ngày gần đây":
+          startDate = now.subtract(const Duration(days: 90));
+          break;
+
+        case "Năm nay":
+          startDate = DateTime(now.year, 1, 1);
+          break;
+
+        default:
+          print("Invalid filter value: $filterValue");
+          emit(FetchCustomersSuccess(
+              currentState.originalCustomers,
+              currentState
+                  .filteredCustomers));
+          return; // Exit the function
+      }
+
+
+      final filteredCustomers = currentState.originalCustomers.where((c) {
+        final hasValidGuarantee = c.guarantees.any((guarantee) {
+          return guarantee.createdAt.toDate().isAfter(startDate!);
+        });
+        return hasValidGuarantee;
+      }).toList();
+
+      emit(currentState.copyWith(filteredCustomers: filteredCustomers));
+    }
+  }
 }

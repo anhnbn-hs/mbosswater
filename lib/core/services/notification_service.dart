@@ -1,9 +1,9 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/timezone.dart' as tz;
+
 
 class NotificationService {
-  static const String CHANNEL_ID = "mbosswater_channel_1";
-  static const String CHANNEL_NAME = "Daily Notifications";
+  static const String CHANNEL_ID = "ezb_channel_1";
+  static const String CHANNEL_NAME = "Order Notifications";
 
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();

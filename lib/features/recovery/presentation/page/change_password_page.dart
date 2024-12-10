@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/constants/error_message.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/custom_textfield.dart';
-import 'package:mbosswater/features/login/presentation/page/login_page.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 
@@ -122,8 +122,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 },
               ),
               const SizedBox(height: 30),
-              CustomElevatedButton(
-                text: "ĐỔI MẬT KHẨU",
+              CustomButton(
+                textButton: "ĐỔI MẬT KHẨU",
                 onTap: () => handleChangePassword(context),
               )
             ],

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
+import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/utils/storage.dart';
@@ -105,6 +106,27 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
           leading: LeadingBackButton(
             onTap: () => backToPreviousPage(),
           ),
+          scrolledUnderElevation: 0,
+          centerTitle: true,
+          title: BlocBuilder<StepBloc, int>(
+            bloc: stepBloc,
+            builder: (context, state) {
+              String title = "";
+              if (state == 0) {
+                title = "Thông Tin Sản Phẩm";
+              }
+              if (state == 1) {
+                title = "Thông Tin Khách Hàng";
+              }
+              if (state == 2) {
+                title = "Thông Tin Thêm";
+              }
+              return Text(
+                title,
+                style: AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
+              );
+            },
+          ),
         ),
         body: BlocListener(
           bloc: activeGuaranteeBloc,
@@ -130,30 +152,6 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              BlocBuilder<StepBloc, int>(
-                bloc: stepBloc,
-                builder: (context, state) {
-                  String title = "";
-                  if (state == 0) {
-                    title = "Thông Tin Sản Phẩm";
-                  }
-                  if (state == 1) {
-                    title = "Thông Tin Khách Hàng";
-                  }
-                  if (state == 2) {
-                    title = "Thông Tin Thêm";
-                  }
-                  return Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: "BeVietnam",
-                      fontWeight: FontWeight.w600,
-                      fontSize: 22,
-                      color: Color(0xff201E1E),
-                    ),
-                  );
-                },
-              ),
               const SizedBox(height: 20),
               BlocBuilder<StepBloc, int>(
                 bloc: stepBloc,

@@ -9,6 +9,8 @@ class FetchMbossStaffBloc extends Cubit<List<UserModel>> {
   List<UserModel> _allStaff = []; // Cache for all staff
   FetchMbossStaffBloc(this.repository) : super([]);
 
+  List<UserModel> get getStaffsOriginal => _allStaff;
+
   Future<void> fetchMbossStaffs() async {
     if (isLoading) return;
     isLoading = true;

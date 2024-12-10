@@ -4,12 +4,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
+import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_state.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item.dart';
+import 'package:mbosswater/features/customer/presentation/widgets/filter_dropdown_agency.dart';
+import 'package:mbosswater/features/guarantee/data/model/agency.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agencies_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class CustomerListPage extends StatefulWidget {
@@ -22,13 +29,37 @@ class CustomerListPage extends StatefulWidget {
 class _CustomerListPageState extends State<CustomerListPage> {
   late FetchCustomersBloc fetchCustomersBloc;
   late UserInfoBloc userInfoBloc;
+  late AgenciesBloc agenciesBloc;
+
+  final List<String> dropdownTimeItems = [
+    'Tháng này',
+    '30 ngày gần đây',
+    '90 ngày gần đây',
+    'Năm nay'
+  ];
+
+  List<Agency> dropdownAgenciesItems = [];
+  ValueNotifier<String?> searchNotifier = ValueNotifier(null);
+  ValueNotifier<String?> selectedTimeFilter = ValueNotifier(null);
+  ValueNotifier<Agency?> selectedAgencyFilter = ValueNotifier(null);
+  final ScrollController _scrollController = ScrollController();
+
+  // Variable
+  List<CustomerEntity> customerSearchResult = [];
+  List<CustomerEntity> customerOriginal = [];
+  ValueNotifier<int> totalCustomer = ValueNotifier(0);
+  ValueNotifier<int> totalProductSold = ValueNotifier(0);
 
   @override
   void initState() {
     super.initState();
     fetchCustomersBloc = BlocProvider.of<FetchCustomersBloc>(context);
+    agenciesBloc = BlocProvider.of<AgenciesBloc>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
     handleFetchCustomer();
+    if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN) {
+      agenciesBloc.fetchAgencies();
+    }
   }
 
   handleFetchCustomer() {
@@ -45,59 +76,132 @@ class _CustomerListPageState extends State<CustomerListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const LeadingBackButton(),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            buildHeaderSection(),
-            Divider(
-              color: Colors.grey.shade400,
-              height: 40,
-              thickness: .2,
+      body: NestedScrollView(
+        controller: _scrollController,
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              leading: const LeadingBackButton(),
+              scrolledUnderElevation: 0,
+              title: Text(
+                "Danh Sách Khách Hàng",
+                style: AppStyle.appBarTitle.copyWith(
+                  color: const Color(0xff820a1a),
+                ),
+              ),
+              centerTitle: true,
+              pinned: true,
+              floating: false,
+              backgroundColor: Colors.white,
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              alignment: AlignmentDirectional.centerStart,
-              child: FilterDropdown(
-                selectedValue: 'Tháng',
-                onChanged: (value) {},
-                options: const ["Tháng", "Tháng này", "6 ngày trước"],
+          ];
+        },
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  buildHeaderSection(),
+                  Divider(
+                    color: Colors.grey.shade400,
+                    height: 44,
+                    thickness: .8,
+                  ),
+                  BlocBuilder(
+                    bloc: fetchCustomersBloc,
+                    builder: (context, state) {
+                      if (state is FetchCustomersLoading) {
+                        return Center(
+                          child: Lottie.asset(AppAssets.aLoading, height: 50),
+                        );
+                      }
+                      if (state is FetchCustomersSuccess) {
+                        customerSearchResult = state.filteredCustomers;
+                        customerOriginal = state.originalCustomers;
+
+                        return Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 3),
+                                    alignment: Alignment.centerLeft,
+                                    child: FilterDropdown(
+                                      selectedValue:
+                                          selectedTimeFilter.value ?? 'Tháng',
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedTimeFilter.value = value;
+                                        });
+                                      },
+                                      options: dropdownTimeItems,
+                                    ),
+                                  ),
+                                  if (userInfoBloc.user?.role ==
+                                      Roles.MBOSS_ADMIN)
+                                    Container(
+                                      alignment: Alignment.centerLeft,
+                                      child: BlocBuilder(
+                                        bloc: agenciesBloc,
+                                        builder: (context, state) {
+                                          if (state is AgenciesLoaded) {
+                                            dropdownAgenciesItems =
+                                                state.agencies;
+                                            return FilterDropdownAgency(
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  selectedAgencyFilter.value =
+                                                      value;
+                                                });
+                                              },
+                                              options: dropdownAgenciesItems,
+                                            );
+                                          }
+                                          return const SizedBox.shrink();
+                                        },
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            ValueListenableBuilder<int>(
+                              valueListenable: totalCustomer,
+                              builder: (context, value, child) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 30),
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(height: 16),
+                                      buildInfoItem(
+                                        label: "Tổng khách hàng",
+                                        value: totalCustomer.value.toString(),
+                                      ),
+                                      buildInfoItem(
+                                        label: "Tổng sản phẩm đã bán",
+                                        value:
+                                            totalProductSold.value.toString(),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                            buildCustomerList(), // Extracted method
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ],
               ),
             ),
-            BlocBuilder<FetchCustomersBloc, FetchCustomersState>(
-              bloc: fetchCustomersBloc,
-              builder: (context, state) {
-                var customers = [];
-                int totalProductSold = 0;
-                if (state is FetchCustomersSuccess) {
-                  customers = state.filteredCustomers;
-                  totalProductSold = state.filteredCustomers.fold(
-                    0,
-                    (sum, c) => sum + c.guarantees.length,
-                  );
-                }
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      buildInfoItem(
-                        label: "Tổng khách hàng",
-                        value: customers.length.toString(),
-                      ),
-                      buildInfoItem(
-                        label: "Tổng sản phẩm đã bán",
-                        value: totalProductSold.toString(),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            buildListViewCustomer(),
           ],
         ),
       ),
@@ -147,19 +251,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Align(
-            alignment: Alignment.center,
-            child: Text(
-              "Danh Sách Khách Hàng",
-              style: TextStyle(
-                fontFamily: "BeVietnam",
-                color: Color(0xff820a1a),
-                fontWeight: FontWeight.w600,
-                fontSize: 22,
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
           Container(
             height: 38,
             width: double.infinity,
@@ -169,9 +261,11 @@ class _CustomerListPageState extends State<CustomerListPage> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: SearchField(
-              onSearch: (value) => fetchCustomersBloc.add(
-                SearchCustomers(value),
-              ),
+              onSearch: (value) {
+                setState(() {
+                  searchNotifier.value = value.trim().toLowerCase();
+                });
+              },
             ),
           ),
         ],
@@ -179,44 +273,83 @@ class _CustomerListPageState extends State<CustomerListPage> {
     );
   }
 
-  Widget buildListViewCustomer() {
-    return BlocBuilder(
-      bloc: fetchCustomersBloc,
-      builder: (context, state) {
-        if (state is FetchCustomersLoading) {
-          return Center(
-            child: Lottie.asset(AppAssets.aLoading, height: 70),
-          );
-        }
-        if (state is FetchCustomersSuccess) {
-          final listCustomer = state.filteredCustomers;
+  Widget buildCustomerList() {
+    // Perform filtering outside the build process
+    customerSearchResult = customerOriginal.where((customer) {
+      // 1. Filter by search
+      final matchesSearch = searchNotifier.value == null ||
+          customer.customer.fullName!
+              .toLowerCase()
+              .contains(searchNotifier.value!.toLowerCase()) ||
+          customer.customer.phoneNumber!
+              .toLowerCase()
+              .contains(searchNotifier.value!.toLowerCase()) ||
+          customer.customer.address!
+              .displayAddress()
+              .toLowerCase()
+              .contains(searchNotifier.value!.toLowerCase());
 
-          if (listCustomer.isEmpty) {
-            return const Center(
-              child: Text("Không tìm thấy khách hàng!"),
-            );
-          }
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            margin: const EdgeInsets.only(bottom: 20),
-            child: ListView.builder(
-              itemCount: listCustomer.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: CustomerCardItem(
-                    customerEntity: listCustomer[index],
-                  ),
-                );
-              },
+      // 2. Filter by agency
+      final matchesAgency = selectedAgencyFilter.value == null ||
+          customer.customer.agency == selectedAgencyFilter.value?.id;
+
+      // 3. Filter by time
+      final matchesTime = () {
+        if (selectedTimeFilter.value == null) return true;
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 7));
+        DateTime? updatedAt = customer.customer.updatedAt?.toDate();
+
+        switch (selectedTimeFilter.value) {
+          case "Tháng này":
+            return updatedAt?.year == now.year && updatedAt?.month == now.month;
+          case "30 ngày gần đây":
+            return updatedAt != null &&
+                updatedAt.isAfter(now.subtract(const Duration(days: 30)));
+          case "90 ngày gần đây":
+            return updatedAt != null &&
+                updatedAt.isAfter(now.subtract(const Duration(days: 90)));
+          case "Năm nay":
+            return updatedAt?.year == now.year;
+          default:
+            return true;
+        }
+      }();
+
+      // Combine all filters
+      return matchesSearch && matchesAgency && matchesTime;
+    }).toList();
+
+    // Update stats outside build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      totalCustomer.value = customerSearchResult.length;
+      totalProductSold.value = customerSearchResult.fold(
+        0,
+        (sum, customer) => sum + customer.guarantees.length,
+      );
+    });
+
+    if (customerSearchResult.isEmpty) {
+      return const Center(
+        child: Text("Không tìm thấy khách hàng!"),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      margin: const EdgeInsets.only(bottom: 20),
+      child: ListView.builder(
+        itemCount: customerSearchResult.length,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: CustomerCardItem(
+              customerEntity: customerSearchResult[index],
             ),
           );
-        }
-
-        return const SizedBox.shrink();
-      },
+        },
+      ),
     );
   }
 }
@@ -274,9 +407,7 @@ class _SearchFieldState extends State<SearchField> {
             fontFamily: 'BeVietNam',
             color: Colors.grey.shade500,
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 10)),
+          contentPadding: const EdgeInsets.symmetric(vertical: 11)),
     );
   }
 }
-
-

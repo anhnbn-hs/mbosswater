@@ -112,17 +112,6 @@ class DialogUtils {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (labelTitle != null)
-                    Text(
-                      labelTitle,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: "BeVietnam",
-                        color: Color(0xff000000),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                   Align(
                     alignment: Alignment.center,
                     child: Text(
@@ -130,9 +119,9 @@ class DialogUtils {
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: "BeVietnam",
-                        color: Color(0xff1b1e25),
+                        color: Colors.black,
                         fontSize: 16,
-                        fontWeight: FontWeight.w300,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -144,7 +133,7 @@ class DialogUtils {
                           onTap: cancelPressed,
                           borderRadius: BorderRadius.circular(4),
                           child: Container(
-                            height: 38,
+                            height: 40,
                             decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
                               color: const Color(0xffC2C2C2),
@@ -153,10 +142,10 @@ class DialogUtils {
                             child: Center(
                               child: Text(
                                 textAlign: TextAlign.center,
-                                textCancelButton,
+                                textCancelButton.toUpperCase(),
                                 style: const TextStyle(
                                   fontFamily: "BeVietnam",
-                                  fontWeight: FontWeight.w400,
+                                  fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                   fontSize: 15,
                                   height: 1,
@@ -172,7 +161,7 @@ class DialogUtils {
                           onTap: acceptPressed,
                           borderRadius: BorderRadius.circular(4),
                           child: Container(
-                            height: 38,
+                            height: 40,
                             decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
                               color: AppColors.primaryColor,
@@ -181,9 +170,9 @@ class DialogUtils {
                             child: Center(
                               child: Text(
                                 textAlign: TextAlign.center,
-                                textAcceptButton,
+                                textAcceptButton.toUpperCase(),
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.w400,
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                   fontFamily: "BeVietnam",
                                   height: 1,

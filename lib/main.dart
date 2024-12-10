@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -20,13 +23,18 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/address/district
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agencies_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/create_agency_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/delete_agency_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/delete_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/fetch_agencies_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/mboss/presentation/bloc/update_agency_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
@@ -35,6 +43,7 @@ import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.d
 import 'package:mbosswater/go_router.dart';
 import 'features/login/presentation/bloc/login_bloc.dart';
 import 'injection_container.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -95,11 +104,13 @@ void main() async {
   // }
 
   // String data =
-  //     '{"code":"mbosswater","product":{"id":"MLN1009","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model09","seriDow":"SRD09","guaranteeDuration":"24 tháng"}}';
+  //     '{"code":"mbosswater","product":{"id":"MLN10010","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model09","seriDow":"SRD09","guaranteeDuration":"24 tháng"}}';
   //
-  // String dataEncri = EncryptionHelper.encryptData("123456", dotenv.env["SECRET_KEY_QR_CODE"]!);
+  // String dataEncri = EncryptionHelper.encryptData(data, dotenv.env["SECRET_KEY_QR_CODE"]!);
   //
   // print(dataEncri);
+
+  // await updateCustomersWithRandomUpdatedAt();
 
   runApp(
     MultiBlocProvider(
@@ -118,12 +129,17 @@ void main() async {
         BlocProvider(create: (_) => sl<FetchCustomersBloc>()),
         BlocProvider(create: (_) => sl<FetchCustomerBloc>()),
         BlocProvider(create: (_) => sl<AgencyBloc>()),
+        BlocProvider(create: (_) => sl<AgenciesBloc>()),
         BlocProvider(create: (_) => sl<GuaranteeHistoryBloc>()),
         BlocProvider(create: (_) => sl<FetchMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<CreateMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<UpdateMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<DeleteMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<FetchAgencyStaffBloc>()),
+        BlocProvider(create: (_) => sl<FetchAgenciesBloc>()),
+        BlocProvider(create: (_) => CreateAgencyBloc()),
+        BlocProvider(create: (_) => sl<UpdateAgencyBloc>()),
+        BlocProvider(create: (_) => sl<DeleteAgencyBloc>()),
         // For step handling
         BlocProvider(create: (_) => StepBloc(0)),
         BlocProvider(create: (_) => ProductBloc(null)),
@@ -132,11 +148,43 @@ void main() async {
       ],
       child: DevicePreview(
         // enabled: !kReleaseMode,
-        enabled: !kReleaseMode,
+        enabled: false,
         builder: (context) => const MyApp(),
       ),
     ),
   );
+}
+
+Future<void> updateCustomersWithRandomUpdatedAt() async {
+  // Reference đến collection 'customers'
+  final CollectionReference customersRef =
+      FirebaseFirestore.instance.collection('customers');
+
+  // Lấy tất cả các document trong collection
+  final QuerySnapshot snapshot = await customersRef.get();
+
+  // Tạo một đối tượng Random để sinh timestamp ngẫu nhiên
+  final Random random = Random();
+
+  // Duyệt qua từng document
+  for (var doc in snapshot.docs) {
+    // Tạo Timestamp ngẫu nhiên trong khoảng 1 năm trước đến hiện tại
+    final DateTime now = DateTime.now();
+    final DateTime randomDate = now.subtract(Duration(
+        days: random.nextInt(365),
+        hours: random.nextInt(24),
+        minutes: random.nextInt(60)));
+    final Timestamp randomTimestamp = Timestamp.fromDate(randomDate);
+
+    // Cập nhật trường updatedAt
+    await customersRef.doc(doc.id).update({
+      'updatedAt': randomTimestamp,
+    }).catchError((error) {
+      print('Lỗi khi cập nhật document ${doc.id}: $error');
+    });
+  }
+
+  print('Hoàn thành cập nhật updatedAt cho tất cả customers.');
 }
 
 class MyApp extends StatelessWidget {
@@ -144,13 +192,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // NotificationService.showInstantNotification(
-    //   'Welcome to MBossWater',
-    //   'This is an instant notification',
-    // );
     return MaterialApp.router(
       title: 'MBossWater',
-      locale: DevicePreview.locale(context),
+      locale: const Locale('vi', 'VN'),
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('vi', 'VN'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       builder: DevicePreview.appBuilder,
       theme: AppTheme.lightTheme,
       routerConfig: router,

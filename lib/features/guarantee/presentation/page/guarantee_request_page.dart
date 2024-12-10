@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
+import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee_history.dart';
@@ -79,14 +80,19 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
             leading: LeadingBackButton(
               onTap: backToPreviousPage,
             ),
+            title:  Text(
+              "Yêu Cầu Bảo Hành",
+              style: AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
+            ),
+            centerTitle: true,
+            scrolledUnderElevation: 0,
           ),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const buildHeading(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 buildStepper(),
                 Expanded(
                   child: PageView(
@@ -272,7 +278,7 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
     DialogUtils.showConfirmationDialog(
       context: context,
       title:
-          "Các thông tin bạn đang điền sẽ mất đi\nBạn chắc chắn muốn quay lại trang chủ?",
+          "Các thông tin bạn đang điền sẽ mất đi\nBạn chắc chắn muốn quay lại?",
       textCancelButton: "Hủy",
       textAcceptButton: "Xác nhận",
       cancelPressed: () => Navigator.pop(context),
@@ -286,23 +292,4 @@ class _GuaranteeRequestPageState extends State<GuaranteeRequestPage> {
   }
 }
 
-class buildHeading extends StatelessWidget {
-  const buildHeading({
-    super.key,
-  });
 
-  @override
-  Widget build(BuildContext context) {
-    return const Align(
-      alignment: Alignment.center,
-      child: Text(
-        "Yêu Cầu Bảo Hành",
-        style: TextStyle(
-          color: Color(0xff820a1a),
-          fontWeight: FontWeight.w600,
-          fontSize: 22,
-        ),
-      ),
-    );
-  }
-}

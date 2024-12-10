@@ -310,7 +310,7 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: FeatureGridItem(
                     title: "Kích hoạt bảo hành",
-                    subtitle: "Quét mã sản phẩm\tại đây",
+                    subtitle: "Quét mã sản phẩm\ntại đây",
                     assetIcon: AppAssets.icGuarantee,
                     onTap: () {
                       context.push(
@@ -323,8 +323,34 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(width: 20),
                 Expanded(
                   child: FeatureGridItem(
-                    title: "Khách hàng",
-                    subtitle: "Thông tin khách hàng",
+                    title: "Quản lý đại lý",
+                    subtitle: "Quản lý thông tin\nđại lý",
+                    assetIcon: AppAssets.icAgencyManagement,
+                    onTap: () {
+                      context.push('/mboss-agency-management');
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Quản lý nhân viên",
+                    subtitle: "Quản lý thông tin\nnhân viên",
+                    assetIcon: AppAssets.icTeamManagement,
+                    onTap: () {
+                      context.push('/mboss-staff-management');
+                    },
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: FeatureGridItem(
+                    title: "Quản lý khách hàng",
+                    subtitle: "Quản lý thông tin\nkhách hàng",
                     assetIcon: AppAssets.icCustomer,
                     onTap: () {
                       context.push('/customer-list');
@@ -345,18 +371,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(width: 20),
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Quản lý nhân viên",
-                    subtitle: "Quản lý thông tin nhân viên",
-                    assetIcon: AppAssets.icTeamManagement,
-                    onTap: () {
-                      context.push('/mboss-staff-management');
-                    },
-                  ),
-                ),
+                const Spacer(),
               ],
-            ),
+            )
           ],
         );
         break;
@@ -595,6 +612,7 @@ class _HomePageState extends State<HomePage> {
         await FirebaseMessaging.instance.deleteToken();
       }
       await Future.delayed(const Duration(milliseconds: 800));
+      DialogUtils.hide(context);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );

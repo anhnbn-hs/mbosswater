@@ -10,6 +10,7 @@ class AppAssets {
   static const String icPerson = 'assets/icons/ic_person.png';
   static const String icCart = 'assets/icons/ic_cart.png';
   static const String icCSKH = 'assets/icons/ic_cskh.png';
+  static const String icAgencyManagement = 'assets/icons/ic_agency_management.png';
   // Images
   static const String imgBgHome = 'assets/images/img_bg_home.png';
   static const String imgLogo = 'assets/images/img_logo.png';

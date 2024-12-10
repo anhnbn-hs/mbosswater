@@ -33,6 +33,7 @@ class AuthDatasourceImpl extends AuthDatasource {
       final userQuery = await FirebaseFirestore.instance
           .collection('users')
           .where('phoneNumber', isEqualTo: phoneNumber)
+          .where("isDelete", isEqualTo: false)
           .limit(1)
           .get();
 

@@ -6,6 +6,7 @@ class CustomTextField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
   final bool obscureText;
+  
 
   const CustomTextField({
     super.key,
@@ -31,7 +32,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       height: 56,
       padding: const EdgeInsets.only(left: 18, right: 2),
