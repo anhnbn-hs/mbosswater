@@ -1,9 +1,5 @@
-import 'dart:math';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,7 +7,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
-import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
@@ -68,50 +63,6 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Future<void> addMultipleUsers(List<UserModel> users) async {
-  //   try {
-  //     WriteBatch batch = FirebaseFirestore.instance.batch();
-  //
-  //     for (var user in users) {
-  //       DocumentReference docRef = FirebaseFirestore.instance.collection('users').doc(user.id);
-  //       batch.set(docRef, user.toJson());
-  //     }
-  //
-  //     await batch.commit();
-  //   } catch (e) {
-  //     print('Error adding multiple users: $e');
-  //     rethrow;
-  //   }
-  // }
-  //
-  // final newUser = UserModel(
-  //   id: '7fuLmrwukHddTWZvA4ixayphzEs2',
-  //   fullName: 'PTN',
-  //   email: 'phamthuynhi2906@gmail.com',
-  //   address: 'Some address',
-  //   dob: '1990-01-01',
-  //   gender: 'male',
-  //   password: '123456',
-  //   role: 'mboss-technical',
-  //   createdAt: Timestamp.now(),
-  // );
-  //
-  // try {
-  //   await addMultipleUsers([newUser]);
-  //   print('User added successfully!');
-  // } catch (e) {
-  //   print('Error adding user: $e');
-  // }
-
-  // String data =
-  //     '{"code":"mbosswater","product":{"id":"MLN10010","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model09","seriDow":"SRD09","guaranteeDuration":"24 tháng"}}';
-  //
-  // String dataEncri = EncryptionHelper.encryptData(data, dotenv.env["SECRET_KEY_QR_CODE"]!);
-  //
-  // print(dataEncri);
-
-  // await updateCustomersWithRandomUpdatedAt();
-
   runApp(
     MultiBlocProvider(
       providers: [
@@ -153,38 +104,6 @@ void main() async {
       ),
     ),
   );
-}
-
-Future<void> updateCustomersWithRandomUpdatedAt() async {
-  // Reference đến collection 'customers'
-  final CollectionReference customersRef =
-      FirebaseFirestore.instance.collection('customers');
-
-  // Lấy tất cả các document trong collection
-  final QuerySnapshot snapshot = await customersRef.get();
-
-  // Tạo một đối tượng Random để sinh timestamp ngẫu nhiên
-  final Random random = Random();
-
-  // Duyệt qua từng document
-  for (var doc in snapshot.docs) {
-    // Tạo Timestamp ngẫu nhiên trong khoảng 1 năm trước đến hiện tại
-    final DateTime now = DateTime.now();
-    final DateTime randomDate = now.subtract(Duration(
-        days: random.nextInt(365),
-        hours: random.nextInt(24),
-        minutes: random.nextInt(60)));
-    final Timestamp randomTimestamp = Timestamp.fromDate(randomDate);
-
-    // Cập nhật trường updatedAt
-    await customersRef.doc(doc.id).update({
-      'updatedAt': randomTimestamp,
-    }).catchError((error) {
-      print('Lỗi khi cập nhật document ${doc.id}: $error');
-    });
-  }
-
-  print('Hoàn thành cập nhật updatedAt cho tất cả customers.');
 }
 
 class MyApp extends StatelessWidget {
