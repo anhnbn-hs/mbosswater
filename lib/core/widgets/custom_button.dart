@@ -4,14 +4,12 @@ import 'package:mbosswater/core/styles/app_colors.dart';
 class CustomButton extends StatelessWidget {
   final VoidCallback onTap;
   final String textButton;
-  double? height;
   BorderRadius? borderRadius;
 
   CustomButton({
     super.key,
     required this.onTap,
     required this.textButton,
-    this.height = 56,
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
   });
 
@@ -22,7 +20,7 @@ class CustomButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: borderRadius,
         child: Ink(
-          height: height,
+          height: 50,
           width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.primaryColor,

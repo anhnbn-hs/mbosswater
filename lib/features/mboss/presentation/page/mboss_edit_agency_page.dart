@@ -8,6 +8,7 @@ import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/core/widgets/text_field_label_item.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/delete_agency_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_agencies_bloc.dart';
@@ -94,7 +95,7 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 18),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -106,21 +107,31 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              BoxFieldItem(
-                hintValue: "Tên đại lý",
+              const SizedBox(height: 16),
+              TextFieldLabelItem(
+                label: "Mã đại lý",
+                hint: "Mã đại lý",
+                isRequired: false,
+                isEnable: false,
+                controller: TextEditingController(text: agency.code),
+              ),
+              const SizedBox(height: 12),
+              TextFieldLabelItem(
+                label: "Tên đại lý",
+                hint: "Tên đại lý",
                 isRequired: true,
                 controller: agencyNameController,
                 focusNode: agencyNameFocusNode,
               ),
-              const SizedBox(height: 20),
-              BoxFieldItem(
-                hintValue: "Địa chỉ",
+              const SizedBox(height: 12),
+              TextFieldLabelItem(
+                label: "Địa chỉ",
+                hint: "Địa chỉ",
                 isRequired: true,
                 controller: agencyAddressController,
                 focusNode: agencyAddressFocusNode,
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -132,7 +143,7 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               FutureBuilder(
                 future: fetchAgenciesBloc.fetchAdminOfAgency(widget.agency.id),
                 builder: (context, snapshot) {
@@ -154,23 +165,29 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
                     agencyBossEmailController.text = agencyAdmin?.email ?? "";
                     return Column(
                       children: [
-                        BoxFieldItem(
-                          hintValue: "Họ và tên",
+                        TextFieldLabelItem(
+                          label: "Họ và tên",
+                          hint: "Họ và tên",
                           isRequired: true,
                           controller: agencyBossNameController,
                           focusNode: agencyBossNameFocusNode,
+                          formatter: [
+                            FilteringTextInputFormatter.deny(RegExp(r'\d'))
+                          ],
                         ),
-                        const SizedBox(height: 20),
-                        BoxFieldItem(
-                          hintValue: "Số điện thoại",
+                        const SizedBox(height: 12),
+                        TextFieldLabelItem(
+                          label: "Số điện thoại",
+                          hint: "Số điện thoại",
                           isRequired: true,
                           controller: agencyBossPhoneController,
                           focusNode: agencyBossPhoneFocusNode,
                           formatter: [FilteringTextInputFormatter.digitsOnly],
                         ),
-                        const SizedBox(height: 20),
-                        BoxFieldItem(
-                          hintValue: "Email",
+                        const SizedBox(height: 12),
+                        TextFieldLabelItem(
+                          label: "Email",
+                          hint: "Email",
                           isRequired: false,
                           controller: agencyBossEmailController,
                         ),
@@ -181,7 +198,7 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
                   }
                 },
               ),
-              const SizedBox(height: 56),
+              const SizedBox(height: 28),
               Row(
                 children: [
                   const SizedBox(width: 16),
@@ -367,7 +384,7 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
   handleDeleteStaff() async {
     DialogUtils.showConfirmationDialog(
       context: context,
-      title: "Bạn chắc chắn muốn xoá đại lý này ?",
+      title: "Bạn chắc chắn muốn xoá đại lý này?",
       textCancelButton: "HỦY",
       textAcceptButton: "XÁC NHẬN",
       cancelPressed: () => Navigator.pop(context),

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/constants.dart';
 import 'package:mbosswater/core/constants/roles.dart';
@@ -19,6 +20,7 @@ import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/core/widgets/text_field_label_item.dart';
 import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
@@ -174,100 +176,103 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
             body: Column(
               children: [
                 const SizedBox(height: 10),
-
-                BlocBuilder<FetchAgenciesBloc, List<Agency>>(
-                  bloc: fetchAgenciesBloc,
-                  builder: (context, state) {
-                    if (fetchAgenciesBloc.isLoading) {
-                      return Expanded(
-                        child: ListView.builder(
-                          itemCount: 8,
-                          itemBuilder: (context, index) => Container(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 5,
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: BlocBuilder<FetchAgenciesBloc, List<Agency>>(
+                      bloc: fetchAgenciesBloc,
+                      builder: (context, state) {
+                        if (fetchAgenciesBloc.isLoading) {
+                          return Expanded(
+                            child: ListView.builder(
+                              itemCount: 8,
+                              itemBuilder: (context, index) => Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 5,
+                                ),
+                                child: const CustomerCardShimmer(),
+                              ),
                             ),
-                            child: const CustomerCardShimmer(),
-                          ),
-                        ),
-                      );
-                    }
-
-                    if (!fetchAgenciesBloc.isLoading && state.isNotEmpty) {
-                      List<Agency> agencyOriginal =
-                          fetchAgenciesBloc.getAgenciesOriginal;
-                      List<Agency> agencyFiltered =
-                          List.from(state); // Initialize with search result
-
-                      // Apply sort filter
-                      if (selectedSortFilter.value != null) {
-                        if (selectedSortFilter.value == "Mới nhất") {
-                          agencyFiltered.sort((a, b) => b.createdAt
-                              .toDate()
-                              .compareTo(a.createdAt.toDate()));
-                        } else {
-                          agencyFiltered.sort((a, b) => a.createdAt
-                              .toDate()
-                              .compareTo(b.createdAt.toDate()));
+                          );
                         }
-                      }
 
-                      // Apply date filter
-                      if (selectedDateFilter.value != null) {
-                        final now = DateTime.now()
-                            .toUtc()
-                            .add(const Duration(hours: 7));
-                        if (selectedDateFilter.value ==
-                            filterByDateItems.first) {
-                          agencyFiltered = agencyFiltered.where((item) {
-                            final createdAt = item.createdAt.toDate();
-                            return createdAt.year == now.year &&
-                                createdAt.month == now.month;
-                          }).toList();
-                        } else if (selectedDateFilter.value ==
-                            filterByDateItems.elementAt(1)) {
-                          final last30Days =
-                              now.subtract(const Duration(days: 30));
-                          agencyFiltered = agencyFiltered.where((item) {
-                            final createdAt = item.createdAt.toDate();
-                            return createdAt.isAfter(last30Days) &&
-                                createdAt.isBefore(now);
-                          }).toList();
-                        } else if (selectedDateFilter.value ==
-                            filterByDateItems.elementAt(2)) {
-                          final last90Days =
-                              now.subtract(const Duration(days: 90));
-                          agencyFiltered = agencyFiltered.where((item) {
-                            final createdAt = item.createdAt.toDate();
-                            return createdAt.isAfter(last90Days) &&
-                                createdAt.isBefore(now);
-                          }).toList();
-                        } else if (selectedDateFilter.value ==
-                            filterByDateItems.elementAt(3)) {
-                          agencyFiltered = agencyFiltered.where((item) {
-                            final createdAt = item.createdAt.toDate();
-                            return createdAt.year == now.year;
-                          }).toList();
+                        if (!fetchAgenciesBloc.isLoading && state.isNotEmpty) {
+                          List<Agency> agencyOriginal =
+                              fetchAgenciesBloc.getAgenciesOriginal;
+                          List<Agency> agencyFiltered =
+                              List.from(state); // Initialize with search result
+
+                          // Apply sort filter
+                          if (selectedSortFilter.value != null) {
+                            if (selectedSortFilter.value == "Mới nhất") {
+                              agencyFiltered.sort((a, b) => b.createdAt
+                                  .toDate()
+                                  .compareTo(a.createdAt.toDate()));
+                            } else {
+                              agencyFiltered.sort((a, b) => a.createdAt
+                                  .toDate()
+                                  .compareTo(b.createdAt.toDate()));
+                            }
+                          }
+
+                          // Apply date filter
+                          if (selectedDateFilter.value != null) {
+                            final now = DateTime.now()
+                                .toUtc()
+                                .add(const Duration(hours: 7));
+                            if (selectedDateFilter.value ==
+                                filterByDateItems.elementAt(1)) {
+                              agencyFiltered = agencyFiltered.where((item) {
+                                final createdAt = item.createdAt.toDate();
+                                return createdAt.year == now.year &&
+                                    createdAt.month == now.month;
+                              }).toList();
+                            } else if (selectedDateFilter.value ==
+                                filterByDateItems.elementAt(2)) {
+                              final last30Days =
+                                  now.subtract(const Duration(days: 30));
+                              agencyFiltered = agencyFiltered.where((item) {
+                                final createdAt = item.createdAt.toDate();
+                                return createdAt.isAfter(last30Days) &&
+                                    createdAt.isBefore(now);
+                              }).toList();
+                            } else if (selectedDateFilter.value ==
+                                filterByDateItems.elementAt(3)) {
+                              final last90Days =
+                                  now.subtract(const Duration(days: 90));
+                              agencyFiltered = agencyFiltered.where((item) {
+                                final createdAt = item.createdAt.toDate();
+                                return createdAt.isAfter(last90Days) &&
+                                    createdAt.isBefore(now);
+                              }).toList();
+                            } else if (selectedDateFilter.value ==
+                                filterByDateItems.elementAt(4)) {
+                              agencyFiltered = agencyFiltered.where((item) {
+                                final createdAt = item.createdAt.toDate();
+                                return createdAt.year == now.year;
+                              }).toList();
+                            }
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: ListView.builder(
+                              itemCount: agencyFiltered.length,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 22),
+                                  child: buildAgencyBox(agencyFiltered[index]),
+                                );
+                              },
+                            ),
+                          );
                         }
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: ListView.builder(
-                          itemCount: agencyFiltered.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 22),
-                              child: buildAgencyBox(agencyFiltered[index]),
-                            );
-                          },
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
                 ),
 
                 // Listener for create
@@ -380,17 +385,32 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
         ),
         child: Column(
           children: [
-            Align(
-              alignment: FractionalOffset.centerLeft,
-              child: Text(
-                agency.name,
-                style: const TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Color(0xff820a1a),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    agency.name,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontFamily: "BeVietnam",
+                      color: Color(0xff820a1a),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Text(
+                  DateFormat("dd/MM/yyyy").format(agency.createdAt.toDate()),
+                  style: const TextStyle(
+                    fontFamily: "BeVietnam",
+                    color: Color(0xff820a1a),
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             buildRowInfoItem(
@@ -449,7 +469,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: '',
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
       pageBuilder: (BuildContext context, _, __) {
         return Container(
           alignment: Alignment.bottomCenter,
@@ -458,104 +478,105 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
             child: Container(
               width: double.infinity,
               height: MediaQuery.of(context).size.height - 70,
-              padding: const EdgeInsets.only(bottom: 50, top: 10),
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Stack(
+              child: Column(
                 children: [
-                  SingleChildScrollView(
-                    padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewInsets.bottom,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 10),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              "Thông Tin Đại Lý",
-                              style: AppStyle.heading2.copyWith(
-                                color: AppColors.appBarTitleColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 22,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 23),
-                          BoxFieldItem(
-                            hintValue: "Tên đại lý",
-                            isRequired: true,
-                            controller: agencyNameController,
-                            focusNode: agencyNameFocusNode,
-                          ),
-                          const SizedBox(height: 23),
-                          BoxFieldItem(
-                            hintValue: "Địa chỉ chi tiết",
-                            isRequired: true,
-                            controller: agencyAddressController,
-                            focusNode: agencyAddressFocusNode,
-                          ),
-                          const SizedBox(height: 23),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              "Thông Tin Chủ Đại Lý",
-                              style: AppStyle.heading2.copyWith(
-                                color: AppColors.appBarTitleColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 22,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 23),
-                          BoxFieldItem(
-                            hintValue: "Họ và tên",
-                            isRequired: true,
-                            controller: agencyBossNameController,
-                            focusNode: agencyBossNameFocusNode,
-                          ),
-                          const SizedBox(height: 23),
-                          BoxFieldItem(
-                            hintValue: "Số điện thoại",
-                            isRequired: true,
-                            controller: agencyBossPhoneController,
-                            focusNode: agencyBossPhoneFocusNode,
-                            keyboardType: TextInputType.phone,
-                            formatter: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                          ),
-                          const SizedBox(height: 23),
-                          BoxFieldItem(
-                            hintValue: "Email",
-                            isRequired: false,
-                            controller: agencyBossEmailController,
-                          ),
-                          const SizedBox(height: 36),
-                          CustomButton(
-                            onTap: () async => handleCreateAgency(),
-                            height: 40,
-                            textButton: "THÊM ĐẠI LÝ",
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 4,
-                    right: 4,
+                  Container(
+                    alignment: Alignment.centerRight,
                     child: IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: Icon(
                         Icons.clear,
                         color: AppColors.primaryColor,
-                        size: 32,
+                        size: 26,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                "Thông Tin Đại Lý",
+                                style: AppStyle.heading2.copyWith(
+                                  color: AppColors.appBarTitleColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 22,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 23),
+                            TextFieldLabelItem(
+                              label: "Tên đại lý",
+                              hint: "Tên đại lý",
+                              isRequired: true,
+                              controller: agencyNameController,
+                              focusNode: agencyNameFocusNode,
+                            ),
+                            const SizedBox(height: 12),
+                            TextFieldLabelItem(
+                              label: "Địa chỉ chi tiết",
+                              hint: "Địa chỉ chi tiết",
+                              isRequired: true,
+                              controller: agencyAddressController,
+                              focusNode: agencyAddressFocusNode,
+                            ),
+                            const SizedBox(height: 23),
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                "Thông Tin Chủ Đại Lý",
+                                style: AppStyle.heading2.copyWith(
+                                  color: AppColors.appBarTitleColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 22,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 23),
+                            TextFieldLabelItem(
+                              label: "Họ và tên",
+                              hint: "Họ và tên",
+                              isRequired: true,
+                              controller: agencyBossNameController,
+                              focusNode: agencyBossNameFocusNode,
+                            ),
+                            const SizedBox(height: 12),
+                            TextFieldLabelItem(
+                              label: "Số điện thoại",
+                              hint: "Số điện thoại",
+                              isRequired: true,
+                              controller: agencyBossPhoneController,
+                              focusNode: agencyBossPhoneFocusNode,
+                              inputType: TextInputType.phone,
+                              formatter: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            TextFieldLabelItem(
+                              label: "Email",
+                              hint: "Email",
+                              isRequired: false,
+                              controller: agencyBossEmailController,
+                            ),
+                            const SizedBox(height: 28),
+                            CustomButton(
+                              onTap: () async => handleCreateAgency(),
+                              textButton: "THÊM ĐẠI LÝ",
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

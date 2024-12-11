@@ -664,7 +664,6 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           const SizedBox(height: 36),
                           CustomButton(
                             onTap: () async => handleCreateStaff(),
-                            height: 40,
                             textButton: "TẠO TÀI KHOẢN",
                           )
                         ],

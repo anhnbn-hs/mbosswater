@@ -101,8 +101,8 @@ class DialogUtils {
               height: 190,
               width: double.infinity,
               padding: const EdgeInsets.symmetric(
-                vertical: 24,
-                horizontal: 28,
+                vertical: 16,
+                horizontal: 16,
               ),
               decoration: BoxDecoration(
                 color: Colors.white,

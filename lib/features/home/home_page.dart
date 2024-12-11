@@ -93,14 +93,18 @@ class _HomePageState extends State<HomePage> {
                       onTap: () {
                         context.push("/notification");
                       },
-                      child: const CircleAvatar(
+                      child: const Badge(
+                        smallSize: 12,
+                        child: CircleAvatar(
                           backgroundColor: Color(0xff3F689D),
-                          radius: 24,
+                          radius: 22,
                           child: Icon(
                             Icons.notifications,
                             color: Colors.white,
-                            size: 30,
-                          )),
+                            size: 24,
+                          ),
+                        ),
+                      ),
                     )
                   ],
                 ),

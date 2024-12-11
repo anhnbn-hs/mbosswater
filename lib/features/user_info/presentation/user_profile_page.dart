@@ -7,6 +7,7 @@ import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/widgets/box_label_item.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
@@ -71,16 +72,43 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   if (state is UserInfoLoaded) {
                     return Column(
                       children: [
-                        const SizedBox(height: 36),
-                        buildBoxInfoItem(value: state.user.fullName ?? ""),
-                        buildBoxInfoItem(value: state.user.phoneNumber ?? ""),
-                        buildBoxInfoItem(
-                            value: getRoleName(state.user.role ?? "")),
+                        const SizedBox(height: 20),
+                        BoxLabelItem(
+                          label: "Họ và tên",
+                          fieldValue: state.user.fullName ?? "",
+                        ),
+                        const SizedBox(height: 16),
+                        BoxLabelItem(
+                          label: "Số điện thoại",
+                          fieldValue: state.user.phoneNumber ?? "",
+                        ),
+                        const SizedBox(height: 16),
+                        BoxLabelItem(
+                          label: "Chức vụ",
+                          fieldValue: getRoleName(state.user.role ?? ""),
+                        ),
+                        const SizedBox(height: 16),
                         if (state.user.agency != null && agency != null)
-                          buildBoxInfoItem(value: agency.name),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: BoxLabelItem(
+                              label: "Đại lý",
+                              fieldValue: agency.name,
+                            ),
+                          ),
                         if (state.user.agency != null && agency != null)
-                          buildBoxInfoItem(value: state.user.address ?? ""),
-                        buildBoxInfoItem(value: state.user.email),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: BoxLabelItem(
+                              label: "Địa chỉ",
+                              fieldValue: agency.address,
+                            ),
+                          ),
+                        if (state.user.email != null)
+                          BoxLabelItem(
+                            label: "Email",
+                            fieldValue: state.user.email,
+                          ),
                         const SizedBox(height: 40),
                         CustomButton(
                           onTap: () {
@@ -118,32 +146,5 @@ class _UserProfilePageState extends State<UserProfilePage> {
       return "Nhân viên";
     }
     return "";
-  }
-
-  Container buildBoxInfoItem({required String value}) {
-    return Container(
-      height: 42,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      margin: const EdgeInsets.only(bottom: 26),
-      decoration: BoxDecoration(
-        color: const Color(0xffF5F5F5),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xffD9D9D9),
-        ),
-      ),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          value,
-          style: AppStyle.boxField.copyWith(
-            color: const Color((0xffB3B3B3)),
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-          ),
-        ),
-      ),
-    );
   }
 }

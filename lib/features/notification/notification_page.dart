@@ -124,7 +124,7 @@ class NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat("hh:mm - dd/MM/yyyy").format(
+    final dateFormat = DateFormat("HH:mm - dd/MM/yyyy").format(
       dateTime.toUtc().add(
             const Duration(hours: 7),
           ),

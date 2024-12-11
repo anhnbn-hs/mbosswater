@@ -9,6 +9,7 @@ import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
+import 'package:mbosswater/core/widgets/box_label_item.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
@@ -60,33 +61,33 @@ class ProductInfoStepState extends State<ProductInfoStep>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildBoxItem(
+            BoxLabelItem(
               label: "Tên sản phẩm",
               fieldValue: "Máy Lọc Nước Tạo Kiềm MBossWater",
             ),
             const SizedBox(height: 12),
-            buildBoxItem(
+            BoxLabelItem(
               label: "Model máy",
               fieldValue: widget.product?.model ?? "",
             ),
             const SizedBox(height: 12),
-            buildBoxItem(
+            BoxLabelItem(
               label: "Seri màng lọc Dow",
               fieldValue: widget.product?.seriDow ?? "",
             ),
             const SizedBox(height: 12),
-            buildBoxItem(
+            BoxLabelItem(
               label: "Ngày bắt đầu bảo hành",
               fieldValue: DateFormat("dd/MM/yyyy").format(now),
               icon: Icons.calendar_month,
             ),
             const SizedBox(height: 12),
-            buildBoxItem(
+            BoxLabelItem(
               label: "Thời gian bảo hành",
               fieldValue: widget.product?.guaranteeDuration ?? "Không xác định",
             ),
             const SizedBox(height: 12),
-            buildBoxItem(
+            BoxLabelItem(
               label: "Ngày kết thúc bảo hành",
               fieldValue: endDateFormatted,
               icon: Icons.calendar_month,
@@ -94,13 +95,12 @@ class ProductInfoStepState extends State<ProductInfoStep>
             const SizedBox(height: 12),
             buildAgencyBox(),
             const SizedBox(height: 12),
-            buildBoxItem(
+            BoxLabelItem(
               label: "Nhân viên bán hàng",
               fieldValue: userInfoBloc.user!.fullName!,
             ),
             const SizedBox(height: 40),
             CustomButton(
-              height: 56,
               onTap: () {
                 bool isAgency = Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role);
                 if(!isAgency && agencyBloc.selectedAgency == null){
@@ -131,7 +131,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
           if (state is AgencyLoaded) {
             agency = state.agency.name;
           }
-          return buildBoxItem(
+          return BoxLabelItem(
             label: "Đại lý",
             fieldValue: agency,
           );
@@ -190,53 +190,6 @@ class ProductInfoStepState extends State<ProductInfoStep>
     );
   }
 
-  Widget buildBoxItem({
-    required String label,
-    required String fieldValue,
-    IconData? icon,
-  }) {
-    return Column(
-      children: [
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Text(
-            label,
-            style: AppStyle.boxFieldLabel,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          height: 38,
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-            color: const Color(0xffF6F6F6),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  fieldValue,
-                  style: AppStyle.boxField.copyWith(),
-                  maxLines: 2,
-                ),
-              ),
-              icon != null
-                  ? Icon(
-                      icon,
-                      size: 20,
-                      color: Colors.grey,
-                    )
-                  : const SizedBox.shrink()
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
   @override
   bool get wantKeepAlive => true;

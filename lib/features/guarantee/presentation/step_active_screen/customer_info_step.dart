@@ -1,5 +1,6 @@
 // Step 2: Customer Information
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -9,6 +10,7 @@ import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
+import 'package:mbosswater/core/widgets/text_field_label_item.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_state.dart';
@@ -181,7 +183,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                   children: [
                     buildTextFieldVerifyPhoneItem(
                       label: "Số điện thoại",
-                      hint: "SĐT",
+                      hint: "Số điện thoại",
                       textButton: "GỬI MÃ",
                       isPhoneField: true,
                       onTap: () {
@@ -214,7 +216,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     const SizedBox(height: 20),
                     buildTextFieldVerifyPhoneItem(
                       label: "Nhập mã OTP",
-                      hint: "",
+                      hint: "Nhập mã OTP",
                       textButton: "XÁC NHẬN",
                       isPhoneField: false,
                       onTap: () async => verifyOTP(),
@@ -250,7 +252,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                         if (value == false) return const SizedBox.shrink();
                         return Column(
                           children: [
-                            buildTextFieldItem(
+                            TextFieldLabelItem(
                               isEnable: customer == null,
                               label: "Họ và tên khách hàng",
                               hint: "Nhập họ tên khách hàng",
@@ -310,7 +312,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                                 );
                               },
                             ),
-                            buildTextFieldItem(
+                            TextFieldLabelItem(
                               label: "",
                               hint: "Địa chỉ chi tiết",
                               isEnable: customer == null,
@@ -319,7 +321,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                               isRequired: false,
                             ),
                             const SizedBox(height: 20),
-                            buildTextFieldItem(
+                            TextFieldLabelItem(
                               label: "Email",
                               hint: "Email",
                               isEnable: customer == null,
@@ -377,7 +379,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
         }
       },
       child: Container(
-        height: 38,
+        height: 40,
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         alignment: Alignment.centerLeft,
@@ -396,9 +398,15 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                 text: TextSpan(
                   text: label,
                   style: AppStyle.boxField.copyWith(
-                    color: const Color(0xff828282),
+                    color:
+                        ["Tỉnh/TP", "Quận/Huyện", "Phường/Xã"].contains(label)
+                            ? const Color(0xff828282)
+                            : Colors.black87,
+                    fontSize:
+                        ["Tỉnh/TP", "Quận/Huyện", "Phường/Xã"].contains(label)
+                            ? 15
+                            : 15,
                     fontWeight: FontWeight.w400,
-                    fontSize: ["Tỉnh/TP", "Quận/Huyện", "Phường/Xã"].contains(label) ? 11 : 12,
                   ),
                   children: [
                     if (["Tỉnh/TP", "Quận/Huyện", "Phường/Xã"].contains(label))
@@ -457,7 +465,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
         ),
         const SizedBox(height: 12),
         Container(
-          height: 38,
+          height: 40,
           width: double.infinity,
           padding: const EdgeInsets.only(left: 12),
           alignment: Alignment.centerLeft,
@@ -478,19 +486,25 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     onTapOutSide(controller.text);
                   },
                   keyboardType: inputType,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   focusNode: focusNode,
-                  style: AppStyle.boxField.copyWith(),
+                  style: AppStyle.boxField.copyWith(
+                    color: Colors.black87,
+                    fontSize: 15,
+                  ),
                   decoration: InputDecoration(
                     border: const UnderlineInputBorder(
                       borderSide: BorderSide.none,
                     ),
                     hintText: hint,
                     hintStyle: AppStyle.boxField.copyWith(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 12,
-                        color: const Color(0xff828282)),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      color: const Color(0xff828282),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    isCollapsed: true,
                   ),
+                  textAlignVertical: TextAlignVertical.center,
                   cursorColor: Colors.grey,
                 ),
               ),
@@ -520,76 +534,6 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                 },
               ),
             ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildTextFieldItem({
-    required String label,
-    required String hint,
-    bool isRequired = true,
-    bool isEnable = true,
-    FocusNode? focusNode,
-    TextInputType inputType = TextInputType.text,
-    required TextEditingController controller,
-  }) {
-    return Column(
-      children: [
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: label != ""
-              ? Row(
-                  children: [
-                    Text(
-                      label,
-                      style: AppStyle.boxFieldLabel,
-                    ),
-                    isRequired
-                        ? Text(
-                            " * ",
-                            style: AppStyle.boxFieldLabel.copyWith(
-                              color: AppColors.primaryColor,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ],
-                )
-              : const SizedBox.shrink(),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          height: 38,
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-            color: !isEnable ? Colors.grey.shade200 : null,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xffBDBDBD),
-            ),
-          ),
-          child: TextFormField(
-            controller: controller,
-            keyboardType: inputType,
-            focusNode: focusNode,
-            enabled: isEnable,
-            style: AppStyle.boxField.copyWith(),
-            decoration: InputDecoration(
-              border: const UnderlineInputBorder(
-                borderSide: BorderSide.none,
-              ),
-              hintText: hint,
-              hintStyle: AppStyle.boxField.copyWith(
-                color: const Color(0xff828282),
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-            cursorColor: Colors.grey,
           ),
         ),
       ],

@@ -9,7 +9,7 @@ class BoxSelectNumber extends StatelessWidget {
   });
 
   final String hint;
-  final ValueNotifier<int> numberNotifier;
+  final ValueNotifier<int?> numberNotifier;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class BoxSelectNumber extends StatelessWidget {
       valueListenable: numberNotifier,
       builder: (context, value, child) {
         return Container(
-          height: 38,
+          height: 40,
           decoration: BoxDecoration(
             border: Border.all(color: const Color(0xffBDBDBD)),
             borderRadius: BorderRadius.circular(8),
@@ -29,19 +29,28 @@ class BoxSelectNumber extends StatelessWidget {
             color: Colors.white,
             elevation: 1,
             style: ButtonStyle(
-              textStyle: WidgetStatePropertyAll(AppStyle.boxField),
+              textStyle: WidgetStatePropertyAll(
+                AppStyle.boxField.copyWith(
+                  color: Colors.black87,
+                  fontSize: 15,
+                ),
+              ),
             ),
             onSelected: (value) {
               numberNotifier.value = int.parse(value);
             },
             itemBuilder: (BuildContext context) {
-              return List.generate(10, (index) =>(index++ + 1).toString()).map((value) {
+              return List.generate(10, (index) => (index++ + 1).toString())
+                  .map((value) {
                 return PopupMenuItem<String>(
                   value: value,
-                  height: 38,
+                  height: 40,
                   child: Text(
                     value,
-                    style: AppStyle.boxField,
+                    style: AppStyle.boxField.copyWith(
+                      color: Colors.black87,
+                      fontSize: 15,
+                    ),
                   ),
                 );
               }).toList();
@@ -53,7 +62,13 @@ class BoxSelectNumber extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(value.toString()),
+                    child: Text(
+                      value == null ? hint : value.toString(),
+                      style: AppStyle.boxField.copyWith(
+                        color: value == null ? Colors.grey : Colors.black87,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
                   const Icon(
                     Icons.arrow_drop_down,

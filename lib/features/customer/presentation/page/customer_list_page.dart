@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
@@ -33,6 +33,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
   late AgenciesBloc agenciesBloc;
 
   final List<String> dropdownTimeItems = [
+    'Tất cả',
     'Tháng này',
     '30 ngày gần đây',
     '90 ngày gần đây',
@@ -109,7 +110,12 @@ class _CustomerListPageState extends State<CustomerListPage> {
                     bloc: agenciesBloc,
                     builder: (context, state) {
                       if (state is AgenciesLoaded) {
-                        dropdownAgenciesItems = state.agencies;
+                        dropdownAgenciesItems.clear();
+                        dropdownAgenciesItems = List.from(state.agencies);
+                        dropdownAgenciesItems.insert(
+                          0,
+                          Agency("", "", "Tất cả", "", Timestamp.now(), false),
+                        );
                         return FilterDropdownAgency(
                           onChanged: (value) {
                             setState(() {
@@ -334,11 +340,13 @@ class _CustomerListPageState extends State<CustomerListPage> {
 
       // 2. Filter by agency
       final matchesAgency = selectedAgencyFilter.value == null ||
+          selectedAgencyFilter.value?.id == "" || // "Tất cả"
           customer.customer.agency == selectedAgencyFilter.value?.id;
 
       // 3. Filter by time
       final matchesTime = () {
-        if (selectedTimeFilter.value == null) return true;
+        if (selectedTimeFilter.value == null ||
+            selectedTimeFilter.value == "Tất cả") return true;
         DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
         DateTime? updatedAt = customer.customer.updatedAt?.toDate();
 
@@ -440,15 +448,16 @@ class _SearchFieldState extends State<SearchField> {
         color: Color(0xff3C3C43),
       ),
       decoration: InputDecoration(
-          border: const UnderlineInputBorder(borderSide: BorderSide.none),
-          hintText: 'Tìm kiếm khách hàng',
-          hintStyle: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            fontFamily: 'BeVietNam',
-            color: Colors.grey.shade500,
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 11)),
+        border: const UnderlineInputBorder(borderSide: BorderSide.none),
+        hintText: 'Tìm kiếm khách hàng',
+        hintStyle: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          fontFamily: 'BeVietNam',
+          color: Colors.grey.shade500,
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+      ),
     );
   }
 }

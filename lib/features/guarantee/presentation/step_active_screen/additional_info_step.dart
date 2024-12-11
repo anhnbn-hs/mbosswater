@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
+import 'package:mbosswater/core/widgets/text_field_label_item.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/widgets/box_select_number.dart';
@@ -29,8 +30,8 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
   final TextEditingController phController = TextEditingController();
 
   // Value notifier
-  ValueNotifier<int> adultNumber = ValueNotifier(0);
-  ValueNotifier<int> childNumber = ValueNotifier(0);
+  ValueNotifier<int?> adultNumber = ValueNotifier(null);
+  ValueNotifier<int?> childNumber = ValueNotifier(null);
   ValueNotifier<int> waterQuantityNumber = ValueNotifier(5);
 
   @override
@@ -101,38 +102,13 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            "Độ pH",
-            style: AppStyle.boxFieldLabel,
-          ),
           const SizedBox(height: 16),
-          Container(
-            height: 38,
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            alignment: Alignment.centerLeft,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xffBDBDBD),
-              ),
-            ),
-            child: TextField(
-              controller: phController,
-              keyboardType: TextInputType.number,
-              style: AppStyle.boxField.copyWith(),
-              decoration: InputDecoration(
-                border: const UnderlineInputBorder(
-                  borderSide: BorderSide.none,
-                ),
-                hintStyle: AppStyle.boxField.copyWith(
-                  fontStyle: FontStyle.italic,
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              cursorColor: Colors.grey,
-            ),
+          TextFieldLabelItem(
+            label: "Độ pH",
+            hint: "Độ pH",
+            isRequired: false,
+            controller: phController,
+            inputType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 12),
           const SizedBox(height: 50),
@@ -155,9 +131,10 @@ class AdditionalInfoStepState extends State<AdditionalInfoStep>
               }
 
               additionalInfoBloc.emitAdditionalInfo(AdditionalInfo(
-                adultNumber: adultNumber.value != 0 ? adultNumber.value : null,
-                childNumber: childNumber.value != 0 ? childNumber.value : null,
+                adultNumber: adultNumber.value ?? 0,
+                childNumber: childNumber.value ?? 0,
                 pH: pH,
+                waterQuantity: waterQuantityNumber.value,
               ));
               widget.onNextStep();
             },

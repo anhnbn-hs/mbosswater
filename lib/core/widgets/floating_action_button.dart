@@ -20,7 +20,7 @@ class CustomFloatingActionButton extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(8),
           child: Ink(
-            height: 56,
+            height: 50,
             decoration: BoxDecoration(
               color: AppColors.primaryColor,
               borderRadius: BorderRadius.circular(8),

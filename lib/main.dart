@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
+import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
@@ -64,7 +65,12 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // await NotificationService.showInstantNotification(title: "Thông báo kích hoạt bảo hành thành công", body: "1 khách hàng đã được kích hoạt bảo hành thành công tại đại lý của bạn. Nhân viên phụ trách: Kỹ thuật viên Nguyễn Văn Minh ", detail: "1 khách hàng đã được kích hoạt bảo hành thành công tại đại lý của bạn\nNhân viên phụ trách: Kỹ thuật viên Nguyễn Văn Minh ");
+  // String data =
+  //     '{"code":"mbosswater","product":{"id":"MLN10019","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model11","seriDow":"SRD09","guaranteeDuration":"12 tháng"}}';
+  //
+  // String dataEncri = EncryptionHelper.encryptData(data, dotenv.env["SECRET_KEY_QR_CODE"]!);
+  //
+  // print(dataEncri);
 
   runApp(
     MultiBlocProvider(
