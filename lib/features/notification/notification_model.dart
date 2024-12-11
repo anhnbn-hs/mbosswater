@@ -30,4 +30,13 @@ class NotificationModel {
     );
   }
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'message': message,
+      'isRead': isRead,
+      'actionUrl': actionUrl,
+      'createdAt': createdAt,
+    };
+  }
 }

@@ -29,6 +29,22 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
+  // Add a new notification
+  Future<void> addNotification(String userId, NotificationModel notification) async {
+    try {
+      final notificationData = notification.toFirestore();
+
+      await _firestore
+          .collection('notifications')
+          .doc(userId)
+          .collection('userNotifications')
+          .add(notificationData);
+
+    } catch (e) {
+      emit(NotificationError('Failed to add notification'));
+    }
+  }
+
   // Update the 'isRead' field for a notification
   Future<void> updateNotificationStatus(String userId, String notificationId) async {
     try {

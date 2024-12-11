@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
 import 'package:mbosswater/features/notification/notification_cubit.dart';
 import 'package:mbosswater/features/notification/notification_state.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
@@ -52,10 +53,42 @@ class _NotificationPageState extends State<NotificationPage> {
     return BlocBuilder<NotificationCubit, NotificationState>(
       builder: (context, state) {
         if (state is NotificationLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return ListView.builder(
+            itemCount: 8,
+            itemBuilder: (context, index) => Container(
+              margin: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 5,
+              ),
+              child: const CustomerCardShimmer(),
+            ),
+          );
         }
 
-        if(state is NotificationLoaded){
+        if (state is NotificationLoaded) {
+          if (state.notifications.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    size: 46,
+                    color: Colors.grey,
+                  ),
+                  Text(
+                    "Bạn chưa có thông báo nào",
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: "BeVietnam",
+                    ),
+                  )
+                ],
+              ),
+            );
+          }
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: ListView.builder(
@@ -91,12 +124,16 @@ class NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat("hh:mm - dd/MM/yyyy").format(dateTime);
+    final dateFormat = DateFormat("hh:mm - dd/MM/yyyy").format(
+      dateTime.toUtc().add(
+            const Duration(hours: 7),
+          ),
+    );
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
-        vertical: 6,
+        vertical: 10,
       ),
       decoration: BoxDecoration(
         color: const Color(0xffFAFAFA),

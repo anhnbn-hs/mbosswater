@@ -5,9 +5,105 @@ const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 
 const admin = require("firebase-admin");
 
+async function sendNotificationToAgencyAdmin(agencyID, guaranteeId, technicalName) {
+    const agencyAdminSnapshot = await admin.firestore().collection("users")
+        .where("role", "==", "agency-admin")
+        .where("agency", "==", agencyID)
+        .get();
+
+    if (agencyAdminSnapshot.empty) {
+        console.log("No users with Agency Admin role found.");
+        return;
+    }
+
+    const tokens = [];
+    const userIds = [];
+    agencyAdminSnapshot.docs.forEach(userDoc => {
+        const userData = userDoc.data();
+        if (userData.fcmToken) {
+            tokens.push(userData.fcmToken);
+        }
+        userIds.push(userDoc.id);
+    });
+
+    const payload = {
+        notification: {
+            title: "Thông báo kích hoạt bảo hành thành công",
+            body: `1 khách hàng đã được kích hoạt bảo hành thành công tại đại lý của bạn. Nhân viên phụ trách: ${technicalName}.`,
+        },
+        data: {
+            guaranteeId: guaranteeId,
+        },
+    };
+
+    await sendNotifications(tokens, userIds, payload);
+}
+
+async function sendNotificationToMbossAdmin(guaranteeId, agencyName) {
+    const mbossAdminSnapshot = await admin.firestore().collection("users")
+        .where("role", "==", "mboss-admin")
+        .get();
+
+    if (mbossAdminSnapshot.empty) {
+        console.log("No users with Mboss Admin role found.");
+        return;
+    }
+
+    const tokens = [];
+    const userIds = [];
+    mbossAdminSnapshot.docs.forEach(userDoc => {
+        const userData = userDoc.data();
+        if (userData.fcmToken) {
+            tokens.push(userData.fcmToken);
+        }
+        userIds.push(userDoc.id);
+    });
+
+    const payload = {
+        notification: {
+            title: "Thông báo kích hoạt bảo hành thành công",
+            body: `1 khách hàng đã được kích hoạt bảo hành thành công tại đại lý ${agencyName}.`,
+        },
+        data: {
+            guaranteeId: guaranteeId,
+        },
+    };
+
+    await sendNotifications(tokens, userIds, payload);
+}
+// Function send notifications & save to firestore
+async function sendNotifications(tokens, userIds, payload) {
+    const response = await admin.messaging().sendEachForMulticast({
+        tokens: tokens,
+        notification: payload.notification,
+        data: payload.data,
+    });
+
+    console.log(`${response.successCount} messages were sent successfully.`);
+    console.log(`${response.failureCount} messages failed.`);
+
+    // Lưu thông báo vào Firestore
+    response.responses.forEach(async (res, index) => {
+        if (res.success) {
+            const notification = {
+                title: payload.notification.title,
+                message: payload.notification.body,
+                isRead: false,
+                actionUrl: payload.data.guaranteeId,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+            await admin.firestore().collection('notifications')
+                .doc(userIds[index])
+                .collection('userNotifications')
+                .add(notification);
+        } else {
+            console.log(`Failed to send notification to user with token ${tokens[index]}: ${res.error}`);
+        }
+    });
+}
+
 exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{docId}', async (event) => {
     try {
-        // Get guarantee created
         const guaranteeId = event.params.docId;
         const guaranteeSnapshot = await admin.firestore().collection('guarantees').doc(guaranteeId).get();
 
@@ -17,102 +113,36 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
         }
 
         const guaranteeData = guaranteeSnapshot.data();
-
-        // Get User Implement Activate
         const technicalID = guaranteeData["technicalID"];
+
         const userSnapshot = await admin.firestore().collection('users').doc(technicalID).get();
         if (!userSnapshot.exists) {
             console.log(`User with ID ${technicalID} does not exist.`);
             return;
         }
 
-        const technicalName = (userSnapshot.data())["fullName"];
+        const technicalName = userSnapshot.data().fullName;
+        const agencyID = userSnapshot.data().agency;
 
-        // Get agency
-        const agencyID = (userSnapshot.data())["agency"];
+        // Gửi thông báo cho Agency Admin
+        await sendNotificationToAgencyAdmin(agencyID, guaranteeId, technicalName);
+
+        // Get agency Name -> Gửi thông báo cho Agency Admin
+
         const agencySnapshot = await admin.firestore().collection('agency').doc(agencyID).get();
-
         if (!agencySnapshot.exists) {
             console.log(`Agency with ID ${agencyID} does not exist.`);
             return;
         }
 
-        /** 1. Send notification to Agency Admin when staff creating guarantee */
+        const agencyName = agencySnapshot.data().name;
 
-        // Get agency admin user
-        const agencyAdminSnapshot = await admin.firestore().collection("users")
-            .where("role", "==", "agency-admin")
-            .where("agency", "==", agencyID)
-            .get();
-
-        if (agencyAdminSnapshot.empty) {
-            console.log("No users with Agency Admin role found.");
-            return;
-        }
-
-        const tokens = [];
-        const userIds = [];
-
-        agencyAdminSnapshot.docs.forEach(userDoc => {
-            const userData = userDoc.data();
-            if (userData.fcmToken) {
-                tokens.push(userData.fcmToken);
-            }
-            userIds.push(userDoc.id);  // Lưu lại userId (ID của người nhận)
-        });
-
-        if (tokens.length === 0) {
-            console.log("No FCM tokens found for Agency Admin users.");
-            return;
-        }
-
-        // Tạo payload FCM
-        const payload = {
-            notification: {
-                title: "Thông báo kích hoạt bảo hành thành công",
-                body: `1 khách hàng đã được kích hoạt bảo hành thành công tại đại lý của bạn.\n Nhân viên phụ trách: Kỹ thuật viên ${technicalName}`,
-            },
-            data: {
-                guaranteeId: guaranteeId,
-            },
-        };
-
-        // Gửi thông báo đến nhiều thiết bị cùng lúc và xử lý kết quả riêng biệt cho từng người dùng
-        const response = await admin.messaging().sendEachForMulticast({
-            tokens: tokens,
-            notification: payload.notification,
-            data: payload.data,
-        });
-
-        console.log(`${response.successCount} messages were sent successfully.`);
-        console.log(`${response.failureCount} messages failed.`);
-
-        // Log thêm để chi tiết hơn về những thông báo đã thành công và thất bại
-        response.responses.forEach( async (response, index) => {
-            if (response.success) {
-                console.log(`Notification sent successfully to user with token ${tokens[index]}`);
-
-                // Thêm thông báo vào Firestore cho mỗi người nhận theo userId
-                const notification = {
-                    title: payload.notification.title,
-                    message: payload.notification.body,
-                    isRead: false,
-                    actionUrl: payload.data.guaranteeId,
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                };
-
-                // Lưu thông báo vào collection 'notifications' theo userId
-                await admin.firestore().collection('notifications')
-                    .doc(userIds[index]) // Lưu theo userId thay vì token
-                    .collection('userNotifications')
-                    .add(notification);
-            } else {
-                console.log(`Failed to send notification to user with token ${tokens[index]}: ${response.error}`);
-            }
-        });
+        await sendNotificationToMbossAdmin(guaranteeId, agencyName);
 
     } catch (error) {
-        console.error("Error sending notification:", error);
+        console.error("Error sending notifications:", error);
     }
 });
+
+
 

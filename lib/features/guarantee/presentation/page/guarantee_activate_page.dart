@@ -27,6 +27,8 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.
 import 'package:mbosswater/features/guarantee/presentation/step_active_screen/additional_info_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_active_screen/customer_info_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_active_screen/product_info_step.dart';
+import 'package:mbosswater/features/notification/notification_cubit.dart';
+import 'package:mbosswater/features/notification/notification_model.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class GuaranteeActivatePage extends StatefulWidget {
@@ -95,153 +97,179 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        backToPreviousPage();
-        return true;
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          leading: LeadingBackButton(
-            onTap: () => backToPreviousPage(),
+    return BlocProvider(
+      create: (context) => NotificationCubit(),
+      child: WillPopScope(
+        onWillPop: () async {
+          backToPreviousPage();
+          return true;
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: AppBar(
+            leading: LeadingBackButton(
+              onTap: () => backToPreviousPage(),
+            ),
+            scrolledUnderElevation: 0,
+            centerTitle: true,
+            title: BlocBuilder<StepBloc, int>(
+              bloc: stepBloc,
+              builder: (context, state) {
+                String title = "";
+                if (state == 0) {
+                  title = "Thông Tin Sản Phẩm";
+                }
+                if (state == 1) {
+                  title = "Thông Tin Khách Hàng";
+                }
+                if (state == 2) {
+                  title = "Thông Tin Thêm";
+                }
+                return Text(
+                  title,
+                  style: AppStyle.appBarTitle
+                      .copyWith(color: AppColors.appBarTitleColor),
+                );
+              },
+            ),
           ),
-          scrolledUnderElevation: 0,
-          centerTitle: true,
-          title: BlocBuilder<StepBloc, int>(
-            bloc: stepBloc,
-            builder: (context, state) {
-              String title = "";
-              if (state == 0) {
-                title = "Thông Tin Sản Phẩm";
+          body: BlocListener(
+            bloc: activeGuaranteeBloc,
+            listener: (context, state) async {
+              if (state is ActiveGuaranteeLoaded) {
+                DialogUtils.hide(context);
+                // Activated
+                final notificationCubit =
+                    BlocProvider.of<NotificationCubit>(context);
+
+                // Add notification to Firestore
+                final notification = NotificationModel(
+                  id: "",
+                  title: "Thông báo kích hoạt bảo hành thành công",
+                  message:
+                      "Bạn đã kích hoạt bảo hành thành công cho khách hàng: ${state.customer.fullName}",
+                  isRead: false,
+                  actionUrl: state.guarantees.id,
+                  createdAt: Timestamp.now(),
+                );
+
+                await notificationCubit.addNotification(
+                  userInfoBloc.user?.id ?? "",
+                  notification,
+                );
+
+                await NotificationService.showInstantNotification(
+                  title: "Thông báo kích hoạt bảo hành thành công",
+                  body:
+                      "Bạn đã kích hoạt bảo hành thành công cho khách hàng: ${state.customer.fullName}",
+                  detail:
+                      "Bạn đã kích hoạt bảo hành thành công cho khách hàng: ${state.customer.fullName}",
+                );
+
+                context.go("/active-success");
               }
-              if (state == 1) {
-                title = "Thông Tin Khách Hàng";
+              if (state is ActiveGuaranteeError) {
+                DialogUtils.hide(context);
+                DialogUtils.showWarningDialog(
+                  context: context,
+                  title: "Kích hoạt không thành công. Vui lòng thử lại!",
+                  onClickOutSide: () {},
+                );
               }
-              if (state == 2) {
-                title = "Thông Tin Thêm";
-              }
-              return Text(
-                title,
-                style: AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
-              );
             },
-          ),
-        ),
-        body: BlocListener(
-          bloc: activeGuaranteeBloc,
-          listener: (context, state) async {
-            if (state is ActiveGuaranteeLoaded) {
-              DialogUtils.hide(context);
-              // Activated
-              await NotificationService.showInstantNotification(
-                title: "Thông báo kích hoạt bảo hành thành công",
-                body: "Bạn đã kích hoạt bảo hành thành công cho khách hàng: ${state.customer.fullName}",
-                detail: "Bạn đã kích hoạt bảo hành thành công cho khách hàng: ${state.customer.fullName}",
-              );
-              context.go("/active-success");
-            }
-            if (state is ActiveGuaranteeError) {
-              DialogUtils.hide(context);
-              DialogUtils.showWarningDialog(
-                context: context,
-                title: "Kích hoạt không thành công. Vui lòng thử lại!",
-                onClickOutSide: () {},
-              );
-            }
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              BlocBuilder<StepBloc, int>(
-                bloc: stepBloc,
-                builder: (context, state) {
-                  return EasyStepper(
-                    activeStep: state,
-                    enableStepTapping: true,
-                    lineStyle: const LineStyle(
-                      lineType: LineType.normal,
-                      defaultLineColor: Color(0xffD3DCE6),
-                      lineThickness: 1.5,
-                    ),
-                    activeStepTextColor: Colors.black87,
-                    finishedStepTextColor: Colors.black87,
-                    internalPadding: 60,
-                    showLoadingAnimation: false,
-                    stepRadius: 8,
-                    showStepBorder: false,
-                    steps: [
-                      buildEasyStep(title: "Sản phẩm", stepNumber: 1),
-                      buildEasyStep(title: "Khách hàng", stepNumber: 2),
-                      buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
-                    ],
-                    onStepReached: (index) {
-                      animateToPage(index);
-                    },
-                  );
-                },
-              ),
-              Expanded(
-                child: PageView(
-                  controller: pageController,
-                  scrollDirection: Axis.horizontal,
-                  onPageChanged: (index) => animateToPage(index),
-                  children: [
-                    ProductInfoStep(
-                      key: productStepKey,
-                      product: widget.product,
-                      onNextStep: () {
-                        if (widget.product != null) {
-                          productBloc.emitProduct(widget.product!);
-                        }
-                        stepBloc.goToNextStep();
-                        pageController.animateToPage(
-                          stepBloc.currentStep,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                BlocBuilder<StepBloc, int>(
+                  bloc: stepBloc,
+                  builder: (context, state) {
+                    return EasyStepper(
+                      activeStep: state,
+                      enableStepTapping: true,
+                      lineStyle: const LineStyle(
+                        lineType: LineType.normal,
+                        defaultLineColor: Color(0xffD3DCE6),
+                        lineThickness: 1.5,
+                      ),
+                      activeStepTextColor: Colors.black87,
+                      finishedStepTextColor: Colors.black87,
+                      internalPadding: 60,
+                      showLoadingAnimation: false,
+                      stepRadius: 8,
+                      showStepBorder: false,
+                      steps: [
+                        buildEasyStep(title: "Sản phẩm", stepNumber: 1),
+                        buildEasyStep(title: "Khách hàng", stepNumber: 2),
+                        buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
+                      ],
+                      onStepReached: (index) {
+                        animateToPage(index);
                       },
-                    ),
-                    CustomerInfoStep(
-                      key: customerStepKey,
-                      guaranteeActiveKey:
-                          widget.key as GlobalKey<GuaranteeActivatePageState>,
-                      onPreStep: () {
-                        stepBloc.goToPreviousStep();
-                        pageController.animateToPage(
-                          stepBloc.currentStep,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
-                      onNextStep: (isHandleDuplicatePhone) {
-                        stepBloc.goToNextStep();
-                        pageController.animateToPage(
-                          stepBloc.currentStep,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
-                    ),
-                    AdditionalInfoStep(
-                      key: additionalStepKey,
-                      onPreStep: () {
-                        stepBloc.goToPreviousStep();
-                        pageController.animateToPage(
-                          stepBloc.currentStep,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
-                      onNextStep: () async {
-                        handleConfirmAndActiveGuarantee();
-                      },
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              ),
-            ],
+                Expanded(
+                  child: PageView(
+                    controller: pageController,
+                    scrollDirection: Axis.horizontal,
+                    onPageChanged: (index) => animateToPage(index),
+                    children: [
+                      ProductInfoStep(
+                        key: productStepKey,
+                        product: widget.product,
+                        onNextStep: () {
+                          if (widget.product != null) {
+                            productBloc.emitProduct(widget.product!);
+                          }
+                          stepBloc.goToNextStep();
+                          pageController.animateToPage(
+                            stepBloc.currentStep,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      ),
+                      CustomerInfoStep(
+                        key: customerStepKey,
+                        guaranteeActiveKey:
+                            widget.key as GlobalKey<GuaranteeActivatePageState>,
+                        onPreStep: () {
+                          stepBloc.goToPreviousStep();
+                          pageController.animateToPage(
+                            stepBloc.currentStep,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        onNextStep: (isHandleDuplicatePhone) {
+                          stepBloc.goToNextStep();
+                          pageController.animateToPage(
+                            stepBloc.currentStep,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      ),
+                      AdditionalInfoStep(
+                        key: additionalStepKey,
+                        onPreStep: () {
+                          stepBloc.goToPreviousStep();
+                          pageController.animateToPage(
+                            stepBloc.currentStep,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        onNextStep: () async {
+                          handleConfirmAndActiveGuarantee();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
