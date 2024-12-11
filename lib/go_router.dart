@@ -17,6 +17,7 @@ import 'package:mbosswater/features/login/presentation/page/login_page.dart';
 import 'package:mbosswater/features/mboss/presentation/page/mboss_agency_management.dart';
 import 'package:mbosswater/features/mboss/presentation/page/mboss_edit_agency_page.dart';
 import 'package:mbosswater/features/mboss/presentation/page/mboss_staff_management.dart';
+import 'package:mbosswater/features/notification/notification_page.dart';
 import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scanner_page.dart';
 import 'package:mbosswater/features/recovery/presentation/page/change_password_page.dart';
 import 'package:mbosswater/features/recovery/presentation/page/forgot_password_page.dart';
@@ -126,6 +127,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/customer-care',
       builder: (context, state) => const CustomerCarePage(),
+    ),
+    GoRoute(
+      path: '/notification',
+      builder: (context, state) => const NotificationPage(),
     ),
   ],
 );

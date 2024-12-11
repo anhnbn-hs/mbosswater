@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
@@ -14,10 +16,12 @@ import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
+import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
 import 'package:mbosswater/core/widgets/fullname_formatter.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/delete_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
@@ -49,7 +53,9 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   final focusNodePhone = FocusNode();
   final focusNodeAddress = FocusNode();
 
+  ValueNotifier<bool> isFabVisible = ValueNotifier<bool>(true);
   ValueNotifier<String?> selectedRole = ValueNotifier(null);
+
   final List<String> dropdownItems = [
     'Nhân viên kỹ thuật',
     'Nhân viên chăm sóc khách hàng'
@@ -63,10 +69,13 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   ];
 
   ValueNotifier<String?> selectedFilter = ValueNotifier(null);
-  ValueNotifier<bool> isShowFab = ValueNotifier(true);
 
   // Scroll
   final scrollController = ScrollController();
+
+  ValueNotifier<int> ccCount = ValueNotifier<int>(0);
+  ValueNotifier<int> techCount = ValueNotifier<int>(0);
+  ValueNotifier<int> allCount = ValueNotifier<int>(0);
 
   @override
   void initState() {
@@ -76,15 +85,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     updateMbossStaffBloc = BlocProvider.of<UpdateMbossStaffBloc>(context);
     deleteMbossStaffBloc = BlocProvider.of<DeleteMbossStaffBloc>(context);
     mbossStaffBloc.fetchMbossStaffs();
-    scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (scrollController.position.pixels > 50) {
-      isShowFab.value = false;
-    } else {
-      isShowFab.value = true;
-    }
   }
 
   @override
@@ -100,154 +100,251 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     scrollController.dispose();
   }
 
+  buildSliverAppBarContent() {
+    return Column(
+      children: [
+        Container(
+          height: 38,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xffEEEEEE),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: SearchField(
+            onSearch: (value) {
+              mbossStaffBloc.searchStaff(value);
+            },
+          ),
+        ),
+        Divider(
+          color: Colors.grey.shade400,
+          height: 40,
+          thickness: .2,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: allCount,
+                builder: (context, value, child) => buildRowInfoItem(
+                  label: "Tổng nhân viên",
+                  value: allCount.value.toString(),
+                ),
+              ),
+              ValueListenableBuilder(
+                valueListenable: ccCount,
+                builder: (context, value, child) => buildRowInfoItem(
+                  label: "Nhân viên CSKH",
+                  value: ccCount.value.toString(),
+                ),
+              ),
+              ValueListenableBuilder(
+                valueListenable: techCount,
+                builder: (context, value, child) => buildRowInfoItem(
+                  label: "Nhân viên kỹ thuật",
+                  value: techCount.value.toString(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        leading: const LeadingBackButton(),
-        centerTitle: true,
-        title: Text(
-          "Quản Lý Nhân Viên",
-          style:
-              AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
-        ),
-      ),
       floatingActionButton: ValueListenableBuilder(
-        valueListenable: isShowFab,
+        valueListenable: isFabVisible,
         builder: (context, value, child) {
-          if (!value) return const SizedBox.shrink();
-          return GestureDetector(
-            onTap: () async => await showStaffCreation(),
-            child: Container(
-              margin: const EdgeInsets.only(right: 10, bottom: 16),
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 46,
+          return Visibility(
+            visible: value,
+            child: GestureDetector(
+              onTap: () async => await showStaffCreation(),
+              child: Container(
+                margin: const EdgeInsets.only(right: 10, bottom: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 46,
+                ),
               ),
             ),
           );
         },
       ),
-      body: SingleChildScrollView(
-        controller: scrollController,
-        child: Column(
-          children: [
-            const SizedBox(height: 30),
-            Container(
-              height: 38,
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: const Color(0xffEEEEEE),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: SearchField(
-                onSearch: (value) {
-                  mbossStaffBloc.searchStaff(value);
-                },
-              ),
-            ),
-            Divider(
-              color: Colors.grey.shade400,
-              height: 44,
-              thickness: .2,
-            ),
-            BlocBuilder<FetchMbossStaffBloc, List<UserModel>>(
-              bloc: mbossStaffBloc,
-              builder: (context, state) {
-                if (mbossStaffBloc.isLoading) {
-                  return Center(
-                    child: Lottie.asset(AppAssets.aLoading, height: 50),
-                  );
-                }
-                if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
-                  final userOriginal = mbossStaffBloc.getStaffsOriginal;
-                  final listUser = state;
-                  int ccCount = userOriginal
-                      .where((user) => user.role == Roles.MBOSS_CUSTOMERCARE)
-                      .length;
-                  int techCount = userOriginal
-                      .where((user) => user.role == Roles.MBOSS_TECHNICAL)
-                      .length;
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
+      body: SafeArea(
+        child: NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction == ScrollDirection.forward) {
+              isFabVisible.value = true;
+            } else if (notification.direction == ScrollDirection.reverse) {
+              isFabVisible.value = false;
+            }
+            return true;
+          },
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  scrolledUnderElevation: 0,
+                  title: null,
+                  snap: true,
+                  centerTitle: true,
+                  floating: true,
+                  automaticallyImplyLeading: false,
+                  backgroundColor: Colors.white,
+                  expandedHeight: 210,
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.pin,
+                    background: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        buildRowInfoItem(
-                          label: "Tổng nhân viên",
-                          value: userOriginal.length.toString(),
+                        Container(
+                          padding: const EdgeInsets.only(left: 4, right: 16),
+                          child: Stack(
+                            children: [
+                              Container(
+                                height: kToolbarHeight - 4,
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.only(left: 16),
+                                child: Text(
+                                  "Quản Lý Nhân Viên",
+                                  style: AppStyle.appBarTitle.copyWith(
+                                    color: const Color(0xff820a1a),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: kToolbarHeight,
+                                alignment: Alignment.centerLeft,
+                                child: IconButton(
+                                  onPressed: () => context.pop(),
+                                  icon: ImageHelper.loadAssetImage(
+                                    AppAssets.icArrowLeft,
+                                    tintColor: const Color(0xff111827),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
-                        buildRowInfoItem(
-                          label: "Nhân viên CSKH",
-                          value: ccCount.toString(),
-                        ),
-                        buildRowInfoItem(
-                          label: "Nhân viên kỹ thuật",
-                          value: techCount.toString(),
-                        ),
-                        const SizedBox(height: 30),
-                        ListView.builder(
-                          itemCount: listUser.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 22),
-                              child: buildStaffItem(listUser[index]),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
+                        // Phần buildSliverAppBarContent
+                        buildSliverAppBarContent(),
                       ],
                     ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
+                  ),
+                ),
+              ];
+            },
+            controller: scrollController,
+            body: Column(
+              children: [
+                BlocConsumer<FetchMbossStaffBloc, List<UserModel>>(
+                  bloc: mbossStaffBloc,
+                  listener: (context, state) {
+                    if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
+                      final userOriginal = mbossStaffBloc.getStaffsOriginal;
+                      // Update ValueNotifiers outside the build phase
+                      allCount.value = userOriginal.length;
+                      ccCount.value = userOriginal
+                          .where(
+                              (user) => user.role == Roles.MBOSS_CUSTOMERCARE)
+                          .length;
+                      techCount.value = userOriginal
+                          .where((user) => user.role == Roles.MBOSS_TECHNICAL)
+                          .length;
+                    }
+                  },
+                  builder: (context, state) {
+                    if (mbossStaffBloc.isLoading) {
+                      return Expanded(
+                        child: ListView.builder(
+                          itemCount: 8,
+                          itemBuilder: (context, index) => Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 5,
+                            ),
+                            child: const CustomerCardShimmer(),
+                          ),
+                        ),
+                      );
+                    }
+                    if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
+                      final listUser = List.from(state);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 30),
+                            ListView.builder(
+                              itemCount: listUser.length,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 22),
+                                  child: buildStaffItem(listUser[index]),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                // Listener for create
+                BlocListener<CreateMbossStaffBloc, bool>(
+                  listener: (context, state) async {
+                    if (createMbossStaffBloc.isLoading == false &&
+                        state == true) {
+                      DialogUtils.hide(context);
+                      DialogUtils.hide(context);
+                      await mbossStaffBloc.fetchMbossStaffs();
+                    }
+                  },
+                  child: const SizedBox.shrink(),
+                ),
+                // Listener for delete
+                BlocListener<DeleteMbossStaffBloc, bool>(
+                  listener: (context, state) async {
+                    if (deleteMbossStaffBloc.isLoading == false &&
+                        state == true) {
+                      DialogUtils.hide(context);
+                      DialogUtils.hide(context);
+                      await mbossStaffBloc.fetchMbossStaffs();
+                    }
+                  },
+                  child: const SizedBox.shrink(),
+                ),
+                // Listener for update
+                BlocListener<UpdateMbossStaffBloc, bool>(
+                  listener: (context, state) async {
+                    if (updateMbossStaffBloc.isLoading == false &&
+                        state == true) {
+                      DialogUtils.hide(context);
+                      DialogUtils.hide(context);
+                      await mbossStaffBloc.fetchMbossStaffs();
+                    }
+                  },
+                  child: const SizedBox.shrink(),
+                ),
+              ],
             ),
-            // Listener for create
-            BlocListener<CreateMbossStaffBloc, bool>(
-              listener: (context, state) async {
-                if (createMbossStaffBloc.isLoading == false && state == true) {
-                  DialogUtils.hide(context);
-                  DialogUtils.hide(context);
-                  await mbossStaffBloc.fetchMbossStaffs();
-                }
-              },
-              child: const SizedBox.shrink(),
-            ),
-            // Listener for delete
-            BlocListener<DeleteMbossStaffBloc, bool>(
-              listener: (context, state) async {
-                if (deleteMbossStaffBloc.isLoading == false && state == true) {
-                  DialogUtils.hide(context);
-                  DialogUtils.hide(context);
-                  await mbossStaffBloc.fetchMbossStaffs();
-                }
-              },
-              child: const SizedBox.shrink(),
-            ),
-            // Listener for update
-            BlocListener<UpdateMbossStaffBloc, bool>(
-              listener: (context, state) async {
-                if (updateMbossStaffBloc.isLoading == false && state == true) {
-                  DialogUtils.hide(context);
-                  DialogUtils.hide(context);
-                  await mbossStaffBloc.fetchMbossStaffs();
-                }
-              },
-              child: const SizedBox.shrink(),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -752,7 +849,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                             isRequired: true,
                             controller: nameController,
                             formatter: [
-                              FullNameInputFormatter(),
+                              FilteringTextInputFormatter.deny(RegExp(r'\d')),
                             ],
                             focusNode: focusNodeName,
                           ),

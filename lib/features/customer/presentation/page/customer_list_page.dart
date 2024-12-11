@@ -1,20 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
+import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
-import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_state.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item.dart';
+import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/filter_dropdown_agency.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
-import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agencies_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
@@ -73,136 +74,178 @@ class _CustomerListPageState extends State<CustomerListPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              leading: const LeadingBackButton(),
-              scrolledUnderElevation: 0,
-              title: Text(
-                "Danh Sách Khách Hàng",
-                style: AppStyle.appBarTitle.copyWith(
-                  color: const Color(0xff820a1a),
+  Widget buildSliverAppBarContent() {
+    return Column(
+      children: [
+        // Nội dung trong SliverAppBarContent
+        buildHeaderSection(),
+        Divider(
+          color: Colors.grey.shade400,
+          height: 36,
+          thickness: .4,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(right: 3),
+                alignment: Alignment.centerLeft,
+                child: FilterDropdown(
+                  selectedValue: selectedTimeFilter.value ?? 'Tháng',
+                  onChanged: (value) {
+                    setState(() {
+                      selectedTimeFilter.value = value;
+                    });
+                  },
+                  options: dropdownTimeItems,
                 ),
               ),
-              centerTitle: true,
-              pinned: true,
-              floating: false,
-              backgroundColor: Colors.white,
-            ),
-          ];
-        },
-        body: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  buildHeaderSection(),
-                  Divider(
-                    color: Colors.grey.shade400,
-                    height: 44,
-                    thickness: .8,
-                  ),
-                  BlocBuilder(
-                    bloc: fetchCustomersBloc,
+              if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN)
+                Container(
+                  alignment: Alignment.centerLeft,
+                  child: BlocBuilder(
+                    bloc: agenciesBloc,
                     builder: (context, state) {
-                      if (state is FetchCustomersLoading) {
-                        return Center(
-                          child: Lottie.asset(AppAssets.aLoading, height: 50),
-                        );
-                      }
-                      if (state is FetchCustomersSuccess) {
-                        customerSearchResult = state.filteredCustomers;
-                        customerOriginal = state.originalCustomers;
-
-                        return Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    margin: const EdgeInsets.only(right: 3),
-                                    alignment: Alignment.centerLeft,
-                                    child: FilterDropdown(
-                                      selectedValue:
-                                          selectedTimeFilter.value ?? 'Tháng',
-                                      onChanged: (value) {
-                                        setState(() {
-                                          selectedTimeFilter.value = value;
-                                        });
-                                      },
-                                      options: dropdownTimeItems,
-                                    ),
-                                  ),
-                                  if (userInfoBloc.user?.role ==
-                                      Roles.MBOSS_ADMIN)
-                                    Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: BlocBuilder(
-                                        bloc: agenciesBloc,
-                                        builder: (context, state) {
-                                          if (state is AgenciesLoaded) {
-                                            dropdownAgenciesItems =
-                                                state.agencies;
-                                            return FilterDropdownAgency(
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  selectedAgencyFilter.value =
-                                                      value;
-                                                });
-                                              },
-                                              options: dropdownAgenciesItems,
-                                            );
-                                          }
-                                          return const SizedBox.shrink();
-                                        },
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            ValueListenableBuilder<int>(
-                              valueListenable: totalCustomer,
-                              builder: (context, value, child) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 30),
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(height: 16),
-                                      buildInfoItem(
-                                        label: "Tổng khách hàng",
-                                        value: totalCustomer.value.toString(),
-                                      ),
-                                      buildInfoItem(
-                                        label: "Tổng sản phẩm đã bán",
-                                        value:
-                                            totalProductSold.value.toString(),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                            buildCustomerList(), // Extracted method
-                          ],
+                      if (state is AgenciesLoaded) {
+                        dropdownAgenciesItems = state.agencies;
+                        return FilterDropdownAgency(
+                          onChanged: (value) {
+                            setState(() {
+                              selectedAgencyFilter.value = value;
+                            });
+                          },
+                          options: dropdownAgenciesItems,
                         );
                       }
                       return const SizedBox.shrink();
                     },
                   ),
-                ],
+                ),
+            ],
+          ),
+        ),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              ValueListenableBuilder(
+                valueListenable: totalCustomer,
+                builder: (context, value, child) {
+                  return buildInfoItem(
+                    label: "Tổng khách hàng",
+                    value: value.toString(),
+                  );
+                },
               ),
-            ),
-          ],
+              ValueListenableBuilder(
+                valueListenable: totalProductSold,
+                builder: (context, value, child) {
+                  return buildInfoItem(
+                    label: "Tổng sản phẩm đã bán",
+                    value: totalProductSold.value.toString(),
+                  );
+                },
+              ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                scrolledUnderElevation: 0,
+                title: null,
+                snap: true,
+                centerTitle: true,
+                floating: true,
+                automaticallyImplyLeading: false,
+                backgroundColor: Colors.white,
+                expandedHeight: 249,
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.only(left: 6, right: 16),
+                        child: Stack(
+                          children: [
+                            Container(
+                              height: kToolbarHeight - 4,
+                              padding: const EdgeInsets.only(left: 16),
+                              alignment: Alignment.center,
+                              child: Text(
+                                "Danh Sách Khách Hàng",
+                                style: AppStyle.appBarTitle.copyWith(
+                                  color: const Color(0xff820a1a),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              height: kToolbarHeight,
+                              alignment: Alignment.centerLeft,
+                              child: IconButton(
+                                onPressed: () => context.pop(),
+                                icon: ImageHelper.loadAssetImage(
+                                  AppAssets.icArrowLeft,
+                                  tintColor: const Color(0xff111827),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      // Phần buildSliverAppBarContent
+                      buildSliverAppBarContent(),
+                    ],
+                  ),
+                ),
+              ),
+            ];
+          },
+          body: BlocBuilder(
+            bloc: fetchCustomersBloc,
+            builder: (context, state) {
+              if (state is FetchCustomersLoading) {
+                return ListView.builder(
+                  itemCount: 8,
+                  itemBuilder: (context, index) => Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 5,
+                    ),
+                    child: const CustomerCardShimmer(),
+                  ),
+                );
+              }
+              if (state is FetchCustomersSuccess) {
+                customerSearchResult = state.filteredCustomers;
+                customerOriginal = state.originalCustomers;
+
+                return buildCustomerList();
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
@@ -251,7 +294,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 32),
+          const SizedBox(height: 10),
           Container(
             height: 38,
             width: double.infinity,
@@ -296,7 +339,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
       // 3. Filter by time
       final matchesTime = () {
         if (selectedTimeFilter.value == null) return true;
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 7));
+        DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
         DateTime? updatedAt = customer.customer.updatedAt?.toDate();
 
         switch (selectedTimeFilter.value) {
@@ -323,9 +366,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       totalCustomer.value = customerSearchResult.length;
       totalProductSold.value = customerSearchResult.fold(
-        0,
-        (sum, customer) => sum + customer.guarantees.length,
-      );
+          0, (sum, customer) => sum + customer.guarantees.length);
     });
 
     if (customerSearchResult.isEmpty) {

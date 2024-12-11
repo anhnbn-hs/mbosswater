@@ -70,7 +70,9 @@ class _FilterDropdownState extends State<FilterDropdown> {
                 style: const TextStyle(
                   fontFamily: "BeVietnam",
                   color: Colors.black,
-                  fontSize: 14,
+                  height: 1.4,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

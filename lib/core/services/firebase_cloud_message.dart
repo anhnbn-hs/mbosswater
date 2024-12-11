@@ -57,7 +57,7 @@ class FirebaseCloudMessage {
     final String? body = message.notification?.body;
 
     if (title != null && body != null) {
-      await NotificationService.showInstantNotification(title, body);
+      await NotificationService.showInstantNotification(title: title, body: body, detail: body);
     }
   }
 }

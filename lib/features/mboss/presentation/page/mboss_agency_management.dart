@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -14,10 +15,12 @@ import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
+import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
+import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_agency_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_agencies_bloc.dart';
@@ -32,7 +35,7 @@ class MbossAgencyManagement extends StatefulWidget {
 
 class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
   // Value Notifier
-  ValueNotifier<bool> isShowFab = ValueNotifier(true);
+  ValueNotifier<bool> isFabVisible = ValueNotifier<bool>(true);
   ValueNotifier<String?> selectedDateFilter = ValueNotifier(null);
   ValueNotifier<String?> selectedSortFilter = ValueNotifier(null);
 
@@ -79,101 +82,126 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        leading: const LeadingBackButton(),
-        centerTitle: true,
-        title: Text(
-          "Danh Sách Đại Lý",
-          style:
-              AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
-        ),
-      ),
       floatingActionButton: ValueListenableBuilder(
-        valueListenable: isShowFab,
+        valueListenable: isFabVisible,
         builder: (context, value, child) {
-          if (!value) return const SizedBox.shrink();
-          return GestureDetector(
-            onTap: () async => await showAgencyCreation(),
-            child: Container(
-              margin: const EdgeInsets.only(right: 10, bottom: 16),
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 46,
+          return Visibility(
+            visible: value,
+            child: GestureDetector(
+              onTap: () async => await showAgencyCreation(),
+              child: Container(
+                margin: const EdgeInsets.only(right: 10, bottom: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 46,
+                ),
               ),
             ),
           );
         },
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 30),
-            Container(
-              height: 38,
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: const Color(0xffEEEEEE),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: SearchField(
-                onSearch: (value) {
-                  fetchAgenciesBloc.searchAgency(value.trim().toLowerCase());
-                },
-              ),
-            ),
-            Divider(
-              color: Colors.grey.shade400,
-              height: 44,
-              thickness: .2,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  FilterDropdown(
-                    selectedValue: "Mới nhất",
-                    options: const ["Mới nhất", "Cũ nhất"],
-                    onChanged: (value) => selectedSortFilter.value = value,
-                  ),
-                  FilterDropdown(
-                    selectedValue: "Tháng",
-                    options: filterByDateItems,
-                    onChanged: (value) => selectedDateFilter.value = value,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            BlocBuilder<FetchAgenciesBloc, List<Agency>>(
-              bloc: fetchAgenciesBloc,
-              builder: (context, state) {
-                if (fetchAgenciesBloc.isLoading) {
-                  return Center(
-                    child: Lottie.asset(AppAssets.aLoading, height: 50),
-                  );
-                }
+      body: SafeArea(
+        child: NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction == ScrollDirection.forward) {
+              isFabVisible.value = true;
+            } else if (notification.direction == ScrollDirection.reverse) {
+              isFabVisible.value = false;
+            }
 
-                if (!fetchAgenciesBloc.isLoading && state.isNotEmpty) {
-                  List<Agency> agencyOriginal =
-                      fetchAgenciesBloc.getAgenciesOriginal;
-                  List<Agency> searchFiltered = state; // Result of search
-                  List<Agency> agencyFiltered = searchFiltered;
+            return true;
+          },
+          child: NestedScrollView(
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  scrolledUnderElevation: 0,
+                  title: null,
+                  snap: true,
+                  centerTitle: true,
+                  floating: true,
+                  automaticallyImplyLeading: false,
+                  backgroundColor: Colors.white,
+                  expandedHeight: 190,
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.pin,
+                    background: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.only(left: 4, right: 16),
+                          child: Stack(
+                            children: [
+                              Container(
+                                height: kToolbarHeight - 4,
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.only(left: 16),
+                                child: Text(
+                                  "Danh Sách Đại Lý",
+                                  style: AppStyle.appBarTitle.copyWith(
+                                    color: const Color(0xff820a1a),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: kToolbarHeight,
+                                alignment: Alignment.centerLeft,
+                                child: IconButton(
+                                  onPressed: () => context.pop(),
+                                  icon: ImageHelper.loadAssetImage(
+                                    AppAssets.icArrowLeft,
+                                    tintColor: const Color(0xff111827),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        // Phần buildSliverAppBarContent
+                        buildSliverAppBarContent(),
+                      ],
+                    ),
+                  ),
+                ),
+              ];
+            },
+            body: Column(
+              children: [
+                const SizedBox(height: 10),
 
-                  return ValueListenableBuilder(
-                    valueListenable: selectedSortFilter,
-                    builder: (context, value, child) {
-                      if (value != null) {
-                        // Apply sorting to the searchFiltered list
-                        if (value == "Mới nhất") {
+                BlocBuilder<FetchAgenciesBloc, List<Agency>>(
+                  bloc: fetchAgenciesBloc,
+                  builder: (context, state) {
+                    if (fetchAgenciesBloc.isLoading) {
+                      return Expanded(
+                        child: ListView.builder(
+                          itemCount: 8,
+                          itemBuilder: (context, index) => Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 5,
+                            ),
+                            child: const CustomerCardShimmer(),
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (!fetchAgenciesBloc.isLoading && state.isNotEmpty) {
+                      List<Agency> agencyOriginal =
+                          fetchAgenciesBloc.getAgenciesOriginal;
+                      List<Agency> agencyFiltered =
+                          List.from(state); // Initialize with search result
+
+                      // Apply sort filter
+                      if (selectedSortFilter.value != null) {
+                        if (selectedSortFilter.value == "Mới nhất") {
                           agencyFiltered.sort((a, b) => b.createdAt
                               .toDate()
                               .compareTo(a.createdAt.toDate()));
@@ -184,90 +212,149 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
                         }
                       }
 
-                      return ValueListenableBuilder(
-                        valueListenable: selectedDateFilter,
-                        builder: (context, value, child) {
-                          if (value != null) {
-                            final now = DateTime.now()
-                                .toUtc()
-                                .add(const Duration(hours: 7));
+                      // Apply date filter
+                      if (selectedDateFilter.value != null) {
+                        final now = DateTime.now()
+                            .toUtc()
+                            .add(const Duration(hours: 7));
+                        if (selectedDateFilter.value ==
+                            filterByDateItems.first) {
+                          agencyFiltered = agencyFiltered.where((item) {
+                            final createdAt = item.createdAt.toDate();
+                            return createdAt.year == now.year &&
+                                createdAt.month == now.month;
+                          }).toList();
+                        } else if (selectedDateFilter.value ==
+                            filterByDateItems.elementAt(1)) {
+                          final last30Days =
+                              now.subtract(const Duration(days: 30));
+                          agencyFiltered = agencyFiltered.where((item) {
+                            final createdAt = item.createdAt.toDate();
+                            return createdAt.isAfter(last30Days) &&
+                                createdAt.isBefore(now);
+                          }).toList();
+                        } else if (selectedDateFilter.value ==
+                            filterByDateItems.elementAt(2)) {
+                          final last90Days =
+                              now.subtract(const Duration(days: 90));
+                          agencyFiltered = agencyFiltered.where((item) {
+                            final createdAt = item.createdAt.toDate();
+                            return createdAt.isAfter(last90Days) &&
+                                createdAt.isBefore(now);
+                          }).toList();
+                        } else if (selectedDateFilter.value ==
+                            filterByDateItems.elementAt(3)) {
+                          agencyFiltered = agencyFiltered.where((item) {
+                            final createdAt = item.createdAt.toDate();
+                            return createdAt.year == now.year;
+                          }).toList();
+                        }
+                      }
 
-                            // Apply date filtering to the searchFiltered list
-                            if (value == filterByDateItems.first) {
-                              agencyFiltered = searchFiltered.where((item) {
-                                final createdAt = item.createdAt.toDate();
-                                return createdAt.year == now.year &&
-                                    createdAt.month == now.month;
-                              }).toList();
-                            } else if (value ==
-                                filterByDateItems.elementAt(1)) {
-                              final last30Days =
-                                  now.subtract(const Duration(days: 30));
-                              agencyFiltered = searchFiltered.where((item) {
-                                final createdAt = item.createdAt.toDate();
-                                return createdAt.isAfter(last30Days) &&
-                                    createdAt.isBefore(now);
-                              }).toList();
-                            } else if (value ==
-                                filterByDateItems.elementAt(2)) {
-                              final last90Days =
-                                  now.subtract(const Duration(days: 90));
-                              agencyFiltered = searchFiltered.where((item) {
-                                final createdAt = item.createdAt.toDate();
-                                return createdAt.isAfter(last90Days) &&
-                                    createdAt.isBefore(now);
-                              }).toList();
-                            } else if (value ==
-                                filterByDateItems.elementAt(3)) {
-                              agencyFiltered = searchFiltered.where((item) {
-                                final createdAt = item.createdAt.toDate();
-                                return createdAt.year == now.year;
-                              }).toList();
-                            }
-                          }
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: ListView.builder(
-                              itemCount: agencyFiltered.length,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 22),
-                                  child: buildAgencyBox(agencyFiltered[index]),
-                                );
-                              },
-                            ),
-                          );
-                        },
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: ListView.builder(
+                          itemCount: agencyFiltered.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 22),
+                              child: buildAgencyBox(agencyFiltered[index]),
+                            );
+                          },
+                        ),
                       );
-                    },
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
 
-            // Listener for create
-            BlocListener<CreateAgencyBloc, bool>(
-              listener: (context, state) async {
-                if (createAgencyBloc.isLoading == false && state == true) {
-                  DialogUtils.hide(context);
-                  DialogUtils.hide(context);
-                  agencyNameController.text = "";
-                  agencyAddressController.text = "";
-                  agencyBossNameController.text = "";
-                  agencyBossPhoneController.text = "";
-                  agencyBossEmailController.text = "";
-                  await fetchAgenciesBloc.fetchAllAgencies();
-                }
-              },
-              child: const SizedBox.shrink(),
+                // Listener for create
+                BlocListener<CreateAgencyBloc, bool>(
+                  listener: (context, state) async {
+                    if (createAgencyBloc.isLoading == false && state == true) {
+                      DialogUtils.hide(context);
+                      DialogUtils.hide(context);
+                      agencyNameController.text = "";
+                      agencyAddressController.text = "";
+                      agencyBossNameController.text = "";
+                      agencyBossPhoneController.text = "";
+                      agencyBossEmailController.text = "";
+                      await fetchAgenciesBloc.fetchAllAgencies();
+                    }
+                  },
+                  child: const SizedBox.shrink(),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget buildSliverAppBarContent() {
+    return Column(
+      children: [
+        const SizedBox(height: 10),
+        Container(
+          height: 38,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xffEEEEEE),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: SearchField(
+            onSearch: (value) {
+              fetchAgenciesBloc.searchAgency(value.trim().toLowerCase());
+            },
+          ),
+        ),
+        Divider(
+          color: Colors.grey.shade400,
+          height: 40,
+          thickness: .2,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ValueListenableBuilder(
+                valueListenable: selectedSortFilter,
+                builder: (context, value, child) {
+                  return FilterDropdown(
+                    selectedValue: selectedSortFilter.value ?? "Mới nhất",
+                    options: const ["Mới nhất", "Cũ nhất"],
+                    onChanged: (value) {
+                      setState(() {
+                        selectedSortFilter.value = value;
+                      });
+                    },
+                  );
+                },
+              ),
+              ValueListenableBuilder(
+                valueListenable: selectedDateFilter,
+                builder: (context, value, child) {
+                  return FilterDropdown(
+                    selectedValue: selectedDateFilter.value ?? "Tháng",
+                    options: filterByDateItems,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedDateFilter.value = value;
+                      });
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

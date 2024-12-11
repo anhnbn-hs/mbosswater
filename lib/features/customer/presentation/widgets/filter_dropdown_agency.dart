@@ -25,6 +25,7 @@ class _FilterDropdownAgencyState extends State<FilterDropdownAgency> {
   Widget build(BuildContext context) {
     return PopupMenuButton<Agency>(
       color: Colors.white,
+      initialValue: selected,
       onSelected: (value) {
         widget.onChanged(value);
         setState(() {
@@ -34,24 +35,21 @@ class _FilterDropdownAgencyState extends State<FilterDropdownAgency> {
       position: PopupMenuPosition.under,
       itemBuilder: (BuildContext context) {
         return widget.options.map((value) {
-          final isSelected = value == selected; // Kiểm tra mục được chọn
           return PopupMenuItem<Agency>(
             value: value,
             height: 40,
-            padding: EdgeInsets.zero, // Loại bỏ padding mặc định của PopupMenuItem
+            padding: EdgeInsets.zero,
             child: Container(
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.grey[300] : Colors.white,
-              ),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
               alignment: Alignment.centerLeft,
               child: Text(
                 value.name,
                 style: const TextStyle(
                   fontFamily: "BeVietnam",
-                  overflow: TextOverflow.ellipsis,
                   color: Colors.black,
-                  fontSize: 14,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
@@ -70,14 +68,18 @@ class _FilterDropdownAgencyState extends State<FilterDropdownAgency> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(
-              child: Text(
-                selected?.name ?? "Đại lý",
-                maxLines: 1,
-                style: const TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Colors.black,
-                  fontSize: 14,
-                  overflow: TextOverflow.ellipsis,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  selected?.name ?? "Đại lý",
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontFamily: "BeVietnam",
+                    color: Colors.black,
+                    fontSize: 14,
+                    height: 1.4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ),

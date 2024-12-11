@@ -5,13 +5,10 @@ const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 
 const admin = require("firebase-admin");
 
-
-
 exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{docId}', async (event) => {
     try {
         // Get guarantee created
         const guaranteeId = event.params.docId;
-
         const guaranteeSnapshot = await admin.firestore().collection('guarantees').doc(guaranteeId).get();
 
         if (!guaranteeSnapshot.exists) {
@@ -40,8 +37,6 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
             return;
         }
 
-        // const agencyName = (agencySnapshot.data())["name"];
-
         /** 1. Send notification to Agency Admin when staff creating guarantee */
 
         // Get agency admin user
@@ -55,18 +50,19 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
             return;
         }
 
-
         const tokens = [];
+        const userIds = [];
 
         agencyAdminSnapshot.docs.forEach(userDoc => {
             const userData = userDoc.data();
             if (userData.fcmToken) {
                 tokens.push(userData.fcmToken);
             }
+            userIds.push(userDoc.id);  // Lưu lại userId (ID của người nhận)
         });
 
         if (tokens.length === 0) {
-            console.log("No FCM tokens found for MBOSS users.");
+            console.log("No FCM tokens found for Agency Admin users.");
             return;
         }
 
@@ -92,14 +88,31 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
         console.log(`${response.failureCount} messages failed.`);
 
         // Log thêm để chi tiết hơn về những thông báo đã thành công và thất bại
-        response.responses.forEach((response, index) => {
+        response.responses.forEach( async (response, index) => {
             if (response.success) {
                 console.log(`Notification sent successfully to user with token ${tokens[index]}`);
+
+                // Thêm thông báo vào Firestore cho mỗi người nhận theo userId
+                const notification = {
+                    title: payload.notification.title,
+                    message: payload.notification.body,
+                    isRead: false,
+                    actionUrl: payload.data.guaranteeId,
+                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                };
+
+                // Lưu thông báo vào collection 'notifications' theo userId
+                await admin.firestore().collection('notifications')
+                    .doc(userIds[index]) // Lưu theo userId thay vì token
+                    .collection('userNotifications')
+                    .add(notification);
             } else {
                 console.log(`Failed to send notification to user with token ${tokens[index]}: ${response.error}`);
             }
         });
+
     } catch (error) {
         console.error("Error sending notification:", error);
     }
 });
+

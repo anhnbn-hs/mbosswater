@@ -135,8 +135,9 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
               DialogUtils.hide(context);
               // Activated
               await NotificationService.showInstantNotification(
-                "Thông báo kích hoạt bảo hành thành công",
-                "Bạn đã kích hoạt bảo hành thành công cho anh Nguyễn Văn A",
+                title: "Thông báo kích hoạt bảo hành thành công",
+                body: "Bạn đã kích hoạt bảo hành thành công cho khách hàng: ${state.customer.fullName}",
+                detail: "Bạn đã kích hoạt bảo hành thành công cho khách hàng: ${state.customer.fullName}",
               );
               context.go("/active-success");
             }
@@ -329,8 +330,7 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
       customer.additionalInfo = additionalInfo;
       DialogUtils.showConfirmationDialog(
         context: context,
-        title: "",
-        labelTitle: "Bạn chắc chắn xác nhận\nthông tin trên ?",
+        title: "Bạn chắc chắn xác nhận\nthông tin trên ?",
         textCancelButton: "Hủy",
         textAcceptButton: "Xác nhận",
         acceptPressed: () async {

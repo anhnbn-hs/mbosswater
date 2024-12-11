@@ -1,6 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-
 class NotificationService {
   static const String CHANNEL_ID = "ezb_channel_1";
   static const String CHANNEL_NAME = "Order Notifications";
@@ -40,15 +39,23 @@ class NotificationService {
         ?.requestNotificationsPermission();
   }
 
-  static Future<void> showInstantNotification(String title, String body) async {
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+  static Future<void> showInstantNotification({
+    required String title,
+    required String body,
+    required String detail,
+  }) async {
+    NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: AndroidNotificationDetails(
         CHANNEL_ID,
         CHANNEL_NAME,
         importance: Importance.max,
         priority: Priority.high,
+        styleInformation: BigTextStyleInformation(
+          detail,
+          contentTitle: title,
+        ),
       ),
-      iOS: DarwinNotificationDetails(),
+      iOS: const DarwinNotificationDetails(),
     );
 
     await flutterLocalNotificationsPlugin.show(

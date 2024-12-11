@@ -82,9 +82,11 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
         leading: const LeadingBackButton(),
         centerTitle: true,
         title: Text(
-          "Đại Lý ${widget.agency.name}",
-          style:
-              AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
+          maxLines: 2,
+          widget.agency.name,
+          style: AppStyle.appBarTitle.copyWith(
+            color: AppColors.appBarTitleColor,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -251,7 +253,6 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
                 },
                 child: const SizedBox.shrink(),
               ),
-
               BlocListener<DeleteAgencyBloc, bool>(
                 listener: (context, state) async {
                   if (deleteAgencyBloc.isLoading == false && state == true) {

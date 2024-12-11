@@ -31,6 +31,7 @@ import 'package:mbosswater/features/mboss/presentation/bloc/fetch_agencies_bloc.
 import 'package:mbosswater/features/mboss/presentation/bloc/fetch_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/update_agency_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
+import 'package:mbosswater/features/notification/notification_cubit.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
@@ -62,6 +63,8 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // await NotificationService.showInstantNotification(title: "Thông báo kích hoạt bảo hành thành công", body: "1 khách hàng đã được kích hoạt bảo hành thành công tại đại lý của bạn. Nhân viên phụ trách: Kỹ thuật viên Nguyễn Văn Minh ", detail: "1 khách hàng đã được kích hoạt bảo hành thành công tại đại lý của bạn\nNhân viên phụ trách: Kỹ thuật viên Nguyễn Văn Minh ");
 
   runApp(
     MultiBlocProvider(

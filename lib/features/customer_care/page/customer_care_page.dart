@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
+import 'package:mbosswater/core/styles/app_theme.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -41,6 +42,12 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     }
   }
 
+  void filterDataByMonth(DateTime selectedDate) {
+    final selectedMonth = selectedDate.month;
+    final selectedYear = selectedDate.year;
+
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -62,97 +69,127 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
       ),
       body: Column(
         children: [
-          ValueListenableBuilder<DateTime>(
-            valueListenable: focusDayNotifier,
-            builder: (context, value, child) {
-              return TableCalendar(
-                locale: 'vi_VN',
-                focusedDay: value,
-                firstDay: DateTime.utc(2023, 01, 01),
-                lastDay: now.add(const Duration(days: 365 * 3)),
-                rowHeight: 50,
-                headerStyle: const HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                  headerMargin: EdgeInsets.symmetric(vertical: 6),
-                  titleTextStyle: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-                daysOfWeekHeight: 24,
-                calendarStyle: CalendarStyle(
-                  todayTextStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  todayDecoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.blueGrey.shade50,
-                  ),
-                  selectedDecoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primaryColor,
-                  ),
-                ),
-                daysOfWeekStyle: const DaysOfWeekStyle(
-                  weekdayStyle: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  weekendStyle: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                startingDayOfWeek: StartingDayOfWeek.monday,
-                availableGestures: AvailableGestures.all,
-                onDaySelected: onDaySelected,
-                selectedDayPredicate: (day) =>
-                    isSameDay(day, focusDayNotifier.value),
-                calendarBuilders: CalendarBuilders(
-                  defaultBuilder: (context, date, events) {
-                    // Kiểm tra nếu ngày trong danh sách specialDays thì thêm indicator
-                    if (specialDays
-                        .any((specialDay) => isSameDay(date, specialDay))) {
-                      return Stack(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${date.day}',
-                                style: const TextStyle(
-                                  color: Colors.blueGrey,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            right: 26,
-                            bottom: 0,
-                            child: Badge(
-                              smallSize: 8,
-                              backgroundColor: AppColors.primaryColor,
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-                    return null; // Không hiển thị gì nếu không phải ngày đặc biệt
-                  },
-                ),
-              );
-            },
-          ),
-
+          _buildTableCalendar(),
         ],
       ),
+    );
+  }
+
+  ValueListenableBuilder<DateTime> _buildTableCalendar() {
+    return ValueListenableBuilder<DateTime>(
+      valueListenable: focusDayNotifier,
+      builder: (context, value, child) {
+        return TableCalendar(
+          locale: 'vi_VN',
+          focusedDay: value,
+          firstDay: DateTime.utc(2023, 01, 01),
+          lastDay: now.add(const Duration(days: 365 * 3)),
+          rowHeight: 50,
+          headerStyle: HeaderStyle(
+            formatButtonVisible: false,
+            titleCentered: true,
+            headerMargin: const EdgeInsets.symmetric(vertical: 6),
+            titleTextStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+            titleTextFormatter: (date, locale) =>
+                'Tháng ${date.month} - ${date.year}',
+          ),
+          onHeaderTapped: (focusedDay) async {
+            final selectedYear = await showDatePicker(
+              context: context,
+              confirmText: "Chọn",
+              initialDate: focusedDay,
+              firstDate: DateTime(2023),
+              lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+              builder: (context, child) {
+                return Theme(
+                  data: AppTheme.lightTheme.copyWith(),
+                  child: child!,
+                );
+              },
+            );
+
+            if (selectedYear != null) {
+              focusDayNotifier.value = selectedYear;
+            }
+          },
+          daysOfWeekHeight: 24,
+          calendarStyle: CalendarStyle(
+            todayTextStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+            todayDecoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.blueGrey.shade50,
+            ),
+            selectedDecoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primaryColor,
+            ),
+          ),
+          daysOfWeekStyle: const DaysOfWeekStyle(
+            weekdayStyle: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w500,
+            ),
+            weekendStyle: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          startingDayOfWeek: StartingDayOfWeek.monday,
+          availableGestures: AvailableGestures.all,
+          onDaySelected: onDaySelected,
+          selectedDayPredicate: (day) => isSameDay(day, focusDayNotifier.value),
+          calendarBuilders: CalendarBuilders(
+            defaultBuilder: (context, date, events) {
+              // Kiểm tra nếu ngày trong danh sách specialDays thì thêm indicator
+              if (specialDays
+                  .any((specialDay) => isSameDay(date, specialDay))) {
+                return Stack(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${date.day}',
+                          style: const TextStyle(
+                            color: Colors.blueGrey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 4,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return null;
+            },
+          ),
+        );
+      },
     );
   }
 }
