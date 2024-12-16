@@ -28,8 +28,11 @@ import 'package:mbosswater/features/guarantee/domain/usecase/active_guarantee.da
 import 'package:mbosswater/features/guarantee/domain/usecase/address_usecase.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/agency_usecase.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/guarantee_history.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_bloc.dart';
@@ -124,6 +127,16 @@ void initServiceLocator() {
   );
   sl.registerLazySingleton<CommunesBloc>(
     () => CommunesBloc(sl<AddressUseCase>()),
+  );
+
+  sl.registerLazySingleton<ProvincesAgencyBloc>(
+        () => ProvincesAgencyBloc(sl<AddressUseCase>()),
+  );
+  sl.registerLazySingleton<DistrictsAgencyBloc>(
+        () => DistrictsAgencyBloc(sl<AddressUseCase>()),
+  );
+  sl.registerLazySingleton<CommunesAgencyBloc>(
+        () => CommunesAgencyBloc(sl<AddressUseCase>()),
   );
 
   // Guarantee

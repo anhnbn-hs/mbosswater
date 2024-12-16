@@ -4,12 +4,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
+import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/utils/storage.dart';
 import 'package:mbosswater/core/widgets/feature_grid_item.dart';
@@ -19,6 +22,8 @@ import 'package:mbosswater/features/customer/presentation/bloc/search_customer_e
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/login/presentation/page/login_page.dart';
+import 'package:mbosswater/features/notification/notification_cubit.dart';
+import 'package:mbosswater/features/notification/notification_state.dart';
 import 'package:mbosswater/features/qrcode_scanner/presentation/page/qrcode_scanner_page.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
@@ -49,116 +54,143 @@ class _HomePageState extends State<HomePage> {
       resizeToAvoidBottomInset: false,
       floatingActionButton: buildCustomFloatingActionButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Stack(
-          children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: 190,
-              child: ImageHelper.loadAssetImage(
-                AppAssets.imgBgHome,
-                fit: BoxFit.fill,
+      body: SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Stack(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: 190,
+                child: ImageHelper.loadAssetImage(
+                  AppAssets.imgBgHome,
+                  fit: BoxFit.fill,
+                ),
               ),
-            ),
-            Positioned(
-              top: 36,
-              right: 24,
-              left: 16,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        DialogUtils.showConfirmationDialog(
-                          context: context,
-                          title: "Bạn chắc chắc muốn đăng xuất?",
-                          labelTitle: "Đăng xuất",
-                          textCancelButton: "HỦY",
-                          textAcceptButton: "ĐĂNG XUẤT",
-                          acceptPressed: () async => handleLogout(context),
-                          cancelPressed: () => Navigator.pop(context),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.logout,
-                        color: Colors.black,
-                        size: 28,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        context.push("/notification");
-                      },
-                      child: const Badge(
-                        smallSize: 12,
-                        child: CircleAvatar(
-                          backgroundColor: Color(0xff3F689D),
-                          radius: 22,
-                          child: Icon(
-                            Icons.notifications,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+              Positioned(
+                top: 10,
+                right: 24,
+                left: 16,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          DialogUtils.showConfirmationDialog(
+                            context: context,
+                            title: "Bạn chắc chắc muốn đăng xuất?",
+                            labelTitle: "Đăng xuất",
+                            textCancelButton: "HỦY",
+                            textAcceptButton: "ĐĂNG XUẤT",
+                            acceptPressed: () async => handleLogout(context),
+                            cancelPressed: () => Navigator.pop(context),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.logout,
+                          color: Colors.black,
+                          size: 28,
                         ),
                       ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              // top: MediaQuery.of(context).size.height * 0.27,
-              top: 190 - 24,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height,
-                decoration: const BoxDecoration(
-                  color: Color(0xffFAFAFA),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(25),
-                    topRight: Radius.circular(25),
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 30,
-                    ),
-                    margin: const EdgeInsets.only(bottom: 50),
-                    child: Column(
-                      children: [
-                        buildSearchSection(context),
-                        const SizedBox(height: 30),
-                        BlocBuilder(
-                          bloc: userInfoBloc,
+                      GestureDetector(
+                        onTap: () {
+                          context.push("/notification");
+                        },
+                        child:
+                            BlocBuilder<NotificationCubit, NotificationState>(
                           builder: (context, state) {
-                            if (state is UserInfoLoading) {
-                              return Center(
-                                child: Lottie.asset(AppAssets.aLoading,
-                                    height: 50),
-                              );
+                            int notifyUnRead = 0;
+                            if (state is NotificationLoaded) {
+                              notifyUnRead =
+                                  state.notifications.fold(0, (total, noti) {
+                                if (!noti.isRead) {
+                                  total += 1;
+                                }
+                                return total;
+                              });
                             }
-                            if (state is UserInfoLoaded) {
-                              return buildBodyByRole(state.user);
-                            }
-                            return const SizedBox.shrink();
+                            return Badge(
+                              offset: const Offset(0, -2),
+                              isLabelVisible: notifyUnRead != 0,
+                              padding: const EdgeInsets.only(bottom: 2),
+                              label: Text(
+                                notifyUnRead.toString(),
+                                style: AppStyle.appBarTitle.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                ),
+                              ),
+                              child: const CircleAvatar(
+                                backgroundColor: Color(0xff3F689D),
+                                radius: 20,
+                                child: Icon(
+                                  Icons.notifications,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            );
                           },
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                // top: MediaQuery.of(context).size.height * 0.27,
+                top: 190 - 24,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: double.infinity,
+                  height: MediaQuery.of(context).size.height,
+                  decoration: const BoxDecoration(
+                    color: Color(0xffFAFAFA),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 30,
+                      ),
+                      margin: const EdgeInsets.only(bottom: 50),
+                      child: Column(
+                        children: [
+                          buildSearchSection(context),
+                          const SizedBox(height: 30),
+                          BlocBuilder(
+                            bloc: userInfoBloc,
+                            builder: (context, state) {
+                              if (state is UserInfoLoading) {
+                                return Center(
+                                  child: Lottie.asset(AppAssets.aLoading,
+                                      height: 50),
+                                );
+                              }
+                              if (state is UserInfoLoaded) {
+                                return buildBodyByRole(state.user);
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -486,6 +518,8 @@ class _HomePageState extends State<HomePage> {
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
                     ),
+                    onTapOutside: (event) =>
+                        FocusScope.of(context).requestFocus(FocusNode()),
                     decoration: const InputDecoration(
                       border: UnderlineInputBorder(
                         borderSide: BorderSide.none,

@@ -1,10 +1,10 @@
 class Commune {
   Commune({
-    required this.id,
-    required this.name,
-    required this.districtId,
-    required this.type,
-    required this.typeText,
+     this.id,
+     this.name,
+     this.districtId,
+     this.type,
+     this.typeText,
   });
 
   final String? id;

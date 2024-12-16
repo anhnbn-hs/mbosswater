@@ -79,20 +79,38 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  widget.guarantee.product.name ?? "",
-                  maxLines: 2,
-                  textAlign: TextAlign.start,
-                  style: const TextStyle(
-                    fontFamily: "BeVietnam",
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    overflow: TextOverflow.ellipsis,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Tên sản phẩm",
+                    style: TextStyle(
+                      fontFamily: "BeVietnam",
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                        widget.guarantee.product.name ?? "",
+                        maxLines: 2,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontFamily: "BeVietnam",
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               buildGuaranteeInfoItem(

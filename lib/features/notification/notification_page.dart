@@ -19,33 +19,32 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   late final UserInfoBloc userInfoBloc;
+  late final NotificationCubit notificationCubit;
 
   @override
   void initState() {
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
+    notificationCubit = BlocProvider.of<NotificationCubit>(context);
+    notificationCubit.readAllNotification(userInfoBloc.user?.id ?? "");
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          NotificationCubit()..fetchNotifications(userInfoBloc.user?.id ?? ""),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: const LeadingBackButton(),
-          title: Text(
-            "Thông Báo",
-            style: AppStyle.appBarTitle.copyWith(
-              color: AppColors.appBarTitleColor,
-              fontSize: 24,
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        leading: const LeadingBackButton(),
+        title: Text(
+          "Thông Báo",
+          style: AppStyle.appBarTitle.copyWith(
+            color: AppColors.appBarTitleColor,
+            fontSize: 24,
           ),
-          centerTitle: true,
-          scrolledUnderElevation: 0,
         ),
-        body: buildListNotification(),
+        centerTitle: true,
+        scrolledUnderElevation: 0,
       ),
+      body: buildListNotification(),
     );
   }
 
@@ -151,7 +150,7 @@ class NotificationCard extends StatelessWidget {
               fontFamily: "BeVietnam",
               color: Color(0xff8E8E93),
               fontWeight: FontWeight.w300,
-              fontSize: 15,
+              fontSize: 12,
             ),
           ),
           const SizedBox(height: 6),

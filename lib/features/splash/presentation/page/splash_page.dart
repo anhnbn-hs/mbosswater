@@ -6,6 +6,7 @@ import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/utils/storage.dart';
+import 'package:mbosswater/features/notification/notification_cubit.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_event.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_state.dart';
@@ -19,20 +20,22 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   late UserInfoBloc userInfoBloc;
+  late NotificationCubit notificationCubit;
 
   @override
   void initState() {
     super.initState();
+    notificationCubit = BlocProvider.of<NotificationCubit>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
     navigate();
   }
 
   Future<void> navigate() async {
-    String? currentUserID =
-        await PreferencesUtils.getString(loginSessionKey);
+    String? currentUserID = await PreferencesUtils.getString(loginSessionKey);
     if (currentUserID != null) {
       // Fetch user data
       userInfoBloc.add(FetchUserInfo(currentUserID));
+      notificationCubit.fetchNotifications(currentUserID);
     } else {
       print("Don't have any users in session. Continue navigate to Login Page");
       await Future.delayed(

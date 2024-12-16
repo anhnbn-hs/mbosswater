@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 
 class UserModel {
   String id;
@@ -6,7 +7,7 @@ class UserModel {
   String? fullName;
   final String? dob;
   final String? gender;
-  String? address;
+  Address? address;
   String? phoneNumber;
   String? role;
   final String? password;
@@ -36,7 +37,9 @@ class UserModel {
       fullName: json['fullName'] as String?,
       dob: json['dob'] as String?,
       gender: json['gender'] as String?,
-      address: json['address'] as String?,
+      address: json['address'] != null
+          ? Address.fromJson(json['address'] as Map<String, dynamic>)
+          : null,
       email: json["email"] as String,
       role: json['role'] as String?,
       createdAt: json['createdAt'] as Timestamp?,
@@ -52,7 +55,7 @@ class UserModel {
     return {
       'id': id,
       'fullName': fullName,
-      'address': address,
+      'address': address?.toJson(),
       'dob': dob,
       'gender': gender,
       'role': role,

@@ -13,20 +13,31 @@ class NotificationCubit extends Cubit<NotificationState> {
     try {
       emit(NotificationLoading());
 
-      final querySnapshot = await _firestore
+      notificationsStream(userId).listen((notifications) {
+        emit(NotificationLoaded(notifications));
+      }, onError: (error) {
+        emit(NotificationError('Failed to load notifications'));
+      });
+    } catch (e) {
+      emit(NotificationError('Failed to subscribe to notifications'));
+    }
+  }
+
+  Stream<List<NotificationModel>> notificationsStream(String userId) {
+    try {
+      return _firestore
           .collection('notifications')
           .doc(userId)
           .collection('userNotifications')
-          .orderBy("createdAt", descending: true)
-          .get();
-
-      final notifications = querySnapshot.docs.map((doc) {
-        return NotificationModel.fromFirestore(doc);
-      }).toList();
-
-      emit(NotificationLoaded(notifications));
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((querySnapshot) {
+        return querySnapshot.docs.map((doc) {
+          return NotificationModel.fromFirestore(doc);
+        }).toList();
+      });
     } catch (e) {
-      emit(NotificationError('Failed to load notifications'));
+      return Stream.error('Failed to load notifications');
     }
   }
 
@@ -56,12 +67,32 @@ class NotificationCubit extends Cubit<NotificationState> {
           .collection('userNotifications')
           .doc(notificationId)
           .update({'isRead': true});
-
-      emit(NotificationUpdated());
     } catch (e) {
       emit(NotificationError('Failed to update notification'));
     }
   }
+
+  // Update the 'isRead' field for a notification
+  Future<void> readAllNotification(String userId) async {
+    try {
+      final batch = _firestore.batch();
+
+      final querySnapshot = await _firestore
+          .collection('notifications')
+          .doc(userId)
+          .collection('userNotifications')
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        batch.update(doc.reference, {'isRead': true});
+      }
+
+      await batch.commit();
+    } catch (e) {
+      emit(NotificationError('Failed to update notifications'));
+    }
+  }
+
 
   // Delete a notification
   Future<void> deleteNotification(String userId, String notificationId) async {
@@ -72,8 +103,6 @@ class NotificationCubit extends Cubit<NotificationState> {
           .collection('userNotifications')
           .doc(notificationId)
           .delete();
-
-      emit(NotificationDeleted());
     } catch (e) {
       emit(NotificationError('Failed to delete notification'));
     }

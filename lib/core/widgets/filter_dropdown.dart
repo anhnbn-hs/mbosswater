@@ -53,11 +53,11 @@ class _FilterDropdownState extends State<FilterDropdown> {
         }).toList();
       },
       child: Container(
-        height: 29,
+        height: 30,
         width: MediaQuery.of(context).size.width / 2 - 24,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           color: const Color(0xffEFEFF0),
         ),
         child: Row(

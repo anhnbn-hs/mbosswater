@@ -1,10 +1,10 @@
 class District {
   District({
-    required this.id,
-    required this.name,
-    required this.provinceId,
-    required this.type,
-    required this.typeText,
+    this.id,
+    this.name,
+    this.provinceId,
+    this.type,
+    this.typeText,
   });
 
   final String? id;
@@ -13,7 +13,7 @@ class District {
   int? type;
   String? typeText;
 
-  factory District.fromJson(Map<String, dynamic> json){
+  factory District.fromJson(Map<String, dynamic> json) {
     return District(
       id: json["id"],
       name: json["name"],
@@ -24,11 +24,10 @@ class District {
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "provinceId": provinceId,
-    "type": type,
-    "typeText": typeText,
-  };
-
+        "id": id,
+        "name": name,
+        "provinceId": provinceId,
+        "type": type,
+        "typeText": typeText,
+      };
 }

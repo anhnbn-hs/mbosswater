@@ -130,237 +130,227 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocListener(
-      bloc: provincesBloc,
-      listener: (context, state) {
-        // if (state is ProvincesLoading) {
-        //   DialogUtils.showLoadingDialog(context);
-        // }
-        // if (state is ProvincesLoaded) {
-        //   DialogUtils.hide(context);
-        // }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: BlocBuilder<FetchCustomerBloc, FetchCustomerState>(
-              builder: (context, state) {
-                Customer? customer;
-                if (state is FetchCustomerSuccess) {
-                  customer = state.customer;
-                  customerBloc.emitCustomer(customer);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Form(
+        key: formKey,
+        child: SingleChildScrollView(
+          child: BlocBuilder<FetchCustomerBloc, FetchCustomerState>(
+            builder: (context, state) {
+              Customer? customer;
+              if (state is FetchCustomerSuccess) {
+                customer = state.customer;
+                customerBloc.emitCustomer(customer);
 
-                  nameController.text = customer.fullName ?? "";
-                  addressController.text = customer.address?.detail ?? "";
+                nameController.text = customer.fullName ?? "";
+                addressController.text = customer.address?.detail ?? "";
 
-                  provincesBloc.selectProvince(
-                      Province(name: customer.address?.province));
+                provincesBloc.selectProvince(
+                    Province(name: customer.address?.province));
 
-                  districtsBloc.emitDistrict(
-                    District(
-                      name: customer.address?.district,
-                      id: '',
-                      provinceId: '',
-                      type: null,
-                      typeText: '',
-                    ),
-                  );
-
-                  communesBloc.emitCommune(
-                    Commune(
-                      name: customer.address?.commune,
-                      id: '',
-                      districtId: "",
-                      type: null,
-                      typeText: '',
-                    ),
-                  );
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    buildTextFieldVerifyPhoneItem(
-                      label: "Số điện thoại",
-                      hint: "Số điện thoại",
-                      textButton: "GỬI MÃ",
-                      isPhoneField: true,
-                      onTap: () {
-                        isOTPSent.value = true;
-                      },
-                      onTapOutSide: (phone) async =>
-                          handleCheckPhoneNumber(phone),
-                      onCompleted: (phone) async =>
-                          handleCheckPhoneNumber(phone),
-                      isRequired: true,
-                      focusNode: focusNodePhone,
-                      inputType: TextInputType.number,
-                      controller: phoneController,
-                    ),
-                    const SizedBox(height: 12),
-                    ValueListenableBuilder(
-                      valueListenable: isOTPSent,
-                      builder: (context, value, child) {
-                        if (value == false) return const SizedBox.shrink();
-                        return Text(
-                          "Mã OTP đã được gửi đến số điện thoại",
-                          style: AppStyle.boxFieldLabel.copyWith(
-                            color: const Color((0xffD81E1E)),
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    buildTextFieldVerifyPhoneItem(
-                      label: "Nhập mã OTP",
-                      hint: "Nhập mã OTP",
-                      textButton: "XÁC NHẬN",
-                      isPhoneField: false,
-                      onTap: () async => verifyOTP(),
-                      onTapOutSide: (p0) {},
-                      focusNode: focusNodeOTP,
-                      onCompleted: (p0) {},
-                      isRequired: true,
-                      inputType: TextInputType.number,
-                      controller: otpController,
-                    ),
-                    const SizedBox(height: 12),
-                    ValueListenableBuilder(
-                      valueListenable: isOTPCorrected,
-                      builder: (context, value, child) {
-                        if (value == true || value == null) {
-                          return const SizedBox.shrink();
-                        }
-                        return Text(
-                          "Nhập lại mã OTP",
-                          style: AppStyle.boxFieldLabel.copyWith(
-                            color: const Color((0xffD81E1E)),
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-                    ValueListenableBuilder(
-                      valueListenable: isOTPVerified,
-                      builder: (context, value, child) {
-                        if (value == false) return const SizedBox.shrink();
-                        return Column(
-                          children: [
-                            TextFieldLabelItem(
-                              isEnable: customer == null,
-                              label: "Họ và tên khách hàng",
-                              hint: "Nhập họ tên khách hàng",
-                              focusNode: focusNodeFullName,
-                              controller: nameController,
-                            ),
-                            const SizedBox(height: 20),
-                            Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: Row(
-                                children: [
-                                  Text(
-                                    "Địa chỉ",
-                                    style: AppStyle.boxFieldLabel,
-                                  ),
-                                  Text(
-                                    " * ",
-                                    style: AppStyle.boxFieldLabel.copyWith(
-                                        color: const Color(0xff8A0E1E)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            BlocBuilder(
-                              bloc: provincesBloc,
-                              builder: (context, state) {
-                                return buildAddressItem(
-                                  isEnable: customer == null,
-                                  label: provincesBloc.selectedProvince?.name ??
-                                      "Tỉnh/TP",
-                                  addressType: AddressType.province,
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            BlocBuilder(
-                              bloc: districtsBloc,
-                              builder: (context, state) {
-                                return buildAddressItem(
-                                  isEnable: customer == null,
-                                  label: districtsBloc.selectedDistrict?.name ??
-                                      "Quận/Huyện",
-                                  addressType: AddressType.district,
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            BlocBuilder(
-                              bloc: communesBloc,
-                              builder: (context, state) {
-                                return buildAddressItem(
-                                  isEnable: customer == null,
-                                  label: communesBloc.selectedCommune?.name ??
-                                      "Phường/Xã",
-                                  addressType: AddressType.commune,
-                                );
-                              },
-                            ),
-                            TextFieldLabelItem(
-                              label: "",
-                              hint: "Địa chỉ chi tiết",
-                              isEnable: customer == null,
-                              controller: addressController,
-                              focusNode: focusNodeAddress,
-                              isRequired: false,
-                            ),
-                            const SizedBox(height: 20),
-                            TextFieldLabelItem(
-                              label: "Email",
-                              hint: "Email",
-                              isEnable: customer == null,
-                              controller: emailController,
-                              isRequired: false,
-                            ),
-                            const SizedBox(height: 28),
-                            CustomButton(
-                              onTap: () {
-                                handleAndGoToNextStep();
-                              },
-                              textButton: "TIẾP TỤC",
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    // Handle Listener
-                    // BlocListener<StepBloc, int>(
-                    //   bloc: stepBloc,
-                    //   listener: (context, state) {
-                    //     if (state == 2) {
-                    //       if (!checkInput()) {
-                    //         DialogUtils.showWarningDialog(
-                    //           context: context,
-                    //           title: "Vui lòng hoàn thành bước trước đó!",
-                    //           canDismissible: false,
-                    //           onClickOutSide: () {},
-                    //         );
-                    //       }
-                    //     }
-                    //   },
-                    //   child: const SizedBox.shrink(),
-                    // ),
-                  ],
+                districtsBloc.emitDistrict(
+                  District(
+                    name: customer.address?.district,
+                    id: '',
+                    provinceId: '',
+                    type: null,
+                    typeText: '',
+                  ),
                 );
-              },
-            ),
+
+                communesBloc.emitCommune(
+                  Commune(
+                    name: customer.address?.commune,
+                    id: '',
+                    districtId: "",
+                    type: null,
+                    typeText: '',
+                  ),
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildTextFieldVerifyPhoneItem(
+                    label: "Số điện thoại",
+                    hint: "Số điện thoại",
+                    textButton: "GỬI MÃ",
+                    isPhoneField: true,
+                    onTap: () {
+                      isOTPSent.value = true;
+                    },
+                    onTapOutSide: (phone) async =>
+                        handleCheckPhoneNumber(phone),
+                    onCompleted: (phone) async =>
+                        handleCheckPhoneNumber(phone),
+                    isRequired: true,
+                    focusNode: focusNodePhone,
+                    inputType: TextInputType.number,
+                    controller: phoneController,
+                  ),
+                  const SizedBox(height: 12),
+                  ValueListenableBuilder(
+                    valueListenable: isOTPSent,
+                    builder: (context, value, child) {
+                      if (value == false) return const SizedBox.shrink();
+                      return Text(
+                        "Mã OTP đã được gửi đến số điện thoại",
+                        style: AppStyle.boxFieldLabel.copyWith(
+                          color: const Color((0xffD81E1E)),
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  buildTextFieldVerifyPhoneItem(
+                    label: "Nhập mã OTP",
+                    hint: "Nhập mã OTP",
+                    textButton: "XÁC NHẬN",
+                    isPhoneField: false,
+                    onTap: () async => verifyOTP(),
+                    onTapOutSide: (p0) {},
+                    focusNode: focusNodeOTP,
+                    onCompleted: (p0) {},
+                    isRequired: true,
+                    inputType: TextInputType.number,
+                    controller: otpController,
+                  ),
+                  const SizedBox(height: 12),
+                  ValueListenableBuilder(
+                    valueListenable: isOTPCorrected,
+                    builder: (context, value, child) {
+                      if (value == true || value == null) {
+                        return const SizedBox.shrink();
+                      }
+                      return Text(
+                        "Nhập lại mã OTP",
+                        style: AppStyle.boxFieldLabel.copyWith(
+                          color: const Color((0xffD81E1E)),
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+                  ValueListenableBuilder(
+                    valueListenable: isOTPVerified,
+                    builder: (context, value, child) {
+                      if (value == false) return const SizedBox.shrink();
+                      return Column(
+                        children: [
+                          TextFieldLabelItem(
+                            isEnable: customer == null,
+                            label: "Họ và tên khách hàng",
+                            hint: "Nhập họ tên khách hàng",
+                            focusNode: focusNodeFullName,
+                            controller: nameController,
+                          ),
+                          const SizedBox(height: 20),
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Row(
+                              children: [
+                                Text(
+                                  "Địa chỉ",
+                                  style: AppStyle.boxFieldLabel,
+                                ),
+                                Text(
+                                  " * ",
+                                  style: AppStyle.boxFieldLabel.copyWith(
+                                      color: const Color(0xff8A0E1E)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          BlocBuilder(
+                            bloc: provincesBloc,
+                            builder: (context, state) {
+                              return buildAddressItem(
+                                isEnable: customer == null,
+                                label: provincesBloc.selectedProvince?.name ??
+                                    "Tỉnh/TP",
+                                addressType: AddressType.province,
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          BlocBuilder(
+                            bloc: districtsBloc,
+                            builder: (context, state) {
+                              return buildAddressItem(
+                                isEnable: customer == null,
+                                label: districtsBloc.selectedDistrict?.name ??
+                                    "Quận/Huyện",
+                                addressType: AddressType.district,
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          BlocBuilder(
+                            bloc: communesBloc,
+                            builder: (context, state) {
+                              return buildAddressItem(
+                                isEnable: customer == null,
+                                label: communesBloc.selectedCommune?.name ??
+                                    "Phường/Xã",
+                                addressType: AddressType.commune,
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          TextFieldLabelItem(
+                            label: "Địa chỉ chi tiết",
+                            hint: "Địa chỉ chi tiết",
+                            isEnable: customer == null,
+                            controller: addressController,
+                            focusNode: focusNodeAddress,
+                            isRequired: true,
+                          ),
+                          const SizedBox(height: 20),
+                          TextFieldLabelItem(
+                            label: "Email",
+                            hint: "Email",
+                            isEnable: customer == null,
+                            controller: emailController,
+                            isRequired: false,
+                          ),
+                          const SizedBox(height: 28),
+                          CustomButton(
+                            onTap: () {
+                              handleAndGoToNextStep();
+                            },
+                            textButton: "TIẾP TỤC",
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  // Handle Listener
+                  // BlocListener<StepBloc, int>(
+                  //   bloc: stepBloc,
+                  //   listener: (context, state) {
+                  //     if (state == 2) {
+                  //       if (!checkInput()) {
+                  //         DialogUtils.showWarningDialog(
+                  //           context: context,
+                  //           title: "Vui lòng hoàn thành bước trước đó!",
+                  //           canDismissible: false,
+                  //           onClickOutSide: () {},
+                  //         );
+                  //       }
+                  //     }
+                  //   },
+                  //   child: const SizedBox.shrink(),
+                  // ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -375,7 +365,14 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     return GestureDetector(
       onTap: () {
         if (isEnable) {
-          showBottomSheetChooseAddress(context, addressType);
+          showBottomSheetChooseAddress(
+            context: context,
+            addressType: addressType,
+            pageController: pageController,
+            provincesBloc: provincesBloc,
+            districtsBloc: districtsBloc,
+            communesBloc: communesBloc,
+          );
         }
       },
       child: Container(
@@ -614,483 +611,6 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
         onClickOutSide: () {},
       );
     }
-  }
-
-  showBottomSheetChooseAddress(BuildContext context, AddressType addressType) {
-    final size = MediaQuery.of(context).size;
-
-    if (addressType == AddressType.province) {
-      pageController = PageController(initialPage: 0);
-      provincesBloc.emitProvincesFullList();
-    }
-    if (addressType == AddressType.district) {
-      if (provincesBloc.selectedProvince == null) {
-        return;
-      }
-      pageController = PageController(initialPage: 1);
-    }
-    if (addressType == AddressType.commune) {
-      if (districtsBloc.selectedDistrict == null) {
-        return;
-      }
-      pageController = PageController(initialPage: 2);
-    }
-
-    showModalBottomSheet(
-      elevation: 1,
-      isDismissible: true,
-      barrierLabel: '',
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      context: context,
-      builder: (context) {
-        return SizedBox(
-          height: size.height * 0.85,
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 3),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      alignment: Alignment.center,
-                      margin: const EdgeInsets.only(left: 46),
-                      child: Text(
-                        "Chọn",
-                        style: AppStyle.heading2.copyWith(fontSize: 18),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.close,
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: PageView(
-                  controller: pageController,
-                  scrollDirection: Axis.horizontal,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (addressType == AddressType.province)
-                            Text(
-                              "Tỉnh thành",
-                              style: AppStyle.heading2.copyWith(fontSize: 16),
-                            ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 40,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              color: const Color(0xffEEEEEE),
-                            ),
-                            child: Center(
-                              child: TextField(
-                                style: AppStyle.boxField.copyWith(fontSize: 15),
-                                onChanged: (value) {
-                                  provincesBloc.add(SearchProvinces(value));
-                                },
-                                decoration: InputDecoration(
-                                  hintText: "Tìm kiếm tỉnh thành",
-                                  hintStyle:
-                                      AppStyle.boxField.copyWith(fontSize: 15),
-                                  prefixIcon: const Icon(
-                                    Icons.search,
-                                    size: 20,
-                                    color: Colors.grey,
-                                  ),
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                  border: const UnderlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: buildProvinceBlocBuilder(),
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          BlocBuilder(
-                            bloc: provincesBloc,
-                            builder: (context, state) {
-                              return Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      pageController.animateToPage(
-                                        0,
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    },
-                                    child: Text(
-                                      provincesBloc.selectedProvince!.name!,
-                                      style: AppStyle.heading2.copyWith(
-                                          fontSize: 16, color: Colors.grey),
-                                    ),
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 3),
-                                    child: Icon(
-                                      Icons.keyboard_arrow_right,
-                                      size: 18,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  Text(
-                                    "Quận/Huyện",
-                                    style: AppStyle.heading2
-                                        .copyWith(fontSize: 16),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 40,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              color: const Color(0xffEEEEEE),
-                            ),
-                            child: Center(
-                              child: BlocBuilder(
-                                bloc: provincesBloc,
-                                builder: (context, state) {
-                                  return TextField(
-                                    style: AppStyle.boxField
-                                        .copyWith(fontSize: 15),
-                                    onChanged: (value) {
-                                      districtsBloc.add(SearchDistrict(value));
-                                    },
-                                    decoration: InputDecoration(
-                                      hintText: "Tìm kiếm quận huyện",
-                                      hintStyle: AppStyle.boxField
-                                          .copyWith(fontSize: 15),
-                                      prefixIcon: const Icon(
-                                        Icons.search,
-                                        size: 20,
-                                        color: Colors.grey,
-                                      ),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              vertical: 12),
-                                      border: const UnderlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: buildDistrictBlocBuilder(),
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          BlocBuilder(
-                            bloc: districtsBloc,
-                            builder: (context, state) {
-                              return Wrap(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      pageController.animateToPage(
-                                        0,
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    },
-                                    child: Text(
-                                      provincesBloc.selectedProvince!.name!,
-                                      style: AppStyle.heading2.copyWith(
-                                          fontSize: 16, color: Colors.grey),
-                                    ),
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 3),
-                                    child: Icon(
-                                      Icons.keyboard_arrow_right,
-                                      size: 18,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      pageController.animateToPage(
-                                        1,
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    },
-                                    child: Text(
-                                      districtsBloc.selectedDistrict!.name!,
-                                      style: AppStyle.heading2.copyWith(
-                                          fontSize: 16, color: Colors.grey),
-                                    ),
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 3),
-                                    child: Icon(
-                                      Icons.keyboard_arrow_right,
-                                      size: 18,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  Text(
-                                    "Phường/Xã",
-                                    style: AppStyle.heading2
-                                        .copyWith(fontSize: 16),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 40,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(6),
-                                color: const Color(0xffEEEEEE)),
-                            child: Center(
-                              child: TextField(
-                                style: AppStyle.boxField.copyWith(fontSize: 15),
-                                onChanged: (value) {
-                                  communesBloc.add(SearchCommunes(value));
-                                },
-                                decoration: InputDecoration(
-                                  hintText: "Tìm kiếm phường xã",
-                                  hintStyle:
-                                      AppStyle.boxField.copyWith(fontSize: 15),
-                                  prefixIcon: const Icon(
-                                    Icons.search,
-                                    size: 20,
-                                    color: Colors.grey,
-                                  ),
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                  border: const UnderlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: buildCommuneBlocBuilder(),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget buildProvinceBlocBuilder() {
-    return BlocBuilder(
-      bloc: provincesBloc,
-      builder: (context, state) {
-        if (state is ProvincesLoading) {
-          return Center(
-            child: Lottie.asset(AppAssets.aLoading, height: 50),
-          );
-        }
-        if (state is ProvincesLoaded) {
-          final provinces = state.provinces;
-          return ListView.builder(
-            itemCount: provinces.length,
-            itemBuilder: (context, index) {
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey.shade400,
-                      width: .2,
-                    ),
-                  ),
-                ),
-                child: ListTile(
-                  onTap: () {
-                    // Reset
-                    districtsBloc.selectedDistrict = null;
-                    communesBloc.selectedCommune = null;
-                    //
-
-                    provincesBloc.selectProvince(provinces[index]);
-                    // Fetch districts
-                    Province? province = provincesBloc.selectedProvince;
-                    districtsBloc.add(FetchDistricts(province!.id!));
-                    // Change page view
-                    pageController.animateToPage(
-                      1,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.bounceIn,
-                    );
-                  },
-                  leading: null,
-                  minTileHeight: 48,
-                  titleAlignment: ListTileTitleAlignment.center,
-                  contentPadding: const EdgeInsets.all(0),
-                  title: Text(
-                    provinces[index].name!,
-                    style: AppStyle.boxField.copyWith(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget buildDistrictBlocBuilder() {
-    return BlocBuilder(
-      bloc: districtsBloc,
-      builder: (context, state) {
-        if (state is DistrictsLoading) {
-          return Center(
-            child: Lottie.asset(AppAssets.aLoading, height: 50),
-          );
-        }
-        if (state is DistrictsLoaded) {
-          final districts = state.districts;
-          return ListView.builder(
-            itemCount: districts.length,
-            itemBuilder: (context, index) {
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey.shade400,
-                      width: .2,
-                    ),
-                  ),
-                ),
-                child: ListTile(
-                  onTap: () {
-                    districtsBloc.selectDistrict(districts[index]);
-                    // Fetch commune
-                    District? district = districtsBloc.selectedDistrict;
-                    communesBloc.add(FetchCommunes(district!.id!));
-                    // Change page view
-                    pageController.animateToPage(
-                      2,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.bounceIn,
-                    );
-                  },
-                  leading: null,
-                  minTileHeight: 48,
-                  titleAlignment: ListTileTitleAlignment.center,
-                  contentPadding: const EdgeInsets.all(0),
-                  title: Text(
-                    districts[index].name!,
-                    style: AppStyle.boxField.copyWith(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget buildCommuneBlocBuilder() {
-    return BlocBuilder(
-      bloc: communesBloc,
-      builder: (context, state) {
-        if (state is CommunesLoading) {
-          return Center(
-            child: Lottie.asset(AppAssets.aLoading, height: 50),
-          );
-        }
-        if (state is CommunesLoaded) {
-          final communes = state.communes;
-          return ListView.builder(
-            itemCount: communes.length,
-            itemBuilder: (context, index) {
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey.shade400,
-                      width: .2,
-                    ),
-                  ),
-                ),
-                child: ListTile(
-                  onTap: () {
-                    communesBloc.selectCommune(communes[index]);
-                    context.pop();
-                  },
-                  leading: null,
-                  minTileHeight: 48,
-                  titleAlignment: ListTileTitleAlignment.center,
-                  contentPadding: const EdgeInsets.all(0),
-                  title: Text(
-                    communes[index].name!,
-                    style: AppStyle.boxField.copyWith(
-                        color: Colors.black87, fontWeight: FontWeight.w500),
-                  ),
-                ),
-              );
-            },
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
   }
 
   handleCheckPhoneNumber(String phone) async {

@@ -35,7 +35,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
-  final addressController = TextEditingController();
+  final addressDetailController = TextEditingController();
   ValueNotifier<bool> isShowFab = ValueNotifier(true);
   ValueNotifier<String?> selectedRole = ValueNotifier(null);
   final List<String> dropdownItems = [
@@ -63,7 +63,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
-    addressController.dispose();
+    addressDetailController.dispose();
     focusNodeName.dispose();
     focusNodePhone.dispose();
     focusNodeAddress.dispose();
@@ -110,15 +110,17 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
           children: [
             const SizedBox(height: 30),
             Container(
-              height: 38,
+              height: 40,
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               margin: const EdgeInsets.symmetric(horizontal: 20),
+              alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
                 color: const Color(0xffEEEEEE),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: SearchField(
+                hint: "Tìm kiếm theo tên",
                 onSearch: (value) {
                   // fetchAgencyStaffBloc.searchStaff(value);
                 },
@@ -331,7 +333,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   showStaffInformation({UserModel? user}) async {
     nameController.text = user?.fullName ?? "";
     phoneController.text = user?.phoneNumber ?? "";
-    addressController.text = user?.address ?? "";
+    addressDetailController.text = user?.address?.detail ?? "";
     emailController.text = user?.email ?? "";
 
     await showGeneralDialog(
@@ -411,7 +413,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           const SizedBox(height: 23),
                           BoxFieldItem(
                             hintValue: "Địa chỉ",
-                            controller: addressController,
+                            controller: addressDetailController,
                             focusNode: focusNodeAddress,
                           ),
                           const SizedBox(height: 36),
@@ -576,7 +578,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   showStaffCreation() async {
     nameController.text = "";
     phoneController.text = "";
-    addressController.text = "";
+    addressDetailController.text = "";
     emailController.text = "";
 
     showGeneralDialog(
@@ -659,7 +661,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           const SizedBox(height: 23),
                           BoxFieldItem(
                             hintValue: "Địa chỉ",
-                            controller: addressController,
+                            controller: addressDetailController,
                           ),
                           const SizedBox(height: 36),
                           CustomButton(
@@ -719,7 +721,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
         // Get text field value
         final userUpdate = user;
         userUpdate.fullName = nameController.text.trim();
-        userUpdate.address = addressController.text.trim();
+        userUpdate.address = null;
 
         // Get role
         String newRole = "";
@@ -738,7 +740,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   handleCreateStaff() async {
     String fullName = nameController.text.trim();
     String phoneNumber = phoneController.text.trim();
-    String address = addressController.text.trim();
+    String address = addressDetailController.text.trim();
     String email = emailController.text.trim();
 
     DialogUtils.showConfirmationDialog(
@@ -768,7 +770,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
           phoneNumber: phoneNumber,
           role: newRole,
           createdAt: Timestamp.now(),
-          address: address,
+          address: null,
           agency: null,
           password: "123456",
           isDelete: false,
@@ -784,10 +786,12 @@ enum ShowType { view, create, update }
 
 class SearchField extends StatefulWidget {
   final Function(String) onSearch;
+  final String hint;
 
   const SearchField({
     super.key,
     required this.onSearch,
+    required this.hint,
   });
 
   @override
@@ -820,23 +824,26 @@ class _SearchFieldState extends State<SearchField> {
   Widget build(BuildContext context) {
     return TextField(
       onChanged: (value) => _onSearchChanged(value),
+      onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()),
       style: const TextStyle(
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: FontWeight.w400,
         fontFamily: 'BeVietNam',
         color: Color(0xff3C3C43),
       ),
+      textAlignVertical: TextAlignVertical.center,
       decoration: InputDecoration(
         border: const UnderlineInputBorder(borderSide: BorderSide.none),
-        hintText: 'Tìm kiếm',
+        hintText: widget.hint,
         hintStyle: TextStyle(
-          fontSize: 16,
+          fontSize: 15,
           fontWeight: FontWeight.w400,
           fontFamily: 'BeVietNam',
           color: Colors.grey.shade500,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 11),
+        isCollapsed: true,
       ),
+      cursorColor: Colors.grey,
     );
   }
 }

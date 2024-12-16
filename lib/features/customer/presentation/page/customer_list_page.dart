@@ -8,6 +8,7 @@ import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
+import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
 import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_event.dart';
@@ -94,7 +95,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
                 margin: const EdgeInsets.only(right: 3),
                 alignment: Alignment.centerLeft,
                 child: FilterDropdown(
-                  selectedValue: selectedTimeFilter.value ?? 'Tháng',
+                  selectedValue: selectedTimeFilter.value ?? 'Tất cả',
                   onChanged: (value) {
                     setState(() {
                       selectedTimeFilter.value = value;
@@ -114,7 +115,14 @@ class _CustomerListPageState extends State<CustomerListPage> {
                         dropdownAgenciesItems = List.from(state.agencies);
                         dropdownAgenciesItems.insert(
                           0,
-                          Agency("", "", "Tất cả", "", Timestamp.now(), false),
+                          Agency(
+                            "",
+                            "",
+                            "Tất cả",
+                            null,
+                            Timestamp.now(),
+                            false,
+                          ),
                         );
                         return FilterDropdownAgency(
                           onChanged: (value) {
@@ -237,7 +245,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
                   itemBuilder: (context, index) => Container(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 20,
-                      vertical: 5,
+                      vertical: 10,
                     ),
                     child: const CustomerCardShimmer(),
                   ),
@@ -302,14 +310,16 @@ class _CustomerListPageState extends State<CustomerListPage> {
         children: [
           const SizedBox(height: 10),
           Container(
-            height: 38,
+            height: 40,
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            alignment: FractionalOffset.centerLeft,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: const Color(0xffEEEEEE),
               borderRadius: BorderRadius.circular(10),
             ),
             child: SearchField(
+              hint: "Tìm kiếm theo tên và số điện thoại",
               onSearch: (value) {
                 setState(() {
                   searchNotifier.value = value.trim().toLowerCase();
@@ -392,7 +402,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
         physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: CustomerCardItem(
               customerEntity: customerSearchResult[index],
             ),
@@ -403,61 +413,3 @@ class _CustomerListPageState extends State<CustomerListPage> {
   }
 }
 
-class SearchField extends StatefulWidget {
-  final Function(String) onSearch;
-
-  const SearchField({
-    super.key,
-    required this.onSearch,
-  });
-
-  @override
-  State<SearchField> createState() => _SearchFieldState();
-}
-
-class _SearchFieldState extends State<SearchField> {
-  Timer? _debounce;
-
-  void _onSearchChanged(String query) {
-    // Hủy Timer cũ nếu có
-    if (_debounce?.isActive ?? false) {
-      _debounce?.cancel();
-    }
-
-    // Tạo Timer mới
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      widget.onSearch(query);
-    });
-  }
-
-  @override
-  void dispose() {
-    // Hủy Timer khi Widget bị dispose
-    _debounce?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      onChanged: (value) => _onSearchChanged(value),
-      style: const TextStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.w400,
-        fontFamily: 'BeVietNam',
-        color: Color(0xff3C3C43),
-      ),
-      decoration: InputDecoration(
-        border: const UnderlineInputBorder(borderSide: BorderSide.none),
-        hintText: 'Tìm kiếm khách hàng',
-        hintStyle: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          fontFamily: 'BeVietNam',
-          color: Colors.grey.shade500,
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 12),
-      ),
-    );
-  }
-}

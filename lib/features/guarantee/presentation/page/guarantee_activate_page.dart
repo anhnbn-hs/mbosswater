@@ -177,98 +177,101 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                 );
               }
             },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                BlocBuilder<StepBloc, int>(
-                  bloc: stepBloc,
-                  builder: (context, state) {
-                    return EasyStepper(
-                      activeStep: state,
-                      enableStepTapping: true,
-                      lineStyle: const LineStyle(
-                        lineType: LineType.normal,
-                        defaultLineColor: Color(0xffD3DCE6),
-                        lineThickness: 1.5,
-                      ),
-                      activeStepTextColor: Colors.black87,
-                      finishedStepTextColor: Colors.black87,
-                      internalPadding: 60,
-                      showLoadingAnimation: false,
-                      stepRadius: 8,
-                      showStepBorder: false,
-                      steps: [
-                        buildEasyStep(title: "Sản phẩm", stepNumber: 1),
-                        buildEasyStep(title: "Khách hàng", stepNumber: 2),
-                        buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
-                      ],
-                      onStepReached: (index) {
-                        animateToPage(index);
-                      },
-                    );
-                  },
-                ),
-                Expanded(
-                  child: PageView(
-                    controller: pageController,
-                    scrollDirection: Axis.horizontal,
-                    onPageChanged: (index) => animateToPage(index),
-                    children: [
-                      ProductInfoStep(
-                        key: productStepKey,
-                        product: widget.product,
-                        onNextStep: () {
-                          if (widget.product != null) {
-                            productBloc.emitProduct(widget.product!);
-                          }
-                          stepBloc.goToNextStep();
-                          pageController.animateToPage(
-                            stepBloc.currentStep,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  BlocBuilder<StepBloc, int>(
+                    bloc: stepBloc,
+                    builder: (context, state) {
+                      return EasyStepper(
+                        activeStep: state,
+                        enableStepTapping: true,
+                        lineStyle: const LineStyle(
+                          lineType: LineType.normal,
+                          defaultLineColor: Color(0xffD3DCE6),
+                          lineThickness: 1.5,
+                        ),
+                        activeStepTextColor: Colors.black87,
+                        finishedStepTextColor: Colors.black87,
+                        internalPadding: 60,
+                        showLoadingAnimation: false,
+                        stepRadius: 8,
+                        showStepBorder: false,
+                        steps: [
+                          buildEasyStep(title: "Sản phẩm", stepNumber: 1),
+                          buildEasyStep(title: "Khách hàng", stepNumber: 2),
+                          buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
+                        ],
+                        onStepReached: (index) {
+                          animateToPage(index);
                         },
-                      ),
-                      CustomerInfoStep(
-                        key: customerStepKey,
-                        guaranteeActiveKey:
-                            widget.key as GlobalKey<GuaranteeActivatePageState>,
-                        onPreStep: () {
-                          stepBloc.goToPreviousStep();
-                          pageController.animateToPage(
-                            stepBloc.currentStep,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        onNextStep: (isHandleDuplicatePhone) {
-                          stepBloc.goToNextStep();
-                          pageController.animateToPage(
-                            stepBloc.currentStep,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                      ),
-                      AdditionalInfoStep(
-                        key: additionalStepKey,
-                        onPreStep: () {
-                          stepBloc.goToPreviousStep();
-                          pageController.animateToPage(
-                            stepBloc.currentStep,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        onNextStep: () async {
-                          handleConfirmAndActiveGuarantee();
-                        },
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: PageView(
+                      controller: pageController,
+                      scrollDirection: Axis.horizontal,
+                      onPageChanged: (index) => animateToPage(index),
+                      children: [
+                        ProductInfoStep(
+                          key: productStepKey,
+                          product: widget.product,
+                          onNextStep: () {
+                            if (widget.product != null) {
+                              productBloc.emitProduct(widget.product!);
+                            }
+                            stepBloc.goToNextStep();
+                            pageController.animateToPage(
+                              stepBloc.currentStep,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                        ),
+                        CustomerInfoStep(
+                          key: customerStepKey,
+                          guaranteeActiveKey:
+                              widget.key as GlobalKey<GuaranteeActivatePageState>,
+                          onPreStep: () {
+                            stepBloc.goToPreviousStep();
+                            pageController.animateToPage(
+                              stepBloc.currentStep,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          onNextStep: (isHandleDuplicatePhone) {
+                            stepBloc.goToNextStep();
+                            pageController.animateToPage(
+                              stepBloc.currentStep,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                        ),
+                        AdditionalInfoStep(
+                          key: additionalStepKey,
+                          onPreStep: () {
+                            stepBloc.goToPreviousStep();
+                            pageController.animateToPage(
+                              stepBloc.currentStep,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          onNextStep: () async {
+                            handleConfirmAndActiveGuarantee();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

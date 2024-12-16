@@ -65,7 +65,11 @@ class Address {
   });
 
   String displayAddress() {
-    return "${commune!}, ${district!}, $province";
+    String pdc = "${commune!}, ${district!}, $province";
+    if(detail != null){
+      return "${detail!}, $pdc";
+    }
+    return pdc;
   }
 
   factory Address.fromJson(Map<String, dynamic> json) {

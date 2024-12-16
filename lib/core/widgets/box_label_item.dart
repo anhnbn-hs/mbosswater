@@ -37,9 +37,8 @@ class BoxLabelItem extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Container(
-          height: 38,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
             color: const Color(0xffF6F6F6),

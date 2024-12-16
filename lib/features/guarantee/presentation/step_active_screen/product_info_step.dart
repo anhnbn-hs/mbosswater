@@ -102,8 +102,9 @@ class ProductInfoStepState extends State<ProductInfoStep>
             const SizedBox(height: 40),
             CustomButton(
               onTap: () {
-                bool isAgency = Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role);
-                if(!isAgency && agencyBloc.selectedAgency == null){
+                bool isAgency =
+                    Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role);
+                if (!isAgency && agencyBloc.selectedAgency == null) {
                   DialogUtils.showWarningDialog(
                     context: context,
                     title: "Hãy chọn đại lý để tiếp tục!",
@@ -154,13 +155,14 @@ class ProductInfoStepState extends State<ProductInfoStep>
             await showBottomSheetChooseAgency();
           },
           child: Container(
-            height: 38,
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             alignment: Alignment.centerLeft,
             decoration: BoxDecoration(
-              color: const Color(0xffF6F6F6),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xffBDBDBD),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -190,7 +192,6 @@ class ProductInfoStepState extends State<ProductInfoStep>
     );
   }
 
-
   @override
   bool get wantKeepAlive => true;
 
@@ -219,7 +220,41 @@ class ProductInfoStepState extends State<ProductInfoStep>
                   "Chọn đại lý",
                   style: AppStyle.heading2.copyWith(fontSize: 18),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 16),
+                Container(
+                  height: 40,
+                  width: double.infinity,
+                  alignment: Alignment.centerLeft,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: const Color(0xffEEEEEE),
+                  ),
+                  child: Center(
+                    child: TextField(
+                      style: AppStyle.boxField.copyWith(fontSize: 15),
+                      onChanged: (value) {
+                        agencyBloc.searchAgency(value);
+                      },
+                      textAlignVertical: TextAlignVertical.center,
+                      onTapOutside: (event) =>
+                          FocusScope.of(context).requestFocus(FocusNode()),
+                      decoration: InputDecoration(
+                        hintText: "Tìm kiếm đại lý",
+                        hintStyle: AppStyle.boxField.copyWith(fontSize: 15),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                        isCollapsed: true,
+                        border: const UnderlineInputBorder(
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Expanded(
                   child: BlocBuilder(
                     bloc: agencyBloc,

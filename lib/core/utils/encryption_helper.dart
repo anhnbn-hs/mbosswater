@@ -1,40 +1,52 @@
+import 'dart:convert';
+
 import 'package:encrypt/encrypt.dart' as encrypt;
 
 
 class EncryptionHelper {
   static String encryptData(String data, String secretKey) {
     try {
-      final key = encrypt.Key.fromUtf8(secretKey.padRight(32, ' ').substring(0, 32)); // Đảm bảo độ dài 32 ký tự
-      final iv = encrypt.IV.fromLength(16); // IV dài 16 byte
+      // Ensure the key is exactly 32 characters long
+      final key = encrypt.Key.fromUtf8(secretKey.padRight(32, ' ').substring(0, 32));
 
-      final encrypter = encrypt.Encrypter(encrypt.AES(key));
+      // Generate a fixed-length IV
+      final iv = encrypt.IV.fromLength(16);
 
-      // Mã hóa dữ liệu và lưu IV cùng với dữ liệu mã hóa (base64)
+      final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+
+      // Encrypt the data
       final encrypted = encrypter.encrypt(data, iv: iv);
-      // Lưu IV cùng với dữ liệu mã hóa (hoặc sử dụng một cách khác để lưu trữ IV)
-      return iv.base64 + encrypted.base64; // Gộp IV và dữ liệu mã hóa
-    } on Exception catch (e) {
-      print("Error: $e");
+
+      // Combine base64 encoded IV and base64 encoded encrypted data
+      return base64.encode(iv.bytes) + encrypted.base64;
+    } catch (e) {
+      print("Encryption Error: $e");
       rethrow;
     }
   }
 
   static String decryptData(String encryptedData, String secretKey) {
     try {
-      final key = encrypt.Key.fromUtf8(secretKey.padRight(32, ' ').substring(0, 32)); // Đảm bảo độ dài 32 ký tự
+      // Ensure the key is exactly 32 characters long
+      final key = encrypt.Key.fromUtf8(secretKey.padRight(32, ' ').substring(0, 32));
 
-      // Tách IV và dữ liệu mã hóa
-      final ivBase64 = encryptedData.substring(0, 24); // IV có độ dài 16 byte (24 ký tự base64)
-      final encryptedBase64 = encryptedData.substring(24); // Dữ liệu mã hóa còn lại
+      // Split the base64 encoded IV and encrypted data
+      // First 24 characters are the base64 encoded IV (16 bytes = 24 base64 chars)
+      final ivBase64 = encryptedData.substring(0, 24);
+      final encryptedBase64 = encryptedData.substring(24);
 
-      final iv = encrypt.IV.fromBase64(ivBase64); // Chuyển đổi IV từ base64
-      final encrypter = encrypt.Encrypter(encrypt.AES(key));
+      // Decode the IV
+      final ivBytes = base64.decode(ivBase64);
+      final iv = encrypt.IV(ivBytes);
 
-      // Giải mã dữ liệu
+      final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+
+      // Decrypt the data
       final decrypted = encrypter.decrypt64(encryptedBase64, iv: iv);
+
       return decrypted;
-    } on Exception catch (e) {
-      print("Error during decryption: $e");
+    } catch (e) {
+      print("Decryption Error: $e");
       rethrow;
     }
   }

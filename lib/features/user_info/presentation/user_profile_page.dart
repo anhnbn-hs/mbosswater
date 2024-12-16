@@ -96,15 +96,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               fieldValue: agency.name,
                             ),
                           ),
-                        if (state.user.agency != null && agency != null)
-                          Padding(
+                        Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: BoxLabelItem(
                               label: "Địa chỉ",
-                              fieldValue: agency.address,
+                              fieldValue: userInfoBloc.user?.address?.displayAddress() ?? "",
                             ),
-                          ),
-                        if (state.user.email != null)
+                        ),
+                        if (state.user.email != null || state.user.email != "")
                           BoxLabelItem(
                             label: "Email",
                             fieldValue: state.user.email,

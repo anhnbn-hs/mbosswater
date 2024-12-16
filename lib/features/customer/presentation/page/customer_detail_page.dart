@@ -148,7 +148,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                   return ListView.builder(
                     itemCount: 8,
                     itemBuilder: (context, index) => Container(
-                      margin: const EdgeInsets.symmetric(vertical: 5),
+                      margin: const EdgeInsets.symmetric(vertical: 10),
                       child: const CustomerCardShimmer(),
                     ),
                   );

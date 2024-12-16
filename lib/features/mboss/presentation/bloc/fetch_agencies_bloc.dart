@@ -36,12 +36,9 @@ class FetchAgenciesBloc extends Cubit<List<Agency>> {
       emit(_allAgency);
     } else {
       final filteredAgencies = _allAgency
-          .where(
-            (agency) =>
-                agency.name.toLowerCase().contains(query) ||
-                agency.address.toLowerCase().contains(query) ||
-                agency.code.toLowerCase().contains(query),
-          )
+          .where((agency) =>
+              agency.name.toLowerCase().contains(query) ||
+              agency.address!.displayAddress().toLowerCase().contains(query))
           .toList();
       emit(filteredAgencies);
     }

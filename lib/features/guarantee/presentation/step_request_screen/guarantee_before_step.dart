@@ -203,6 +203,7 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
           child: TextField(
               maxLines: 6,
               controller: controller,
+              onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
               decoration: InputDecoration.collapsed(
                 hintText: "Mô tả tình trạng sản phẩm",
                 hintStyle: AppStyle.boxField.copyWith(

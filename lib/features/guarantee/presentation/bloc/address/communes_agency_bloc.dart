@@ -2,44 +2,15 @@ import 'package:bloc/bloc.dart';
 import 'package:mbosswater/features/guarantee/data/model/commune.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/address_usecase.dart';
 import 'package:collection/collection.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
 
-abstract class CommunesEvent {}
-
-class FetchCommunes extends CommunesEvent {
-  final String districtId;
-
-  FetchCommunes(this.districtId);
-}
-class SearchCommunes extends CommunesEvent {
-  String query;
-
-  SearchCommunes(this.query);
-}
-abstract class CommunesState {}
-
-class CommunesInitial extends CommunesState {}
-
-class CommunesLoading extends CommunesState {}
-
-class CommunesLoaded extends CommunesState {
-  final List<Commune> communes;
-
-  CommunesLoaded(this.communes);
-}
-
-class CommunesError extends CommunesState {
-  final String message;
-
-  CommunesError(this.message);
-}
-
-class CommunesBloc extends Bloc<CommunesEvent, CommunesState> {
+class CommunesAgencyBloc extends Bloc<CommunesEvent, CommunesState> {
   final AddressUseCase addressUseCase;
 
   Commune? selectedCommune;
   List<Commune>? communes;
 
-  CommunesBloc(this.addressUseCase) : super(CommunesInitial()) {
+  CommunesAgencyBloc(this.addressUseCase) : super(CommunesInitial()) {
     on<FetchCommunes>((event, emit) async {
       emit(CommunesLoading());
       try {
@@ -81,6 +52,7 @@ class CommunesBloc extends Bloc<CommunesEvent, CommunesState> {
       emit(CommunesLoaded(currentState.communes));
     }
   }
+
 
   void emitCommune(Commune commune){
     selectedCommune = commune;

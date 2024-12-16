@@ -3,44 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:mbosswater/features/guarantee/data/model/province.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/address_usecase.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 
-// Events
-abstract class ProvincesEvent {}
-
-class FetchProvinces extends ProvincesEvent {}
-
-class SearchProvinces extends ProvincesEvent {
-  String query;
-
-  SearchProvinces(this.query);
-}
-
-// States
-abstract class ProvincesState {}
-
-class ProvincesInitial extends ProvincesState {}
-
-class ProvincesLoading extends ProvincesState {}
-
-class ProvincesLoaded extends ProvincesState {
-  final List<Province> provinces;
-
-  ProvincesLoaded(this.provinces);
-}
-
-class ProvincesError extends ProvincesState {
-  final String message;
-
-  ProvincesError(this.message);
-}
-
-class ProvincesBloc extends Bloc<ProvincesEvent, ProvincesState> {
+class ProvincesAgencyBloc extends Bloc<ProvincesEvent, ProvincesState> {
   final AddressUseCase addressUseCase;
 
   Province? selectedProvince;
   List<Province>? provinces;
 
-  ProvincesBloc(this.addressUseCase) : super(ProvincesInitial()) {
+  ProvincesAgencyBloc(this.addressUseCase) : super(ProvincesInitial()) {
     on<FetchProvinces>((event, emit) async {
       emit(ProvincesLoading());
       try {
@@ -83,6 +54,7 @@ class ProvincesBloc extends Bloc<ProvincesEvent, ProvincesState> {
       emit(ProvincesLoaded(currentState.provinces));
     }
   }
+
 
   void emitProvincesFullList() {
     if (provinces != null) {

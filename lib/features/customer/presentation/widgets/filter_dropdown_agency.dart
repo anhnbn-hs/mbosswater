@@ -61,7 +61,7 @@ class _FilterDropdownAgencyState extends State<FilterDropdownAgency> {
         width: MediaQuery.of(context).size.width / 2 - 24 - 3,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           color: const Color(0xffEFEFF0),
         ),
         child: Row(
@@ -71,7 +71,7 @@ class _FilterDropdownAgencyState extends State<FilterDropdownAgency> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  selected?.name ?? "Đại lý",
+                  selected?.name ?? "Tất cả",
                   maxLines: 1,
                   style: const TextStyle(
                     fontFamily: "BeVietnam",

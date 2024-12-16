@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 
@@ -6,7 +5,6 @@ class CustomTextField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
   final bool obscureText;
-  
 
   const CustomTextField({
     super.key,
@@ -22,7 +20,6 @@ class CustomTextField extends StatefulWidget {
 class _CustomTextFieldState extends State<CustomTextField> {
   IconData suffixIcon = Icons.visibility;
   late bool isShow;
-
 
   @override
   void initState() {
@@ -59,6 +56,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     fontSize: 15,
                   ),
                 ),
+                onTapOutside: (event) =>
+                    FocusScope.of(context).requestFocus(FocusNode()),
                 cursorColor: AppColors.textInputColor,
                 style: TextStyle(
                   fontFamily: "BeVietnam",
@@ -71,22 +70,22 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
           widget.obscureText
               ? IconButton(
-            onPressed: () {
-              setState(() {
-                if (isShow) {
-                  suffixIcon = Icons.visibility_off;
-                } else {
-                  suffixIcon = Icons.visibility;
-                }
-                isShow = !isShow;
-              });
-            },
-            icon: Icon(
-              suffixIcon,
-              size: 22,
-              color: Colors.grey,
-            ),
-          )
+                  onPressed: () {
+                    setState(() {
+                      if (isShow) {
+                        suffixIcon = Icons.visibility_off;
+                      } else {
+                        suffixIcon = Icons.visibility;
+                      }
+                      isShow = !isShow;
+                    });
+                  },
+                  icon: Icon(
+                    suffixIcon,
+                    size: 22,
+                    color: Colors.grey,
+                  ),
+                )
               : const SizedBox.shrink(),
         ],
       ),

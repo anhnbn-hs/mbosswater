@@ -3,47 +3,17 @@ import 'package:bloc/bloc.dart';
 import 'package:mbosswater/features/guarantee/data/model/district.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/address_usecase.dart';
 import 'package:collection/collection.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
 
-abstract class DistrictsEvent {}
 
-class FetchDistricts extends DistrictsEvent {
-  final String provinceId;
-
-  FetchDistricts(this.provinceId);
-}
-
-class SearchDistrict extends DistrictsEvent {
-  String query;
-
-  SearchDistrict(this.query);
-}
-
-abstract class DistrictsState {}
-
-class DistrictsInitial extends DistrictsState {}
-
-class DistrictsLoading extends DistrictsState {}
-
-class DistrictsLoaded extends DistrictsState {
-  final List<District> districts;
-
-  DistrictsLoaded(this.districts);
-}
-
-class DistrictsError extends DistrictsState {
-  final String message;
-
-  DistrictsError(this.message);
-}
-
-class DistrictsBloc extends Bloc<DistrictsEvent, DistrictsState> {
+class DistrictsAgencyBloc extends Bloc<DistrictsEvent, DistrictsState> {
   final AddressUseCase addressUseCase;
 
   District? selectedDistrict;
 
   List<District>? districts;
 
-  DistrictsBloc(this.addressUseCase) : super(DistrictsInitial()) {
+  DistrictsAgencyBloc(this.addressUseCase) : super(DistrictsInitial()) {
     on<FetchDistricts>((event, emit) async {
       emit(DistrictsLoading());
       try {
@@ -86,13 +56,6 @@ class DistrictsBloc extends Bloc<DistrictsEvent, DistrictsState> {
     }
   }
 
-
-  void rebuildBlocWidget(){
-    if(state is DistrictsLoaded){
-      final currentState = state as DistrictsLoaded;
-      emit(DistrictsLoaded(currentState.districts));
-    }
-  }
 
   void emitDistrict(District district){
     selectedDistrict = district;
