@@ -63,7 +63,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
           children: [
             BoxLabelItem(
               label: "Tên sản phẩm",
-              fieldValue: "Máy Lọc Nước Tạo Kiềm MBossWater",
+              fieldValue: widget.product?.name ?? "Máy Lọc Nước Tạo Kiềm MBossWater",
             ),
             const SizedBox(height: 12),
             BoxLabelItem(
