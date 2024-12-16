@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
+import 'package:mbosswater/features/customer_care/bloc/cycle_bloc.dart';
+import 'package:mbosswater/features/customer_care/bloc/cycle_event.dart';
+import 'package:mbosswater/features/customer_care/bloc/cycle_state.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,11 +21,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
   DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
   late ValueNotifier<DateTime> focusDayNotifier;
 
-  final List<DateTime> specialDays = [
-    DateTime.utc(2024, 12, 10),
-    DateTime.utc(2024, 12, 15),
-    DateTime.utc(2024, 12, 20),
-  ];
+  final List<DateTime> specialDays = [];
 
   @override
   void initState() {
@@ -42,12 +42,6 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     }
   }
 
-  void filterDataByMonth(DateTime selectedDate) {
-    final selectedMonth = selectedDate.month;
-    final selectedYear = selectedDate.year;
-
-  }
-
   @override
   void dispose() {
     super.dispose();
@@ -56,21 +50,39 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: const LeadingBackButton(),
-        title: Text(
-          "Chăm Sóc Khách Hàng",
-          style: AppStyle.appBarTitle.copyWith(
-            color: AppColors.appBarTitleColor,
+    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    DateTime startOfMonth = DateTime(now.year, now.month, 1);
+    DateTime endOfMonth = DateTime(now.year, now.month + 1, 0);
+    return BlocProvider(
+      create: (_) => CycleBloc()
+        ..add(FetchValidCycleDates(
+          createdAt: startOfMonth,
+          endDate: endOfMonth,
+        )),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: const LeadingBackButton(),
+          title: Text(
+            "Chăm Sóc Khách Hàng",
+            style: AppStyle.appBarTitle.copyWith(
+              color: AppColors.appBarTitleColor,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: BlocListener<CycleBloc, CycleState>(
+          listener: (context, state) {
+            if (state is CycleLoaded) {
+              specialDays.addAll(state.validDates);
+              return ;
+            }
+          },
+          child: Column(
+            children: [
+              _buildTableCalendar(),
+            ],
           ),
         ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          _buildTableCalendar(),
-        ],
       ),
     );
   }
@@ -88,7 +100,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
           headerStyle: HeaderStyle(
             formatButtonVisible: false,
             titleCentered: true,
-            headerMargin: const EdgeInsets.symmetric(vertical: 6),
+            headerMargin: const EdgeInsets.only(bottom: 6),
             titleTextStyle: const TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
@@ -188,6 +200,14 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
               return null;
             },
           ),
+          onPageChanged: (dayOfMonth) {
+            DateTime startOfMonth = DateTime(dayOfMonth.year, dayOfMonth.month, 1);
+            DateTime endOfMonth = DateTime(dayOfMonth.year, dayOfMonth.month + 1, 0);
+            context.read<CycleBloc>().add(FetchValidCycleDates(
+              createdAt: startOfMonth,
+              endDate: endOfMonth,
+            ));
+          },
         );
       },
     );

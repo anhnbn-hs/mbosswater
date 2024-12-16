@@ -13,6 +13,7 @@ import 'package:mbosswater/core/widgets/custom_textfield.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_bloc.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_event.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_state.dart';
+import 'package:mbosswater/features/notification/notification_cubit.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_event.dart';
 
@@ -29,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   // BLOC
   late LoginBloc loginBloc;
   late UserInfoBloc userInfoBloc;
-
+  late NotificationCubit notificationCubit;
   @override
   void initState() {
     super.initState();
@@ -37,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
     passwordController = TextEditingController();
     // Init bloc
     loginBloc = BlocProvider.of<LoginBloc>(context);
+    notificationCubit = BlocProvider.of<NotificationCubit>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
   }
 
@@ -120,6 +122,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       // Get User Information after navigation
                       userInfoBloc.add(FetchUserInfo(state.user.id));
+                      notificationCubit.fetchNotifications(state.user.id);
                     });
                   }
                   return const SizedBox.shrink();
