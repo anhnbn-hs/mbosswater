@@ -54,4 +54,17 @@ class AgencyDatasourceImpl extends AgencyDatasource {
         .map((doc) => UserModel.fromJson(doc.data()))
         .toList();
   }
+
+  @override
+  Future<void> createStaff(UserModel newStaff) async {
+    try {
+      await firebaseFirestore
+          .collection("users")
+          .doc(newStaff.id)
+          .set(newStaff.toJson(), SetOptions(merge: true));
+    } catch (e) {
+      print("Error creating staff: $e");
+      rethrow; // Propagate error if needed
+    }
+  }
 }

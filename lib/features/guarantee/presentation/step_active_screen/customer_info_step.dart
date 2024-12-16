@@ -145,8 +145,8 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                 nameController.text = customer.fullName ?? "";
                 addressController.text = customer.address?.detail ?? "";
 
-                provincesBloc.selectProvince(
-                    Province(name: customer.address?.province));
+                provincesBloc
+                    .selectProvince(Province(name: customer.address?.province));
 
                 districtsBloc.emitDistrict(
                   District(
@@ -181,8 +181,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     },
                     onTapOutSide: (phone) async =>
                         handleCheckPhoneNumber(phone),
-                    onCompleted: (phone) async =>
-                        handleCheckPhoneNumber(phone),
+                    onCompleted: (phone) async => handleCheckPhoneNumber(phone),
                     isRequired: true,
                     focusNode: focusNodePhone,
                     inputType: TextInputType.number,
@@ -235,7 +234,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     },
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   ValueListenableBuilder(
                     valueListenable: isOTPVerified,
                     builder: (context, value, child) {
@@ -260,8 +259,8 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                                 ),
                                 Text(
                                   " * ",
-                                  style: AppStyle.boxFieldLabel.copyWith(
-                                      color: const Color(0xff8A0E1E)),
+                                  style: AppStyle.boxFieldLabel
+                                      .copyWith(color: const Color(0xff8A0E1E)),
                                 ),
                               ],
                             ),
@@ -587,19 +586,21 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     }
     if (checkInput()) {
       if (customerBloc.customer == null) {
-        customerBloc.emitCustomer(Customer(
-          id: generateRandomId(8),
-          email: emailController.text.trim(),
-          phoneNumber: phoneController.text.trim(),
-          fullName: nameController.text.trim(),
-          agency: userInfoBloc.user?.agency ?? "",
-          address: Address(
-            province: provincesBloc.selectedProvince?.name,
-            district: districtsBloc.selectedDistrict?.name,
-            commune: communesBloc.selectedCommune?.name,
-            detail: addressController.text.trim(),
+        customerBloc.emitCustomer(
+          Customer(
+            id: generateRandomId(8),
+            email: emailController.text.trim(),
+            phoneNumber: phoneController.text.trim(),
+            fullName: nameController.text.trim(),
+            agency: userInfoBloc.user?.agency ?? "",
+            address: Address(
+              province: provincesBloc.selectedProvince?.name,
+              district: districtsBloc.selectedDistrict?.name,
+              commune: communesBloc.selectedCommune?.name,
+              detail: addressController.text.trim(),
+            ),
           ),
-        ));
+        );
       }
       widget.guaranteeActiveKey.currentState?.isCustomerStepCompleted = true;
       widget.guaranteeActiveKey.currentState?.pageController.jumpToPage(2);

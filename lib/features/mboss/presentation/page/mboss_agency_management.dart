@@ -346,7 +346,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: SearchField(
-            hint: "Tìm kiếm theo tên và địa chỉ",
+            hint: "Tìm kiếm theo tên hoặc địa chỉ",
             onSearch: (value) {
               fetchAgenciesBloc.searchAgency(value.trim().toLowerCase());
             },

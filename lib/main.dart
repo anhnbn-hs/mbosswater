@@ -9,7 +9,10 @@ import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
 import 'package:mbosswater/core/utils/encryption_helper.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/create_agency_staff_bloc.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/delete_agency_staff_bloc.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/update_agency_staff_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
@@ -72,7 +75,7 @@ void main() async {
   ]);
   //
   // String data =
-    //     '{"code":"mbosswater","product":{"id":"MLN10019","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model11","seriDow":"SRD09","guaranteeDuration":"12 tháng"}}';
+  //     '{"code":"mbosswater","product":{"id":"MLN10019","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model11","seriDow":"SRD09","guaranteeDuration":"12 tháng"}}';
   //
   // String dataEncri = EncryptionHelper.decryptData("3X5d+/h+c+UWnqdYupqb1w==T4gFG2afauSMqIcC2dd6+FUa4/nbSS6Tk/c8X8FvgQbyB1ArH2VfhrxkkDwuisXnXCXf4l84cSu4Z4KL4AdI6t5yyFC0aGT2QpZ1QIpAWcNqooEgBDPDCXz8zhnmLO2eSNuNMQm5IdLoLo3i1Gkn1TnVe4VILn6fUxgSUp9IP34/1AnAAv0cIOlU1iuUqn5wKYZq+K5Ijpqir7vC+Yuaf7N9DfSMMKrFw+7lzOVRAz8=", dotenv.env["SECRET_KEY_QR_CODE"]!);
   //
@@ -101,12 +104,18 @@ void main() async {
         BlocProvider(create: (_) => sl<AgencyBloc>()),
         BlocProvider(create: (_) => sl<AgenciesBloc>()),
         BlocProvider(create: (_) => sl<GuaranteeHistoryBloc>()),
+        // Management for MBoss
         BlocProvider(create: (_) => sl<FetchMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<CreateMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<UpdateMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<DeleteMbossStaffBloc>()),
-        BlocProvider(create: (_) => sl<FetchAgencyStaffBloc>()),
         BlocProvider(create: (_) => sl<FetchAgenciesBloc>()),
+        // Management for Agency
+        BlocProvider(create: (_) => sl<CreateAgencyStaffBloc>()),
+        BlocProvider(create: (_) => sl<FetchAgencyStaffBloc>()),
+        BlocProvider(create: (_) => sl<UpdateAgencyStaffBloc>()),
+        BlocProvider(create: (_) => sl<DeleteAgencyStaffBloc>()),
+
         BlocProvider(create: (_) => FetchAgencyAdminCubit()),
         BlocProvider(create: (_) => CreateAgencyBloc()),
         BlocProvider(create: (_) => sl<UpdateAgencyBloc>()),
@@ -131,7 +140,7 @@ Future<void> updateAllAgencyAddresses() async {
   try {
     // Reference to the 'agencies' collection
     final CollectionReference usersRef =
-    FirebaseFirestore.instance.collection('users');
+        FirebaseFirestore.instance.collection('users');
 
     // Fetch all agencies
     final QuerySnapshot snapshot = await usersRef.get();
@@ -164,6 +173,7 @@ Future<void> updateAllAgencyAddresses() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(

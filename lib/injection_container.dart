@@ -2,7 +2,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:mbosswater/features/agency/data/agency_datasource.dart';
 import 'package:mbosswater/features/agency/data/agency_datasource_impl.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/create_agency_staff_bloc.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/delete_agency_staff_bloc.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
+import 'package:mbosswater/features/agency/presentation/bloc/update_agency_staff_bloc.dart';
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource.dart';
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource_impl.dart';
 import 'package:mbosswater/features/customer/data/repository/customer_repository_impl.dart';
@@ -130,13 +133,13 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<ProvincesAgencyBloc>(
-        () => ProvincesAgencyBloc(sl<AddressUseCase>()),
+    () => ProvincesAgencyBloc(sl<AddressUseCase>()),
   );
   sl.registerLazySingleton<DistrictsAgencyBloc>(
-        () => DistrictsAgencyBloc(sl<AddressUseCase>()),
+    () => DistrictsAgencyBloc(sl<AddressUseCase>()),
   );
   sl.registerLazySingleton<CommunesAgencyBloc>(
-        () => CommunesAgencyBloc(sl<AddressUseCase>()),
+    () => CommunesAgencyBloc(sl<AddressUseCase>()),
   );
 
   // Guarantee
@@ -238,7 +241,7 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<AgenciesBloc>(
-        () => AgenciesBloc(sl<AgencyUseCase>()),
+    () => AgenciesBloc(sl<AgencyUseCase>()),
   );
 
   sl.registerLazySingleton<AgencyDatasource>(
@@ -246,11 +249,20 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<FetchAgencyStaffBloc>(
-        () => FetchAgencyStaffBloc(sl<AgencyDatasource>()),
+    () => FetchAgencyStaffBloc(sl<AgencyDatasource>()),
   );
 
+  sl.registerLazySingleton<CreateAgencyStaffBloc>(
+        () => CreateAgencyStaffBloc(sl<AgencyDatasource>()),
+  );
 
+  sl.registerLazySingleton<UpdateAgencyStaffBloc>(
+    () => UpdateAgencyStaffBloc(sl<AgencyDatasource>()),
+  );
 
+  sl.registerLazySingleton<DeleteAgencyStaffBloc>(
+    () => DeleteAgencyStaffBloc(sl<AgencyDatasource>()),
+  );
   // Mboss Management
   sl.registerLazySingleton<MbossManagerDatasource>(
     () => MbossManagerDatasourceImpl(sl<UserDatasource>()),
@@ -265,28 +277,26 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<CreateMbossStaffBloc>(
-        () => CreateMbossStaffBloc(sl<MbossManagerRepository>()),
+    () => CreateMbossStaffBloc(sl<MbossManagerRepository>()),
   );
 
   sl.registerLazySingleton<UpdateMbossStaffBloc>(
-        () => UpdateMbossStaffBloc(sl<MbossManagerRepository>()),
+    () => UpdateMbossStaffBloc(sl<MbossManagerRepository>()),
   );
 
   sl.registerLazySingleton<DeleteMbossStaffBloc>(
-        () => DeleteMbossStaffBloc(sl<MbossManagerRepository>()),
+    () => DeleteMbossStaffBloc(sl<MbossManagerRepository>()),
   );
 
-
   sl.registerLazySingleton<FetchAgenciesBloc>(
-        () => FetchAgenciesBloc(sl<MbossManagerRepository>()),
+    () => FetchAgenciesBloc(sl<MbossManagerRepository>()),
   );
 
   sl.registerLazySingleton<UpdateAgencyBloc>(
-        () => UpdateAgencyBloc(sl<MbossManagerRepository>()),
+    () => UpdateAgencyBloc(sl<MbossManagerRepository>()),
   );
 
   sl.registerLazySingleton<DeleteAgencyBloc>(
-        () => DeleteAgencyBloc(sl<MbossManagerRepository>()),
+    () => DeleteAgencyBloc(sl<MbossManagerRepository>()),
   );
-
 }

@@ -319,7 +319,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: SearchField(
-              hint: "Tìm kiếm theo tên và số điện thoại",
+              hint: "Tìm kiếm theo tên hoặc số điện thoại",
               onSearch: (value) {
                 setState(() {
                   searchNotifier.value = value.trim().toLowerCase();

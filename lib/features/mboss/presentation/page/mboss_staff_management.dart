@@ -64,10 +64,8 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   final focusNodePhone = FocusNode();
   final focusNodeAddress = FocusNode();
 
-  ValueNotifier<bool> isFabVisible = ValueNotifier<bool>(true);
   ValueNotifier<String?> selectedRole = ValueNotifier(null);
   ValueNotifier<bool> isDistrictsUserFetched = ValueNotifier(false);
-  ValueNotifier<bool> isCommunesUserFetched = ValueNotifier(false);
 
   final List<String> dropdownItems = [
     'Nhân viên kỹ thuật',
@@ -127,7 +125,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     techCount.dispose();
     allCount.dispose();
     isDistrictsUserFetched.dispose();
-    isCommunesUserFetched.dispose();
   }
 
   buildSliverAppBarContent() {
@@ -144,7 +141,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: SearchField(
-            hint: "Tìm kiếm theo tên và số điện thoại",
+            hint: "Tìm kiếm theo tên hoặc số điện thoại",
             onSearch: (value) {
               mbossStaffBloc.searchStaff(value);
             },
@@ -191,195 +188,177 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      floatingActionButton: ValueListenableBuilder(
-        valueListenable: isFabVisible,
-        builder: (context, value, child) {
-          return Visibility(
-            visible: value,
-            child: GestureDetector(
-              onTap: () async => await showStaffCreation(),
-              child: Container(
-                margin: const EdgeInsets.only(right: 10, bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 46,
-                ),
-              ),
-            ),
-          );
-        },
+      floatingActionButton: GestureDetector(
+        onTap: () async => await showStaffCreation(),
+        child: Container(
+          margin: const EdgeInsets.only(right: 10, bottom: 16),
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 46,
+          ),
+        ),
       ),
       body: SafeArea(
-        child: NotificationListener<UserScrollNotification>(
-          onNotification: (notification) {
-            if (notification.direction == ScrollDirection.forward) {
-              isFabVisible.value = true;
-            } else if (notification.direction == ScrollDirection.reverse) {
-              isFabVisible.value = false;
-            }
-            return true;
-          },
-          child: NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverAppBar(
-                  scrolledUnderElevation: 0,
-                  title: null,
-                  snap: true,
-                  centerTitle: true,
-                  floating: true,
-                  automaticallyImplyLeading: false,
-                  backgroundColor: Colors.white,
-                  expandedHeight: 210,
-                  flexibleSpace: FlexibleSpaceBar(
-                    collapseMode: CollapseMode.pin,
-                    background: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.only(left: 4, right: 16),
-                          child: Stack(
-                            children: [
-                              Container(
-                                height: kToolbarHeight - 4,
-                                alignment: Alignment.center,
-                                padding: const EdgeInsets.only(left: 16),
-                                child: Text(
-                                  "Quản Lý Nhân Viên",
-                                  style: AppStyle.appBarTitle.copyWith(
-                                    color: const Color(0xff820a1a),
-                                  ),
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                scrolledUnderElevation: 0,
+                title: null,
+                snap: true,
+                centerTitle: true,
+                floating: true,
+                automaticallyImplyLeading: false,
+                backgroundColor: Colors.white,
+                expandedHeight: 210,
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.only(left: 4, right: 16),
+                        child: Stack(
+                          children: [
+                            Container(
+                              height: kToolbarHeight - 4,
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.only(left: 16),
+                              child: Text(
+                                "Quản Lý Nhân Viên",
+                                style: AppStyle.appBarTitle.copyWith(
+                                  color: const Color(0xff820a1a),
                                 ),
                               ),
-                              Container(
-                                height: kToolbarHeight,
-                                alignment: Alignment.centerLeft,
-                                child: IconButton(
-                                  onPressed: () => context.pop(),
-                                  icon: ImageHelper.loadAssetImage(
-                                    AppAssets.icArrowLeft,
-                                    tintColor: const Color(0xff111827),
-                                  ),
+                            ),
+                            Container(
+                              height: kToolbarHeight,
+                              alignment: Alignment.centerLeft,
+                              child: IconButton(
+                                onPressed: () => context.pop(),
+                                icon: ImageHelper.loadAssetImage(
+                                  AppAssets.icArrowLeft,
+                                  tintColor: const Color(0xff111827),
                                 ),
-                              )
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      // Phần buildSliverAppBarContent
+                      buildSliverAppBarContent(),
+                    ],
+                  ),
+                ),
+              ),
+            ];
+          },
+          controller: scrollController,
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: BlocConsumer<FetchMbossStaffBloc, List<UserModel>>(
+                    bloc: mbossStaffBloc,
+                    listener: (context, state) {
+                      if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
+                        final userOriginal = mbossStaffBloc.getStaffsOriginal;
+                        // Update ValueNotifiers outside the build phase
+                        allCount.value = userOriginal.length;
+                        ccCount.value = userOriginal
+                            .where((user) =>
+                                user.role == Roles.MBOSS_CUSTOMERCARE)
+                            .length;
+                        techCount.value = userOriginal
+                            .where(
+                                (user) => user.role == Roles.MBOSS_TECHNICAL)
+                            .length;
+                      }
+                    },
+                    builder: (context, state) {
+                      if (mbossStaffBloc.isLoading) {
+                        return ListView.builder(
+                          itemCount: 8,
+                          itemBuilder: (context, index) => Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 5,
+                            ),
+                            child: const CustomerCardShimmer(),
+                          ),
+                        );
+                      }
+                      if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
+                        final listUser = List.from(state);
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 30),
+                              ListView.builder(
+                                itemCount: listUser.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 20),
+                                    child: buildStaffItem(listUser[index]),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 10),
                             ],
                           ),
-                        ),
-                        // Phần buildSliverAppBarContent
-                        buildSliverAppBarContent(),
-                      ],
-                    ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
                   ),
                 ),
-              ];
-            },
-            controller: scrollController,
-            body: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: BlocConsumer<FetchMbossStaffBloc, List<UserModel>>(
-                      bloc: mbossStaffBloc,
-                      listener: (context, state) {
-                        if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
-                          final userOriginal = mbossStaffBloc.getStaffsOriginal;
-                          // Update ValueNotifiers outside the build phase
-                          allCount.value = userOriginal.length;
-                          ccCount.value = userOriginal
-                              .where((user) =>
-                                  user.role == Roles.MBOSS_CUSTOMERCARE)
-                              .length;
-                          techCount.value = userOriginal
-                              .where(
-                                  (user) => user.role == Roles.MBOSS_TECHNICAL)
-                              .length;
-                        }
-                      },
-                      builder: (context, state) {
-                        if (mbossStaffBloc.isLoading) {
-                          return ListView.builder(
-                            itemCount: 8,
-                            itemBuilder: (context, index) => Container(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 5,
-                              ),
-                              child: const CustomerCardShimmer(),
-                            ),
-                          );
-                        }
-                        if (!mbossStaffBloc.isLoading && state.isNotEmpty) {
-                          final listUser = List.from(state);
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Column(
-                              children: [
-                                const SizedBox(height: 30),
-                                ListView.builder(
-                                  itemCount: listUser.length,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    return Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 22),
-                                      child: buildStaffItem(listUser[index]),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                              ],
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-                ),
-                // Listener for create
-                BlocListener<CreateMbossStaffBloc, bool>(
-                  listener: (context, state) async {
-                    if (createMbossStaffBloc.isLoading == false &&
-                        state == true) {
-                      DialogUtils.hide(context);
-                      DialogUtils.hide(context);
-                      await mbossStaffBloc.fetchMbossStaffs();
-                    }
-                  },
-                  child: const SizedBox.shrink(),
-                ),
-                // Listener for delete
-                BlocListener<DeleteMbossStaffBloc, bool>(
-                  listener: (context, state) async {
-                    if (deleteMbossStaffBloc.isLoading == false &&
-                        state == true) {
-                      DialogUtils.hide(context);
-                      DialogUtils.hide(context);
-                      await mbossStaffBloc.fetchMbossStaffs();
-                    }
-                  },
-                  child: const SizedBox.shrink(),
-                ),
-                // Listener for update
-                BlocListener<UpdateMbossStaffBloc, bool>(
-                  listener: (context, state) async {
-                    if (updateMbossStaffBloc.isLoading == false &&
-                        state == true) {
-                      DialogUtils.hide(context);
-                      DialogUtils.hide(context);
-                      await mbossStaffBloc.fetchMbossStaffs();
-                    }
-                  },
-                  child: const SizedBox.shrink(),
-                ),
-              ],
-            ),
+              ),
+              // Listener for create
+              BlocListener<CreateMbossStaffBloc, bool>(
+                listener: (context, state) async {
+                  if (createMbossStaffBloc.isLoading == false &&
+                      state == true) {
+                    DialogUtils.hide(context);
+                    DialogUtils.hide(context);
+                    await mbossStaffBloc.fetchMbossStaffs();
+                  }
+                },
+                child: const SizedBox.shrink(),
+              ),
+              // Listener for delete
+              BlocListener<DeleteMbossStaffBloc, bool>(
+                listener: (context, state) async {
+                  if (deleteMbossStaffBloc.isLoading == false &&
+                      state == true) {
+                    DialogUtils.hide(context);
+                    DialogUtils.hide(context);
+                    await mbossStaffBloc.fetchMbossStaffs();
+                  }
+                },
+                child: const SizedBox.shrink(),
+              ),
+              // Listener for update
+              BlocListener<UpdateMbossStaffBloc, bool>(
+                listener: (context, state) async {
+                  if (updateMbossStaffBloc.isLoading == false &&
+                      state == true) {
+                    DialogUtils.hide(context);
+                    DialogUtils.hide(context);
+                    await mbossStaffBloc.fetchMbossStaffs();
+                  }
+                },
+                child: const SizedBox.shrink(),
+              ),
+            ],
           ),
         ),
       ),
@@ -1200,8 +1179,8 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                           ),
                           const SizedBox(height: 12),
                           TextFieldLabelItem(
-                            hint: "Địa chỉ",
-                            label: "Địa chỉ",
+                            hint: "Địa chỉ chi tiết",
+                            label: "Địa chỉ chi tiết",
                             controller: addressDetailController,
                           ),
                           const SizedBox(height: 12),
@@ -1248,7 +1227,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   handleDeleteStaff(UserModel? user) async {
     DialogUtils.showConfirmationDialog(
       context: context,
-      title: "Bạn chắc chắn muốn\nxoá nhân viên này?",
+      title: "Bạn chắc chắn muốn xoá nhân viên này?",
       textCancelButton: "HỦY",
       textAcceptButton: "XÁC NHẬN",
       cancelPressed: () => Navigator.pop(context),
@@ -1261,6 +1240,55 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   }
 
   handleUpdateStaff(UserModel user) async {
+
+    String fullName = nameController.text.trim();
+    String phoneNumber = phoneController.text.trim();
+    String addressDetail = addressDetailController.text.trim();
+
+    if (fullName.isEmpty) {
+      DialogUtils.showWarningDialog(
+        context: context,
+        title: "Hãy nhập tên nhân viên",
+        onClickOutSide: () {},
+      );
+      focusNodeName.requestFocus();
+      return;
+    }
+
+
+    if (phoneNumber.isEmpty) {
+      DialogUtils.showWarningDialog(
+        context: context,
+        title: "Hãy nhập số điện thoại của nhân viên",
+        onClickOutSide: () {},
+      );
+      focusNodePhone.requestFocus();
+      return;
+    }
+
+    if (provincesUserBloc.selectedProvince == null ||
+        districtsUserBloc.selectedDistrict == null ||
+        communesUserBloc.selectedCommune == null) {
+      DialogUtils.showWarningDialog(
+        context: context,
+        title: "Hãy chọn địa chỉ nhân viên",
+        onClickOutSide: () {},
+      );
+      return;
+    }
+
+
+    if (addressDetail.isEmpty) {
+      DialogUtils.showWarningDialog(
+        context: context,
+        title: "Hãy nhập địa chỉ chi tiết của nhân viên",
+        onClickOutSide: () {},
+      );
+      focusNodeAddress.requestFocus();
+      return;
+    }
+
+
     DialogUtils.showConfirmationDialog(
       context: context,
       title: "Bạn chắc chắn muốn cập nhật nhân viên này?",
@@ -1302,6 +1330,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           final phoneQuerySnapshot = await FirebaseFirestore.instance
               .collection("users")
               .where("phoneNumber", isEqualTo: userUpdate.phoneNumber)
+              .where("isDelete", isEqualTo: false)
               .limit(1)
               .get();
 
@@ -1312,6 +1341,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           final emailQuerySnapshot = await FirebaseFirestore.instance
               .collection("users")
               .where("email", isEqualTo: userUpdate.email)
+              .where("isDelete", isEqualTo: false)
               .limit(1)
               .get();
 
@@ -1366,7 +1396,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     if (selectedRole.value == null) {
       DialogUtils.showWarningDialog(
         context: context,
-        title: "Hãy chọn vai trò nhân viên",
+        title: "Hãy chọn chức vụ của nhân viên",
         onClickOutSide: () {},
       );
       return;
@@ -1405,6 +1435,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
         final userDoc = await FirebaseFirestore.instance
             .collection("users")
             .where("phoneNumber", isEqualTo: phoneNumber)
+            .where("isDelete", isEqualTo: false)
             .limit(1)
             .get();
 
@@ -1434,7 +1465,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           // Get text field value
 
           final user = UserModel(
-            id: generateRandomId(8),
+            id: generateRandomId(6),
             fullName: fullName,
             dob: null,
             email: email,

@@ -206,7 +206,14 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                           buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
                         ],
                         onStepReached: (index) {
-                          animateToPage(index);
+                          if(index == 2){
+                            customerStepKey.currentState?.handleAndGoToNextStep();
+                            if(customerStepKey.currentState!.checkInput()){
+                              stepBloc.changeStep(2);
+                            }
+                          } else {
+                            animateToPage(index);
+                          }
                         },
                       );
                     },
@@ -215,7 +222,22 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                     child: PageView(
                       controller: pageController,
                       scrollDirection: Axis.horizontal,
-                      onPageChanged: (index) => animateToPage(index),
+                      onPageChanged: (index) {
+                        if(index == 2){
+                          customerStepKey.currentState?.handleAndGoToNextStep();
+
+                          if(!customerStepKey.currentState!.checkInput()){
+                            stepBloc.changeStep(stepBloc.currentStep);
+                            pageController.animateToPage(
+                              stepBloc.currentStep,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        } else {
+                          animateToPage(index);
+                        }
+                      },
                       children: [
                         ProductInfoStep(
                           key: productStepKey,
