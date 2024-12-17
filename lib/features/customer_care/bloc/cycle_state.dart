@@ -1,3 +1,5 @@
+import 'package:mbosswater/features/customer_care/bloc/cycle_bloc.dart';
+
 abstract class CycleState {}
 
 class CycleInitial extends CycleState {}
@@ -5,13 +7,14 @@ class CycleInitial extends CycleState {}
 class CycleLoading extends CycleState {}
 
 class CycleLoaded extends CycleState {
-  final List<DateTime> validDates;
+  final List<GuaranteeDateModel> guaranteesDate;
 
-  CycleLoaded({required this.validDates});
+  CycleLoaded(this.guaranteesDate);
 }
 
 class CycleError extends CycleState {
-  final String message;
+  final String error;
 
-  CycleError({required this.message});
+  CycleError(this.error);
 }
+

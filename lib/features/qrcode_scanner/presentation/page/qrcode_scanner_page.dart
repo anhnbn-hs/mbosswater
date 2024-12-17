@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/encryption_helper.dart';
+import 'package:mbosswater/core/utils/image_helper.dart';
+import 'package:mbosswater/core/widgets/floating_action_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_activate_page.dart';
@@ -367,9 +370,48 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
           ),
           Flexible(
             flex: 1,
-            child: Container(),
+            child: Container(
+              child: Center(
+                child: buildButtonRequestWithoutQRCode(),
+              ),
+            ),
           )
         ],
+      ),
+    );
+  }
+
+  buildButtonRequestWithoutQRCode() {
+    if (widget.scanType == ScanType.activate) return const SizedBox.shrink();
+    final size = MediaQuery.of(context).size;
+    return SizedBox(
+      height: 40,
+      width: size.width * 0.8,
+      child: Material(
+        child: InkWell(
+          onTap: () {
+            context.push("/guarantee-request-without-qrcode");
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Ink(
+            height: 50,
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text(
+                "YÊU CẦU BẢO HÀNH KHÔNG CẦN MÃ QR",
+                style: TextStyle(
+                  fontFamily: 'BeVietnam',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

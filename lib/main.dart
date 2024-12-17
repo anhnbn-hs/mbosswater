@@ -17,6 +17,7 @@ import 'package:mbosswater/features/customer/presentation/bloc/customer_guarante
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
+import 'package:mbosswater/features/customer_care/bloc/cycle_bloc.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
@@ -81,7 +82,6 @@ void main() async {
   //
   // print(dataEncri);
   // await updateAllAgencyAddresses();
-
   runApp(
     MultiBlocProvider(
       providers: [
@@ -126,6 +126,8 @@ void main() async {
         BlocProvider(create: (_) => ProductBloc(null)),
         BlocProvider(create: (_) => CustomerBloc(null)),
         BlocProvider(create: (_) => AdditionalInfoBloc(null)),
+        // CSKH
+        BlocProvider(create: (_) => CycleBloc()),
       ],
       child: DevicePreview(
         // enabled: !kReleaseMode,
@@ -140,7 +142,7 @@ Future<void> updateAllAgencyAddresses() async {
   try {
     // Reference to the 'agencies' collection
     final CollectionReference usersRef =
-        FirebaseFirestore.instance.collection('users');
+        FirebaseFirestore.instance.collection('guarantees');
 
     // Fetch all agencies
     final QuerySnapshot snapshot = await usersRef.get();

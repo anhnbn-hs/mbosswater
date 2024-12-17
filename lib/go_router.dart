@@ -12,6 +12,7 @@ import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_activate_page.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_history_page.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_request_page.dart';
+import 'package:mbosswater/features/guarantee/presentation/page/guarantee_request_without_qrcode_page.dart';
 import 'package:mbosswater/features/home/home_page.dart';
 import 'package:mbosswater/features/login/presentation/page/login_page.dart';
 import 'package:mbosswater/features/mboss/presentation/page/mboss_agency_management.dart';
@@ -62,7 +63,7 @@ final GoRouter router = GoRouter(
 
         return GuaranteeActivatePage(
           product: product,
-          key: key, // Pass the key here
+          key: key,
         );
       },
     ),
@@ -96,6 +97,10 @@ final GoRouter router = GoRouter(
         final data = state.extra as Product;
         return GuaranteeRequestPage(product: data);
       },
+    ),
+    GoRoute(
+      path: '/guarantee-request-without-qrcode',
+      builder: (context, state) => const GuaranteeRequestWithoutQrCodePage(),
     ),
     GoRoute(
       path: '/customer-list',

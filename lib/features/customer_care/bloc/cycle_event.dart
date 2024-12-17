@@ -1,8 +1,8 @@
 abstract class CycleEvent {}
 
-class FetchValidCycleDates extends CycleEvent {
-  final DateTime createdAt;
-  final DateTime endDate;
+class FetchQuarterlyCycles extends CycleEvent {
+  final int month;
+  final int year;
 
-  FetchValidCycleDates({required this.createdAt, required this.endDate});
+  FetchQuarterlyCycles(this.month, this.year);
 }

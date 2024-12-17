@@ -19,13 +19,19 @@ class CustomerCarePage extends StatefulWidget {
 
 class _CustomerCarePageState extends State<CustomerCarePage> {
   DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
-  late ValueNotifier<DateTime> focusDayNotifier;
 
-  final List<DateTime> specialDays = [];
+  late ValueNotifier<DateTime> focusDayNotifier;
+  final ValueNotifier<List<GuaranteeDateModel>> notifyGuaranteeDays =
+      ValueNotifier([]);
+
+  // Bloc
+  late final CycleBloc cycleBloc;
 
   @override
   void initState() {
     super.initState();
+    cycleBloc = BlocProvider.of<CycleBloc>(context);
+    cycleBloc.add(FetchQuarterlyCycles(now.month, now.year));
     focusDayNotifier = ValueNotifier(now);
   }
 
@@ -44,44 +50,36 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
 
   @override
   void dispose() {
-    super.dispose();
     focusDayNotifier.dispose();
+    notifyGuaranteeDays.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    DateTime startOfMonth = DateTime(now.year, now.month, 1);
-    DateTime endOfMonth = DateTime(now.year, now.month + 1, 0);
-    return BlocProvider(
-      create: (_) => CycleBloc()
-        ..add(FetchValidCycleDates(
-          createdAt: startOfMonth,
-          endDate: endOfMonth,
-        )),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: const LeadingBackButton(),
-          title: Text(
-            "Chăm Sóc Khách Hàng",
-            style: AppStyle.appBarTitle.copyWith(
-              color: AppColors.appBarTitleColor,
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        leading: const LeadingBackButton(),
+        title: Text(
+          "Chăm Sóc Khách Hàng",
+          style: AppStyle.appBarTitle.copyWith(
+            color: AppColors.appBarTitleColor,
           ),
-          centerTitle: true,
         ),
-        body: BlocListener<CycleBloc, CycleState>(
-          listener: (context, state) {
-            if (state is CycleLoaded) {
-              specialDays.addAll(state.validDates);
-              return ;
-            }
-          },
-          child: Column(
-            children: [
-              _buildTableCalendar(),
-            ],
-          ),
+        centerTitle: true,
+      ),
+      body: BlocListener<CycleBloc, CycleState>(
+        listener: (context, state) {
+          if (state is CycleLoaded) {
+            setState(() {
+              notifyGuaranteeDays.value = state.guaranteesDate;
+            });
+          }
+        },
+        child: Column(
+          children: [
+            _buildTableCalendar(),
+          ],
         ),
       ),
     );
@@ -159,8 +157,8 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
           calendarBuilders: CalendarBuilders(
             defaultBuilder: (context, date, events) {
               // Kiểm tra nếu ngày trong danh sách specialDays thì thêm indicator
-              if (specialDays
-                  .any((specialDay) => isSameDay(date, specialDay))) {
+              if (notifyGuaranteeDays.value
+                  .any((specialDay) => isSameDay(date, specialDay.dateTime))) {
                 return Stack(
                   children: [
                     Container(
@@ -201,12 +199,9 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
             },
           ),
           onPageChanged: (dayOfMonth) {
-            DateTime startOfMonth = DateTime(dayOfMonth.year, dayOfMonth.month, 1);
-            DateTime endOfMonth = DateTime(dayOfMonth.year, dayOfMonth.month + 1, 0);
-            context.read<CycleBloc>().add(FetchValidCycleDates(
-              createdAt: startOfMonth,
-              endDate: endOfMonth,
-            ));
+            focusDayNotifier.value = dayOfMonth;
+            cycleBloc
+                .add(FetchQuarterlyCycles(dayOfMonth.month, dayOfMonth.year));
           },
         );
       },
