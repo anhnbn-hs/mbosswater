@@ -95,7 +95,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                 floating: true,
                 automaticallyImplyLeading: false,
                 backgroundColor: Colors.white,
-                expandedHeight: 265,
+                expandedHeight: 275,
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Column(

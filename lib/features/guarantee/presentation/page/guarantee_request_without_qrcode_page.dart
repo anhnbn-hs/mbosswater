@@ -16,17 +16,19 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_after_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_before_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/confirm_phone_number_step.dart';
+import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_before_without_qrcode_step.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class GuaranteeRequestWithoutQrCodePage extends StatefulWidget {
-
   const GuaranteeRequestWithoutQrCodePage({super.key});
 
   @override
-  State<GuaranteeRequestWithoutQrCodePage> createState() => _GuaranteeRequestWithoutQrCodePageState();
+  State<GuaranteeRequestWithoutQrCodePage> createState() =>
+      _GuaranteeRequestWithoutQrCodePageState();
 }
 
-class _GuaranteeRequestWithoutQrCodePageState extends State<GuaranteeRequestWithoutQrCodePage> {
+class _GuaranteeRequestWithoutQrCodePageState
+    extends State<GuaranteeRequestWithoutQrCodePage> {
   late StepBloc stepBloc;
   late UserInfoBloc userInfoBloc;
   late GuaranteeHistoryBloc guaranteeHistoryBloc;
@@ -35,7 +37,8 @@ class _GuaranteeRequestWithoutQrCodePageState extends State<GuaranteeRequestWith
   final stateAfterController = TextEditingController();
 
   // Keys
-  final beforeStepKey = GlobalKey<GuaranteeBeforeStepState>();
+  final confirmStepKey = GlobalKey<ConfirmPhoneNumberStepState>();
+  final beforeStepKey = GlobalKey<GuaranteeBeforeWithoutQRCodeStepState>();
 
   @override
   void initState() {
@@ -80,9 +83,10 @@ class _GuaranteeRequestWithoutQrCodePageState extends State<GuaranteeRequestWith
             leading: LeadingBackButton(
               onTap: backToPreviousPage,
             ),
-            title:  Text(
+            title: Text(
               "Yêu Cầu Bảo Hành",
-              style: AppStyle.appBarTitle.copyWith(color: AppColors.appBarTitleColor),
+              style: AppStyle.appBarTitle
+                  .copyWith(color: AppColors.appBarTitleColor),
             ),
             centerTitle: true,
             scrolledUnderElevation: 0,
@@ -101,19 +105,23 @@ class _GuaranteeRequestWithoutQrCodePageState extends State<GuaranteeRequestWith
                     onPageChanged: (index) => changeStep(index),
                     children: [
                       ConfirmPhoneNumberStep(
-                        key: beforeStepKey,
-                        onNextStep: () {
-                          changeStep(2);
+                        key: confirmStepKey,
+                        onNextStep: ({required customer, required guarantee}) {
+                          changeStep(1);
                         },
+                      ),
+                      GuaranteeBeforeWithoutQRCodeStep(
+                        key: beforeStepKey,
+                        confirmStepKey: confirmStepKey,
+                        onNextStep: () => changeStep(2),
+                        reasonController: reasonController,
                       ),
                       GuaranteeAfterStep(
                         stateAfterController: stateAfterController,
                         onConfirm: () {
                           DialogUtils.showConfirmationDialog(
                             context: context,
-                            title: "",
-                            labelTitle:
-                                "Bạn chắc chắn xác nhận\nthông tin trên ?",
+                            title: "Bạn chắc chắn xác nhận thông tin trên?",
                             textCancelButton: "Huỷ",
                             textAcceptButton: "Xác nhận",
                             cancelPressed: () => Navigator.pop(context),
@@ -251,15 +259,33 @@ class _GuaranteeRequestWithoutQrCodePageState extends State<GuaranteeRequestWith
   }
 
   changeStep(int index) {
-    if (reasonController.text.trim().isEmpty && index == 1) {
+    if (index == 1) {
+      if (confirmStepKey.currentState?.guaranteeSelected.value == null) {
+        DialogUtils.showWarningDialog(
+          context: context,
+          title: "Hãy chọn khách hàng và sản phẩm để tiếp tục",
+          onClickOutSide: () {},
+        );
+        stepBloc.changeStep(0);
+        pageController.animateToPage(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        return;
+      }
+      beforeStepKey.currentState?.setState(() {});
+    }
+
+    if (reasonController.text.trim().isEmpty && index == 2) {
       DialogUtils.showWarningDialog(
         context: context,
-        title: "Hãy nhập nguyên nhân bảo hành tiếp tục!",
+        title: "Hãy nhập nguyên nhân bảo hành để tiếp tục",
         onClickOutSide: () {},
       );
-      stepBloc.changeStep(0);
+      stepBloc.changeStep(1);
       pageController.animateToPage(
-        0,
+        1,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -290,5 +316,3 @@ class _GuaranteeRequestWithoutQrCodePageState extends State<GuaranteeRequestWith
     );
   }
 }
-
-

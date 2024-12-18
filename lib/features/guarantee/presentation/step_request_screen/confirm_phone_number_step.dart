@@ -8,9 +8,11 @@ import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
+import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_event.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_state.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_state.dart';
@@ -18,11 +20,15 @@ import 'package:mbosswater/features/customer/presentation/bloc/search_customer_b
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class ConfirmPhoneNumberStep extends StatefulWidget {
-  final VoidCallback onNextStep;
+  final Function({
+    required Customer customer,
+    required Guarantee guarantee,
+  }) onNextStep;
 
   const ConfirmPhoneNumberStep({
     super.key,
@@ -39,7 +45,9 @@ class ConfirmPhoneNumberStepState extends State<ConfirmPhoneNumberStep>
 
   ValueNotifier<String> searchNotifier = ValueNotifier<String>("");
   final TextEditingController _textController = TextEditingController();
+
   ValueNotifier<Customer?> customerSearched = ValueNotifier(null);
+  ValueNotifier<Guarantee?> guaranteeSelected = ValueNotifier(null);
 
   @override
   void initState() {
@@ -51,6 +59,8 @@ class ConfirmPhoneNumberStepState extends State<ConfirmPhoneNumberStep>
   void dispose() {
     super.dispose();
     customerSearched.dispose();
+    guaranteeSelected.dispose();
+    _textController.dispose();
   }
 
   @override
@@ -126,14 +136,43 @@ class ConfirmPhoneNumberStepState extends State<ConfirmPhoneNumberStep>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
-                    CustomButton(
-                      onTap: () {
-                        widget.onNextStep();
+                    ValueListenableBuilder<Guarantee?>(
+                      valueListenable: guaranteeSelected,
+                      builder: (context, value, child) {
+                        if (value != null) {
+                          return Column(
+                            children: [
+                              const SizedBox(height: 20),
+                              Align(
+                                alignment: FractionalOffset.centerLeft,
+                                child: Text(
+                                  "Sản phẩm đã chọn",
+                                  style: AppStyle.boxFieldLabel.copyWith(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              buildGuaranteeItem(value),
+                              const SizedBox(height: 40),
+                              CustomButton(
+                                onTap: () {
+                                  widget.onNextStep(
+                                    customer: customerSearched.value!,
+                                    guarantee: guaranteeSelected.value!,
+                                  );
+                                },
+                                textButton: "XÁC NHẬN",
+                              ),
+                              const SizedBox(height: 24),
+                            ],
+                          );
+                        }
+                        return const SizedBox.shrink();
                       },
-                      textButton: "XÁC NHẬN",
                     ),
-                    const SizedBox(height: 24),
                   ],
                 );
               }
@@ -294,8 +333,14 @@ class ConfirmPhoneNumberStepState extends State<ConfirmPhoneNumberStep>
           );
         },
         onSelected: (Customer value) {
-          searchNotifier.value = value.phoneNumber ?? "";
+          if (searchNotifier.value != value.phoneNumber) {
+            searchNotifier.value = value.phoneNumber ?? "";
+          }
           customerSearched.value = value;
+          if (guaranteeSelected.value != null &&
+              guaranteeSelected.value?.customerID != value.id) {
+            guaranteeSelected.value = null;
+          }
           final customerGuaranteeBloc =
               BlocProvider.of<CustomerGuaranteeBloc>(context);
           customerGuaranteeBloc.add(FetchCustomerGuarantees(value.id ?? ""));
@@ -448,7 +493,6 @@ class ConfirmPhoneNumberStepState extends State<ConfirmPhoneNumberStep>
                   color: Colors.grey.shade300,
                 ),
               ),
-
               Positioned(
                 top: 36,
                 bottom: 0,
@@ -457,11 +501,62 @@ class ConfirmPhoneNumberStepState extends State<ConfirmPhoneNumberStep>
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Chọn Sản Phẩm",
+                          style: AppStyle.heading2.copyWith(
+                            color: AppColors.appBarTitleColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 22,
+                          ),
+                        ),
+                        const SizedBox(height: 23),
+                        BlocBuilder<CustomerGuaranteeBloc,
+                            CustomerGuaranteeState>(
+                          builder: (context, state) {
+                            if (state is CustomerGuaranteeLoading) {
+                              return Center(
+                                child: Lottie.asset(AppAssets.aLoading,
+                                    height: 60),
+                              );
+                            }
+
+                            if (state is CustomerGuaranteeLoaded) {
+                              final now = DateTime.now()
+                                  .toUtc()
+                                  .add(const Duration(hours: 7));
+                              final guarantees = state.guarantees
+                                  .where((g) => g.endDate.isAfter(now))
+                                  .toList();
+                              return ListView.builder(
+                                itemCount: guarantees.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        guaranteeSelected.value =
+                                            guarantees[index];
+                                        Navigator.pop(context);
+                                      },
+                                      child:
+                                          buildGuaranteeItem(guarantees[index]),
+                                    ),
+                                  );
+                                },
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-
               Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
@@ -477,6 +572,157 @@ class ConfirmPhoneNumberStepState extends State<ConfirmPhoneNumberStep>
           ),
         );
       },
+    );
+  }
+
+  Widget buildGuaranteeItem(Guarantee guarantee) {
+    final startDate =
+        guarantee.createdAt.toDate().toUtc().add(const Duration(hours: 7));
+    final startDateFormatted = DateFormat("dd/MM/yyyy").format(startDate);
+    bool expired = isExpired(guarantee.endDate);
+    int remainingMonth = getRemainingMonths(
+      guarantee.endDate.toUtc().add(
+            const Duration(hours: 7),
+          ),
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xffFAFAFA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xffDADADA),
+        ),
+      ),
+      child: Column(
+        children: [
+          Align(
+            alignment: FractionalOffset.centerLeft,
+            child: Text(
+              "#${guarantee.id.toUpperCase()}",
+              style: const TextStyle(
+                color: Color(0xff820a1a),
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          buildCustomerInfoItem(
+            label: "Sản phẩm",
+            value: guarantee.product.name ?? "Máy Lọc Nước Tạo Kiềm MBossWater",
+          ),
+          buildCustomerInfoItem(
+            label: "Model máy",
+            value: guarantee.product.model ?? "",
+          ),
+          buildCustomerInfoItem(
+            label: "Seri màng lọc",
+            value: guarantee.product.seriDow ?? "",
+          ),
+          buildCustomerInfoItem(
+            label: "Ngày kích hoạt",
+            value: startDateFormatted,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Tình trạng",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: CircleAvatar(
+                        backgroundColor: expired
+                            ? AppColors.primaryColor
+                            : const Color(0xff00B81C),
+                        radius: 4,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      expired
+                          ? "Hết hạn bảo hành"
+                          : "Còn $remainingMonth tháng bảo hành",
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildCustomerInfoItem({
+    required String label,
+    required String value,
+    int maxLine = 1,
+    bool isSelectable = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          const SizedBox(width: 50),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: isSelectable
+                  ? SelectableText(
+                      value,
+                      maxLines: maxLine,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )
+                  : Text(
+                      value,
+                      maxLines: maxLine,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

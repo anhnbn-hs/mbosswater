@@ -11,108 +11,100 @@ import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bl
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
+import 'package:mbosswater/features/guarantee/presentation/step_request_screen/confirm_phone_number_step.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
-class GuaranteeBeforeStep extends StatefulWidget {
-  final Product product;
+class GuaranteeBeforeWithoutQRCodeStep extends StatefulWidget {
   final VoidCallback onNextStep;
+  final GlobalKey<ConfirmPhoneNumberStepState> confirmStepKey;
   final TextEditingController reasonController;
 
-  const GuaranteeBeforeStep({
+  const GuaranteeBeforeWithoutQRCodeStep({
     super.key,
-    required this.product,
     required this.onNextStep,
     required this.reasonController,
+    required this.confirmStepKey,
   });
 
   @override
-  State<GuaranteeBeforeStep> createState() => GuaranteeBeforeStepState();
+  State<GuaranteeBeforeWithoutQRCodeStep> createState() =>
+      GuaranteeBeforeWithoutQRCodeStepState();
 }
 
-class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
+class GuaranteeBeforeWithoutQRCodeStepState
+    extends State<GuaranteeBeforeWithoutQRCodeStep>
     with AutomaticKeepAliveClientMixin {
   late UserInfoBloc userInfoBloc;
-  late FetchCustomerBloc fetchCustomerBloc;
   Customer? customer;
+  Guarantee? guarantee;
 
   @override
   void initState() {
     super.initState();
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
-    fetchCustomerBloc = BlocProvider.of<FetchCustomerBloc>(context);
-    fetchCustomerBloc.add(FetchCustomerByProduct(widget.product.id));
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if(widget.confirmStepKey.currentState != null){
+      customer = widget.confirmStepKey.currentState?.customerSearched.value;
+      guarantee = widget.confirmStepKey.currentState?.guaranteeSelected.value;
+    }
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    return BlocBuilder(
-      bloc: fetchCustomerBloc,
-      builder: (context, state) {
-        if (state is FetchCustomerLoading) {
-          return Center(
-            child: Lottie.asset(AppAssets.aLoading, height: 50),
-          );
-        }
-        if (state is FetchCustomerSuccess) {
-          customer = state.customer;
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                buildBoxFieldCannotEdit(
-                  label: "Khách hàng",
-                  value: state.customer.fullName ?? "",
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldCannotEdit(
-                  label: "Số điện thoại",
-                  value: state.customer.phoneNumber ?? "",
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldCannotEdit(
-                  label: "Sản phẩm",
-                  value: widget.product.name!,
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldCannotEdit(
-                  label: "Kỹ thuật viên phụ trách",
-                  value: userInfoBloc.user!.fullName!,
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldCannotEdit(
-                  label: "Thời gian",
-                  value: DateFormat("dd/MM/yyyy").format(now),
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldAreaGuarantee(
-                  label: "Nguyên nhân bảo hành",
-                  hint: "Mô tả tình trạng sản phẩm",
-                  controller: widget.reasonController,
-                ),
-                const SizedBox(height: 40),
-                CustomButton(
-                  onTap: () {
-                    if (widget.reasonController.text.trim().isEmpty) {
-                      DialogUtils.showWarningDialog(
-                        context: context,
-                        title: "Hãy nhập nguyên nhân bảo hành tiếp tục!",
-                        onClickOutSide: () {},
-                      );
-                      return;
-                    }
-                    widget.onNextStep();
-                  },
-                  textButton: "TIẾP TỤC",
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          );
-        }
-        return const SizedBox.shrink();
-      },
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          buildBoxFieldCannotEdit(
+            label: "Khách hàng",
+            value: customer?.fullName ?? "",
+          ),
+          const SizedBox(height: 20),
+          buildBoxFieldCannotEdit(
+            label: "Số điện thoại",
+            value: customer?.phoneNumber ?? "",
+          ),
+          const SizedBox(height: 20),
+          buildBoxFieldCannotEdit(
+            label: "Sản phẩm",
+            value: guarantee?.product.name ?? "",
+          ),
+          const SizedBox(height: 20),
+          buildBoxFieldCannotEdit(
+            label: "Kỹ thuật viên phụ trách",
+            value: userInfoBloc.user!.fullName!,
+          ),
+          const SizedBox(height: 20),
+          buildBoxFieldCannotEdit(
+            label: "Thời gian",
+            value: DateFormat("dd/MM/yyyy").format(now),
+          ),
+          const SizedBox(height: 20),
+          buildBoxFieldAreaGuarantee(
+            label: "Nguyên nhân bảo hành",
+            hint: "Mô tả tình trạng sản phẩm",
+            controller: widget.reasonController,
+          ),
+          const SizedBox(height: 40),
+          CustomButton(
+            onTap: () {
+              if (widget.reasonController.text.trim().isEmpty) {
+                DialogUtils.showWarningDialog(
+                  context: context,
+                  title: "Hãy nhập nguyên nhân bảo hành tiếp tục!",
+                  onClickOutSide: () {},
+                );
+                return;
+              }
+              widget.onNextStep();
+            },
+            textButton: "TIẾP TỤC",
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
     );
   }
 
@@ -203,7 +195,8 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
           child: TextField(
               maxLines: 6,
               controller: controller,
-              onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
+              onTapOutside: (event) =>
+                  FocusScope.of(context).requestFocus(FocusNode()),
               decoration: InputDecoration.collapsed(
                 hintText: "Mô tả tình trạng sản phẩm",
                 hintStyle: AppStyle.boxField.copyWith(
