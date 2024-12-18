@@ -220,7 +220,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 builder: (context, state) {
                   if (state is GuaranteeHistoryLoading) {
                     return Center(
-                      child: Lottie.asset(AppAssets.aLoading, height: 70),
+                      child: Lottie.asset(AppAssets.aLoading, height: 60),
                     );
                   }
                   if (state is GuaranteeHistoryListLoaded) {

@@ -7,9 +7,9 @@ class CycleInitial extends CycleState {}
 class CycleLoading extends CycleState {}
 
 class CycleLoaded extends CycleState {
-  final List<GuaranteeDateModel> guaranteesDate;
+  final List<GuaranteeDateModel> remindersDate;
 
-  CycleLoaded(this.guaranteesDate);
+  CycleLoaded(this.remindersDate);
 }
 
 class CycleError extends CycleState {

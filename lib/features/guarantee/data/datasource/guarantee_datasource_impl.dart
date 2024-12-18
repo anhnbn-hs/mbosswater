@@ -4,6 +4,7 @@ import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee_history.dart';
+import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 
 enum ActionType { update, create }
 
@@ -14,6 +15,7 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
   Future<void> createGuarantee(
     Guarantee guarantee,
     Customer customer,
+    Reminder reminder,
     ActionType actionType,
   ) async {
     final WriteBatch batch = _firebaseFirestore.batch();
@@ -24,7 +26,6 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
 
       if (actionType == ActionType.create) {
         batch.set(customerRef, customer.toJson());
-        print(actionType);
       } else if (actionType == ActionType.update) {
         // Update existing customer
         final querySnapshot = await _firebaseFirestore
@@ -47,6 +48,9 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
       final guaranteeRef =
           _firebaseFirestore.collection('guarantees').doc(guarantee.id);
       batch.set(guaranteeRef, guarantee.toJson());
+
+      final reminderRef = _firebaseFirestore.collection('reminders').doc();
+      batch.set(reminderRef, reminder.toJson());
 
       await batch.commit();
     } catch (e) {

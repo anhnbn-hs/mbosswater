@@ -15,7 +15,7 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guaran
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_after_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_before_step.dart';
-import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_before_without_qrcode_step.dart';
+import 'package:mbosswater/features/guarantee/presentation/step_request_screen/confirm_phone_number_step.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class GuaranteeRequestWithoutQrCodePage extends StatefulWidget {
@@ -100,9 +100,8 @@ class _GuaranteeRequestWithoutQrCodePageState extends State<GuaranteeRequestWith
                     scrollDirection: Axis.horizontal,
                     onPageChanged: (index) => changeStep(index),
                     children: [
-                      GuaranteeBeforeWithoutQrCodeStep(
+                      ConfirmPhoneNumberStep(
                         key: beforeStepKey,
-                        reasonController: reasonController,
                         onNextStep: () {
                           changeStep(2);
                         },
@@ -175,13 +174,14 @@ class _GuaranteeRequestWithoutQrCodePageState extends State<GuaranteeRequestWith
           ),
           activeStepTextColor: Colors.black87,
           finishedStepTextColor: Colors.black87,
-          internalPadding: 100,
+          internalPadding: 60,
           showLoadingAnimation: false,
           stepRadius: 8,
           showStepBorder: false,
           steps: [
-            buildEasyStep(title: "Trước khi bảo hành", stepNumber: 1),
-            buildEasyStep(title: "Sau khi bảo hành", stepNumber: 2),
+            buildEasyStep(title: "Xác nhận SĐT", stepNumber: 1),
+            buildEasyStep(title: "Trước khi bảo hành", stepNumber: 2),
+            buildEasyStep(title: "Sau khi bảo hành", stepNumber: 3),
           ],
           onStepReached: (index) {
             changeStep(index);

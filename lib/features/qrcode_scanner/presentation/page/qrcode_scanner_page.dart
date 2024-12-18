@@ -371,9 +371,8 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
           Flexible(
             flex: 1,
             child: Container(
-              child: Center(
-                child: buildButtonRequestWithoutQRCode(),
-              ),
+              margin: const EdgeInsets.only(bottom: 30),
+              child: buildButtonRequestWithoutQRCode(),
             ),
           )
         ],
@@ -383,34 +382,19 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
 
   buildButtonRequestWithoutQRCode() {
     if (widget.scanType == ScanType.activate) return const SizedBox.shrink();
-    final size = MediaQuery.of(context).size;
-    return SizedBox(
-      height: 40,
-      width: size.width * 0.8,
-      child: Material(
-        child: InkWell(
-          onTap: () {
-            context.push("/guarantee-request-without-qrcode");
-          },
-          borderRadius: BorderRadius.circular(8),
-          child: Ink(
-            height: 50,
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Center(
-              child: Text(
-                "YÊU CẦU BẢO HÀNH KHÔNG CẦN MÃ QR",
-                style: TextStyle(
-                  fontFamily: 'BeVietnam',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
+    return TextButton(
+      onPressed: () {
+        context.push("/guarantee-request-without-qrcode");
+      },
+      child: const Text(
+        "Hoặc nhập số điện thoại",
+        style: TextStyle(
+          decoration: TextDecoration.underline,
+          decorationThickness: 1.2,
+          fontFamily: 'BeVietnam',
+          fontWeight: FontWeight.w500,
+          fontSize: 18,
+          color: Color(0xff201E1E),
         ),
       ),
     );

@@ -52,7 +52,7 @@ class CustomerCardItem extends StatelessWidget {
               value: customerEntity.customer.address!.displayAddress(),
             ),
             buildCustomerInfoItem(
-              label: "Đơn hàng",
+              label: "Số sản phẩm",
               value: "${customerEntity.guarantees.length}",
             ),
           ],

@@ -8,7 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
-import 'package:mbosswater/core/utils/encryption_helper.dart';
+import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/create_agency_staff_bloc.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/delete_agency_staff_bloc.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
@@ -18,7 +18,10 @@ import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bl
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/cycle_bloc.dart';
-import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/customer_care/bloc/fetch_customers_cubit.dart';
+import 'package:mbosswater/features/customer_care/bloc/fetch_guarantee_by_id_cubit.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
+import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_agency_bloc.dart';
@@ -51,6 +54,7 @@ import 'package:mbosswater/go_router.dart';
 import 'features/login/presentation/bloc/login_bloc.dart';
 import 'injection_container.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +63,9 @@ void main() async {
 
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp();
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+    );
   }
   // Initialize NotificationService
   await NotificationService.init();
@@ -81,7 +88,7 @@ void main() async {
   // String dataEncri = EncryptionHelper.decryptData("3X5d+/h+c+UWnqdYupqb1w==T4gFG2afauSMqIcC2dd6+FUa4/nbSS6Tk/c8X8FvgQbyB1ArH2VfhrxkkDwuisXnXCXf4l84cSu4Z4KL4AdI6t5yyFC0aGT2QpZ1QIpAWcNqooEgBDPDCXz8zhnmLO2eSNuNMQm5IdLoLo3i1Gkn1TnVe4VILn6fUxgSUp9IP34/1AnAAv0cIOlU1iuUqn5wKYZq+K5Ijpqir7vC+Yuaf7N9DfSMMKrFw+7lzOVRAz8=", dotenv.env["SECRET_KEY_QR_CODE"]!);
   //
   // print(dataEncri);
-  // await updateAllAgencyAddresses();
+  // await createRemindersForAllGuarantees();
   runApp(
     MultiBlocProvider(
       providers: [
@@ -126,8 +133,10 @@ void main() async {
         BlocProvider(create: (_) => ProductBloc(null)),
         BlocProvider(create: (_) => CustomerBloc(null)),
         BlocProvider(create: (_) => AdditionalInfoBloc(null)),
-        // CSKH
+        // Customer Care - CSKH
         BlocProvider(create: (_) => CycleBloc()),
+        BlocProvider(create: (_) => FetchCustomersCubit()),
+        BlocProvider(create: (_) => FetchGuaranteeByIdCubit()),
       ],
       child: DevicePreview(
         // enabled: !kReleaseMode,
@@ -138,38 +147,61 @@ void main() async {
   );
 }
 
-Future<void> updateAllAgencyAddresses() async {
-  try {
-    // Reference to the 'agencies' collection
-    final CollectionReference usersRef =
-        FirebaseFirestore.instance.collection('guarantees');
+// Future<void> updateAllAgencyAddresses() async {
+//   try {
+//     // Reference to the 'agencies' collection
+//     final CollectionReference guaranteesRef =
+//         FirebaseFirestore.instance.collection('guarantees');
+//
+//     // Fetch all agencies
+//     final QuerySnapshot snapshot = await guaranteesRef.get();
+//
+//     // Loop through each document and update its address
+//     for (final doc in snapshot.docs) {
+//       final guaranteeData = doc.data() as Map<String, dynamic>;
+//
+//       final guarantee = Guarantee.fromJson(guaranteeData);
+//       final createdAt = guarantee.createdAt;
+//
+//
+//       // Update the Firestore document with the new address
+//       await guaranteesRef.doc(doc.id).update({
+//         'nextDateNotify': newAddress.toJson(),
+//       });
+//
+//       print("Updated user ${doc.id}");
+//     }
+//
+//     print("All agencies updated successfully!");
+//   } catch (e) {
+//     print("Error updating agencies: $e");
+//   }
+// }
 
-    // Fetch all agencies
-    final QuerySnapshot snapshot = await usersRef.get();
+Future<void> createRemindersForAllGuarantees() async {
+  final querySnapshot =
+      await FirebaseFirestore.instance.collection('guarantees').get();
 
-    // Loop through each document and update its address
-    for (final doc in snapshot.docs) {
-      final userData = doc.data() as Map<String, dynamic>;
+  for (var doc in querySnapshot.docs) {
+    final guaranteeData = doc.data();
+    final guarantee = Guarantee.fromJson(guaranteeData);
 
-      // Construct the new address (modify this logic as needed)
-      final Address newAddress = Address(
-        province: "Bắc Ninh",
-        district: "Quế Võ",
-        commune: "Yên Giả",
-        detail: "36 Ngô Gia Tự",
-      );
+    // Create reminder for each guarantee
+    Reminder reminder = Reminder(
+      id: generateRandomId(6),
+      customerId: guarantee.customerID,
+      guaranteeId: guarantee.id,
+      createdAt: guarantee.createdAt,
+      endDate: guarantee.endDate,
+    );
 
-      // Update the Firestore document with the new address
-      await usersRef.doc(doc.id).update({
-        'address': newAddress.toJson(),
-      });
+    // Generate reminder dates (3-month intervals in this case)
+    reminder.generateReminderDates(3); // Generate every 3 months
 
-      print("Updated user ${doc.id}");
-    }
-
-    print("All agencies updated successfully!");
-  } catch (e) {
-    print("Error updating agencies: $e");
+    // Add reminder to Firestore
+    final reminderRef =
+        FirebaseFirestore.instance.collection('reminders').doc(reminder.id);
+    await reminderRef.set(reminder.toJson());
   }
 }
 
@@ -189,6 +221,7 @@ class MyApp extends StatelessWidget {
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
+        MonthYearPickerLocalizations.delegate,
       ],
       builder: DevicePreview.appBuilder,
       theme: AppTheme.lightTheme,

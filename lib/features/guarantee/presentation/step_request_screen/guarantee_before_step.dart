@@ -214,7 +214,7 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
               cursorHeight: 20,
               style: AppStyle.boxField.copyWith(
                 fontSize: 15,
-                color: Colors.grey,
+                color: Colors.black87,
                 height: 1,
               )),
         ),

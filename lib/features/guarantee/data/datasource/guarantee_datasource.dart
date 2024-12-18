@@ -3,11 +3,13 @@ import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee_history.dart';
+import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 
 abstract class GuaranteeDatasource {
   Future<void> createGuarantee(
     Guarantee guarantee,
     Customer customer,
+    Reminder reminder,
     ActionType actionType,
   );
 

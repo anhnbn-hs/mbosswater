@@ -16,6 +16,7 @@ import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasour
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
+import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_event.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_state.dart';
@@ -206,9 +207,10 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                           buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
                         ],
                         onStepReached: (index) {
-                          if(index == 2){
-                            customerStepKey.currentState?.handleAndGoToNextStep();
-                            if(customerStepKey.currentState!.checkInput()){
+                          if (index == 2) {
+                            customerStepKey.currentState
+                                ?.handleAndGoToNextStep();
+                            if (customerStepKey.currentState!.checkInput()) {
                               stepBloc.changeStep(2);
                             }
                           } else {
@@ -223,10 +225,10 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                       controller: pageController,
                       scrollDirection: Axis.horizontal,
                       onPageChanged: (index) {
-                        if(index == 2){
+                        if (index == 2) {
                           customerStepKey.currentState?.handleAndGoToNextStep();
 
-                          if(!customerStepKey.currentState!.checkInput()){
+                          if (!customerStepKey.currentState!.checkInput()) {
                             stepBloc.changeStep(stepBloc.currentStep);
                             pageController.animateToPage(
                               stepBloc.currentStep,
@@ -256,8 +258,8 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                         ),
                         CustomerInfoStep(
                           key: customerStepKey,
-                          guaranteeActiveKey:
-                              widget.key as GlobalKey<GuaranteeActivatePageState>,
+                          guaranteeActiveKey: widget.key
+                              as GlobalKey<GuaranteeActivatePageState>,
                           onPreStep: () {
                             stepBloc.goToPreviousStep();
                             pageController.animateToPage(
@@ -416,25 +418,39 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     DialogUtils.showLoadingDialog(context);
     // handle active
     final userID = await PreferencesUtils.getString(loginSessionKey);
+    final createdAt = Timestamp.now();
+    final endDate =
+        DateTime.now().toUtc().add(const Duration(days: 365, hours: 7));
     final guarantee = Guarantee(
       id: generateRandomId(6),
-      createdAt: Timestamp.now(),
+      createdAt: createdAt,
       product: product,
       customerID: customer.id!,
       technicalID: userID ?? "",
-      endDate: DateTime.now().toUtc().add(
-            const Duration(
-              days: 365,
-              hours: 7,
-            ),
-          ),
+      endDate: endDate,
     );
+    final reminder = Reminder(
+      id: generateRandomId(6),
+      customerId: customer.id ?? "",
+      guaranteeId: guarantee.id,
+      createdAt: createdAt,
+      endDate: endDate,
+    );
+    reminder.generateReminderDates(3);
     if (actionType == ActionType.create) {
-      activeGuaranteeBloc
-          .add(ActiveGuarantee(guarantee, customer, ActionType.create));
+      activeGuaranteeBloc.add(ActiveGuarantee(
+        guarantee,
+        customer,
+        reminder,
+        ActionType.create,
+      ));
     } else if (actionType == ActionType.update) {
-      activeGuaranteeBloc
-          .add(ActiveGuarantee(guarantee, customer, ActionType.update));
+      activeGuaranteeBloc.add(ActiveGuarantee(
+        guarantee,
+        customer,
+        reminder,
+        ActionType.update,
+      ));
     }
   }
 
