@@ -234,6 +234,9 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                 // Show modal
                                 await showBottomSheetCustomerInformation(
                                   customerReminder: customers[index],
+                                  reminderDate: relevantReminders
+                                      ?.first.reminderDate
+                                      .toDate() ?? DateTime.now(),
                                   isNotified: isNotified,
                                   node: note,
                                 );
@@ -447,6 +450,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
 
   Future<void> showBottomSheetCustomerInformation({
     required CustomerReminder customerReminder,
+    required DateTime reminderDate,
     required bool isNotified,
     String? node,
   }) async {
@@ -609,7 +613,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    buildGuaranteeItem(state.guarantee),
+                                    buildGuaranteeItem(state.guarantee, reminderDate),
                                     const SizedBox(height: 16),
                                     const Text(
                                       "Ghi chú",
@@ -699,12 +703,12 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     );
   }
 
-  Widget buildGuaranteeItem(Guarantee guarantee) {
+  Widget buildGuaranteeItem(Guarantee guarantee, DateTime reminderDate) {
     final startDate =
         guarantee.createdAt.toDate().toUtc().add(const Duration(hours: 7));
     final startDateFormatted = DateFormat("dd/MM/yyyy").format(startDate);
     final notifyDateFormatted =
-        DateFormat("dd/MM/yyyy").format(focusDayNotifier.value);
+        DateFormat("dd/MM/yyyy").format(reminderDate);
     bool expired = isExpired(guarantee.endDate);
     int remainingMonth = getRemainingMonths(
       guarantee.endDate.toUtc().add(

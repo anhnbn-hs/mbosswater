@@ -81,13 +81,6 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  //
-  // String data =
-  //     '{"code":"mbosswater","product":{"id":"MLN10019","name":"Máy Lọc Nước Tạo Kiềm MBossWater","model":"Model11","seriDow":"SRD09","guaranteeDuration":"12 tháng"}}';
-  //
-  // String dataEncri = EncryptionHelper.decryptData("3X5d+/h+c+UWnqdYupqb1w==T4gFG2afauSMqIcC2dd6+FUa4/nbSS6Tk/c8X8FvgQbyB1ArH2VfhrxkkDwuisXnXCXf4l84cSu4Z4KL4AdI6t5yyFC0aGT2QpZ1QIpAWcNqooEgBDPDCXz8zhnmLO2eSNuNMQm5IdLoLo3i1Gkn1TnVe4VILn6fUxgSUp9IP34/1AnAAv0cIOlU1iuUqn5wKYZq+K5Ijpqir7vC+Yuaf7N9DfSMMKrFw+7lzOVRAz8=", dotenv.env["SECRET_KEY_QR_CODE"]!);
-  //
-  // print(dataEncri);
   // await createRemindersForAllGuarantees();
   runApp(
     MultiBlocProvider(
@@ -146,37 +139,6 @@ void main() async {
     ),
   );
 }
-
-// Future<void> updateAllAgencyAddresses() async {
-//   try {
-//     // Reference to the 'agencies' collection
-//     final CollectionReference guaranteesRef =
-//         FirebaseFirestore.instance.collection('guarantees');
-//
-//     // Fetch all agencies
-//     final QuerySnapshot snapshot = await guaranteesRef.get();
-//
-//     // Loop through each document and update its address
-//     for (final doc in snapshot.docs) {
-//       final guaranteeData = doc.data() as Map<String, dynamic>;
-//
-//       final guarantee = Guarantee.fromJson(guaranteeData);
-//       final createdAt = guarantee.createdAt;
-//
-//
-//       // Update the Firestore document with the new address
-//       await guaranteesRef.doc(doc.id).update({
-//         'nextDateNotify': newAddress.toJson(),
-//       });
-//
-//       print("Updated user ${doc.id}");
-//     }
-//
-//     print("All agencies updated successfully!");
-//   } catch (e) {
-//     print("Error updating agencies: $e");
-//   }
-// }
 
 Future<void> createRemindersForAllGuarantees() async {
   final querySnapshot =

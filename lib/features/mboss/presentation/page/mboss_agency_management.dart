@@ -75,6 +75,8 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
   final agencyBossPhoneFocusNode = FocusNode();
   final agencyBossAddressFocusNode = FocusNode();
 
+  final GlobalKey _sliverAppBarContentKey = GlobalKey();
+  double _sliverAppBarHeight = kToolbarHeight;
   @override
   void initState() {
     super.initState();
@@ -95,6 +97,20 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
     }
     if (provincesUserBloc.state is! ProvincesLoaded) {
       provincesUserBloc.add(FetchProvinces());
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _calculateSliverAppBarHeight();
+    });
+  }
+
+  void _calculateSliverAppBarHeight() {
+    final RenderBox? renderBox =
+    _sliverAppBarContentKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      setState(() {
+        _sliverAppBarHeight = renderBox.size.height + kToolbarHeight;
+      });
     }
   }
 
@@ -145,7 +161,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
                 floating: true,
                 automaticallyImplyLeading: false,
                 backgroundColor: Colors.white,
-                expandedHeight: 230,
+                expandedHeight: _sliverAppBarHeight,
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Column(
@@ -333,6 +349,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
 
   Widget buildSliverAppBarContent() {
     return Column(
+      key: _sliverAppBarContentKey,
       children: [
         const SizedBox(height: 10),
         Container(
