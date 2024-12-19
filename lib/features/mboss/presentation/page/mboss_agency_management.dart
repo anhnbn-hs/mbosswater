@@ -210,7 +210,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
                   MediaQuery.of(context).size.height - 300;
               return Column(
                 children: [
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Expanded(
                     child: SingleChildScrollView(
                       physics: isScrollable

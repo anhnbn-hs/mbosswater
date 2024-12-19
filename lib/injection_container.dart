@@ -13,8 +13,6 @@ import 'package:mbosswater/features/customer/domain/repository/customer_reposito
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_by_phone.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_by_product.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_guarantee.dart';
-import 'package:mbosswater/features/customer/domain/usecase/list_all_customer.dart';
-import 'package:mbosswater/features/customer/domain/usecase/list_customer_by_agency.dart';
 import 'package:mbosswater/features/customer/domain/usecase/search_customer.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
@@ -176,14 +174,6 @@ void initServiceLocator() {
     () => SearchCustomerUseCase(sl<CustomerRepository>()),
   );
 
-  sl.registerLazySingleton<ListCustomerByAgencyUseCase>(
-    () => ListCustomerByAgencyUseCase(sl<CustomerRepository>()),
-  );
-
-  sl.registerLazySingleton<ListAllCustomerUseCase>(
-    () => ListAllCustomerUseCase(sl<CustomerRepository>()),
-  );
-
   sl.registerLazySingleton<GetCustomerGuaranteeUseCase>(
     () => GetCustomerGuaranteeUseCase(sl<CustomerRepository>()),
   );
@@ -209,17 +199,11 @@ void initServiceLocator() {
     () => CustomerSearchBloc(sl<SearchCustomerUseCase>()),
   );
 
-  sl.registerLazySingleton<FetchCustomersBloc>(
-    () => FetchCustomersBloc(
-      sl<ListCustomerByAgencyUseCase>(),
-      sl<ListAllCustomerUseCase>(),
-    ),
-  );
+  sl.registerLazySingleton<FetchCustomersBloc>(() => FetchCustomersBloc());
 
   // User
-  sl.registerLazySingleton<UserDatasource>(
-    () => UserDatasourceImpl(),
-  );
+  sl.registerLazySingleton<UserDatasource>(() => UserDatasourceImpl());
+
   sl.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(sl<UserDatasource>()),
   );
@@ -253,7 +237,7 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<CreateAgencyStaffBloc>(
-        () => CreateAgencyStaffBloc(sl<AgencyDatasource>()),
+    () => CreateAgencyStaffBloc(sl<AgencyDatasource>()),
   );
 
   sl.registerLazySingleton<UpdateAgencyStaffBloc>(

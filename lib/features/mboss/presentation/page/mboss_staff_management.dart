@@ -319,7 +319,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
                             children: [
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 12),
                               ListView.builder(
                                 itemCount: listUser.length,
                                 shrinkWrap: true,

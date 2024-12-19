@@ -6,4 +6,13 @@ class CustomerEntity {
   final List<Guarantee> guarantees;
 
   CustomerEntity(this.customer, this.guarantees);
+
+  factory CustomerEntity.fromJson(Map<String, dynamic> json) {
+    return CustomerEntity(
+      Customer.fromJson(json['customer']), // Deserialize Customer object
+      (json['guarantees'] as List<dynamic>)
+          .map((item) => Guarantee.fromJson(item as Map<String, dynamic>))
+          .toList(), // Deserialize list of Guarantees
+    );
+  }
 }

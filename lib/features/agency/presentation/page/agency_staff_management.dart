@@ -304,7 +304,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
                             children: [
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 10),
                               ListView.builder(
                                 itemCount: listUser.length,
                                 shrinkWrap: true,

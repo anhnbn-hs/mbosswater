@@ -72,6 +72,35 @@ exports.sendNotificationWhenGuaranteeActivated = sendNotificationWhenGuaranteeAc
 //   }
 // });
 
+// Fetch customers and related guarantees
+exports.fetchCustomersWithGuarantees = onCall(async (request) => {
+  try {
+    const customersSnapshot = await admin.firestore().collection("customers").get();
+    const customers = [];
+
+    for (const doc of customersSnapshot.docs) {
+      const customer = { id: doc.id, ...doc.data() };
+
+      const guaranteesSnapshot = await admin.firestore()
+        .collection("guarantees")
+        .where("customerID", "==", customer.id)
+        .get();
+
+      const guarantees = guaranteesSnapshot.docs.map(guaranteeDoc => ({
+        id: guaranteeDoc.id,
+        ...guaranteeDoc.data(),
+      }));
+
+      customers.push({ customer, guarantees });
+    }
+
+    return customers;
+  } catch (error) {
+    console.error("Error fetching customers and guarantees:", error);
+    throw new Error("Failed to fetch customer data");
+  }
+});
+
 exports.deleteUser = onCall(async (request) => {
   const { userId } = request.data;
 
@@ -98,6 +127,7 @@ exports.deleteUser = onCall(async (request) => {
     throw new Error(error.message);
   }
 });
+
 
 
 // exports.sendNotifications = onSchedule(
