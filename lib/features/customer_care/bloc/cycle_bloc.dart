@@ -7,7 +7,7 @@ import 'cycle_event.dart';
 import 'cycle_state.dart';
 
 class GuaranteeDateModel {
-  final DateTime dateTime;
+  DateTime dateTime;
   final List<Reminder> reminders;
 
   GuaranteeDateModel(this.dateTime, this.reminders);
@@ -25,7 +25,7 @@ class CycleBloc extends Bloc<CycleEvent, CycleState> {
     emit(CycleLoading());
 
     DateTime startDate = DateTime(event.year, event.month, 1);
-    DateTime endDate = DateTime(event.year, event.month + 1, 0); // Last day of the month
+    DateTime endDate = DateTime(event.year, event.month + 1, 0).add(const Duration(days: 3));
 
     try {
       snapshot ??= await FirebaseFirestore.instance
@@ -52,7 +52,8 @@ class CycleBloc extends Bloc<CycleEvent, CycleState> {
         for (var reminderDateModel in reminder.reminderDates ?? []) {
           DateTime reminderDate = reminderDateModel.reminderDate.toDate();
           if (reminderDate.isAfter(startDate) && reminderDate.isBefore(endDate.add(const Duration(days: 1)))) {
-            DateTime onlyDate = DateTime(reminderDate.year, reminderDate.month, reminderDate.day);
+            DateTime onlyDate = DateTime(reminderDate.year, reminderDate.month, reminderDate.day)
+                .subtract(const Duration(days: 3));
 
             // Group reminders by reminderDate
             if (groupedReminders.containsKey(onlyDate)) {
@@ -63,6 +64,8 @@ class CycleBloc extends Bloc<CycleEvent, CycleState> {
           }
         }
       }
+
+      print(groupedReminders);
 
       // Convert grouped data to List<GuaranteeDateModel>
       List<GuaranteeDateModel> results = groupedReminders.entries

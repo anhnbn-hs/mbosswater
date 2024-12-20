@@ -57,7 +57,10 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     notifyGuaranteeDays.addListener(() {
       List<Reminder> reminders = [];
       notifyGuaranteeDays.value.forEach((element) {
-        element.reminders.forEach((r) => reminders.add(r));
+        if(element.dateTime.month == focusDayNotifier.value.month) {
+          print(element.dateTime.toIso8601String());
+          element.reminders.forEach((r) => reminders.add(r));
+        }
       });
       // Fetch customers
       fetchCustomersCubit.fetchCustomersByIds(reminders);
@@ -165,8 +168,9 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
           body: BlocListener<CycleBloc, CycleState>(
             listener: (context, state) {
               if (state is CycleLoaded) {
+                final reminders = state.remindersDate;
                 setState(() {
-                  notifyGuaranteeDays.value = state.remindersDate;
+                  notifyGuaranteeDays.value = reminders;
                 });
               }
             },
@@ -205,12 +209,37 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                 .reminderDates
                                 ?.where((e) {
                               DateTime reminderDate = e.reminderDate.toDate();
-                              // Check if the reminder matches the focus day and is notified
-                              if (reminderDate.year ==
-                                      focusDayNotifier.value.year &&
-                                  reminderDate.month ==
-                                      focusDayNotifier.value.month) {
-                                return true;
+
+                              DateTime nextMonth = DateTime(
+                                focusDayNotifier.value.year,
+                                focusDayNotifier.value.month + 1,
+                                focusDayNotifier.value.day,
+                              );
+
+                              if (isInLastThreeDaysOfMonth(
+                                      focusDayNotifier.value) &&
+                                  focusDayNotifier.value.month != 12) {
+                                // Check if the reminder matches the focus day and is notified
+                                if (reminderDate.year ==
+                                        focusDayNotifier.value.year &&
+                                    reminderDate.month == nextMonth.month) {
+                                  return true;
+                                }
+                              } else if(isInLastThreeDaysOfMonth(
+                                  focusDayNotifier.value) &&
+                                  focusDayNotifier.value.month == 12){
+                                if (reminderDate.year ==
+                                    focusDayNotifier.value.year + 1 &&
+                                    reminderDate.month == nextMonth.month) {
+                                  return true;
+                                }
+                              } else {
+                                if (reminderDate.year ==
+                                    focusDayNotifier.value.year &&
+                                    reminderDate.month ==
+                                        focusDayNotifier.value.month) {
+                                  return true;
+                                }
                               }
                               return false;
                             }).toList();
@@ -235,8 +264,9 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                 await showBottomSheetCustomerInformation(
                                   customerReminder: customers[index],
                                   reminderDate: relevantReminders
-                                      ?.first.reminderDate
-                                      .toDate() ?? DateTime.now(),
+                                          ?.first.reminderDate
+                                          .toDate() ??
+                                      DateTime.now(),
                                   isNotified: isNotified,
                                   node: note,
                                 );
@@ -256,6 +286,18 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
         ),
       ),
     );
+  }
+
+  bool isInLastThreeDaysOfMonth(DateTime date) {
+    // Tìm ngày cuối cùng của tháng
+    DateTime lastDayOfMonth = DateTime(date.year, date.month + 1, 0);
+
+    // Tính khoảng 3 ngày cuối tháng
+    DateTime threeDaysBeforeLast = lastDayOfMonth.subtract(Duration(days: 2));
+
+    // Kiểm tra nếu date nằm trong khoảng này
+    return date.isAfter(threeDaysBeforeLast) ||
+        date.isAtSameMomentAs(threeDaysBeforeLast);
   }
 
   Widget buildCustomerCardItem({
@@ -613,7 +655,8 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    buildGuaranteeItem(state.guarantee, reminderDate),
+                                    buildGuaranteeItem(
+                                        state.guarantee, reminderDate),
                                     const SizedBox(height: 16),
                                     const Text(
                                       "Ghi chú",
@@ -707,8 +750,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     final startDate =
         guarantee.createdAt.toDate().toUtc().add(const Duration(hours: 7));
     final startDateFormatted = DateFormat("dd/MM/yyyy").format(startDate);
-    final notifyDateFormatted =
-        DateFormat("dd/MM/yyyy").format(reminderDate);
+    final notifyDateFormatted = DateFormat("dd/MM/yyyy").format(reminderDate);
     bool expired = isExpired(guarantee.endDate);
     int remainingMonth = getRemainingMonths(
       guarantee.endDate.toUtc().add(

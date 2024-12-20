@@ -27,6 +27,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
   }
 
+  void emitError(String error) {
+    emit(LoginError(error));
+  }
+
   void reset() {
     emit(LoginInitial());
   }

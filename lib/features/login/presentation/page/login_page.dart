@@ -92,25 +92,10 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              BlocBuilder(
+              BlocConsumer(
                 bloc: loginBloc,
-                builder: (context, state) {
-                  if (state is LoginError) {
-                    DialogUtils.hide(context);
-                    return Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        ErrorMessage.IUI_ERROR_INVALID_CREDENTIALS,
-                        style: TextStyle(
-                          fontFamily: "BeVietnam",
-                          color: AppColors.textErrorColor,
-                          fontStyle: FontStyle.italic,
-                          fontSize: 12,
-                        ),
-                      ),
-                    );
-                  }
-                  if (state is LoginSuccess) {
+                listener: (context, state) {
+                  if(state is LoginSuccess){
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       // Make sure the context is valid here
                       if (mounted) {
@@ -124,6 +109,24 @@ class _LoginPageState extends State<LoginPage> {
                       userInfoBloc.add(FetchUserInfo(state.user.id));
                       notificationCubit.fetchNotifications(state.user.id);
                     });
+                  }
+                },
+                builder: (context, state) {
+                  if (state is LoginError) {
+                    DialogUtils.hide(context);
+                    return Container(
+                      padding: const EdgeInsets.only(top: 15),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        ErrorMessage.IUI_ERROR_INVALID_CREDENTIALS,
+                        style: TextStyle(
+                          fontFamily: "BeVietnam",
+                          color: AppColors.textErrorColor,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 12,
+                        ),
+                      ),
+                    );
                   }
                   return const SizedBox.shrink();
                 },
@@ -144,6 +147,11 @@ class _LoginPageState extends State<LoginPage> {
     // Get text field value
     String phone = phoneController.text;
     String password = passwordController.text;
+
+    if(phone.trim().isEmpty || password.trim().isEmpty){
+      return;
+    }
+
     // Show loading dialog
     DialogUtils.showLoadingDialog(context);
     // Get FCM Token
