@@ -1,16 +1,153 @@
-# mbosswater
+README: Dự án MBossWater
 
-A new Flutter project.
+1. Tổng quan
 
-## Getting Started
+Ứng dụng được xây dựng dựa trên mô hình Clean Architecture, kết hợp với Firebase làm backend chính. Mục tiêu là đảm bảo mã nguồn dễ bảo trì, mở rộng và đáp ứng tốt các yêu cầu nghiệp vụ.
 
-This project is a starting point for a Flutter application.
+2. Công nghệ sử dụng
 
-A few resources to get you started if this is your first Flutter project:
+Ngôn ngữ chính: Dart (Flutter)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Mô hình kiến trúc: Clean Architecture
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Quản lý trạng thái: BLoC (Business Logic Component)
+
+Backend: Firebase (Firestore, Cloud Functions, Cloud Message, ...)
+
+Cơ sở dữ liệu thời gian thực: Firestore
+
+Quản lý dependencies: pubspec.yaml
+
+3. Cấu trúc dự án
+
+Ứng dụng được chia thành các tầng như sau:
+
+a. Presentation Layer (Tầng giao diện)
+
+Chứa UI và logic liên quan đến giao diện người dùng.
+
+Thư mục: lib/presentation
+
+Các màn hình được tổ chức theo module hoặc chức năng cụ thể.
+
+Quản lý trạng thái bằng BLoC hoặc Cubit.
+
+b. Domain Layer (Tầng nghiệp vụ)
+
+Chứa các logic cốt lõi và các quy tắc kinh doanh.
+
+Thư mục: lib/domain
+
+Các thành phần chính:
+
+Entities: Các đối tượng thuần liên quan đến nghiệp vụ.
+
+Use Cases: Chứa các logic xử lý nghiệp vụ (ví dụ: xử lý đăng nhập, tính toán thống kê).
+
+Repositories (Contracts): Các interface kết nối tầng Domain và Data.
+
+c. Data Layer (Tầng dữ liệu)
+
+Chứa các thành phần liên quan đến xử lý dữ liệu (API, Firebase, Local Storage).
+
+Thư mục: lib/data
+
+Các thành phần chính:
+
+Models: Các mô hình dữ liệu (DTO) được ánh xạ từ Firestore hoặc API.
+
+Data Sources:
+
+Remote Data Source: Giao tiếp với Firebase hoặc API bên ngoài.
+
+Local Data Source: Lưu trữ dữ liệu cục bộ (Shared Preferences, SQLite).
+
+Repositories (Implementations): Hiện thực hóa các repository trong tầng Domain.
+
+4. Công cụ Firebase được sử dụng
+
+Firestore: Lưu trữ và đồng bộ dữ liệu thời gian thực.
+
+Cloud Functions: Xử lý logic backend (như gửi thông báo, xử lý sự kiện).
+
+Firebase Storage: Quản lý tệp (ảnh, video).
+
+Firebase Analytics: Theo dõi hành vi người dùng.
+
+5. Mã hóa dữ liệu
+
+Ứng dụng sử dụng thuật toán AES (Advanced Encryption Standard) với chế độ CBC (Cipher Block Chaining) để mã hóa và giải mã dữ liệu nhạy cảm như mật khẩu và dữ liệu QR code.
+
+Secret Key: Được yêu cầu có độ dài chính xác 32 ký tự, đảm bảo tính bảo mật và khả năng tương thích với thuật toán AES.
+
+IV (Initialization Vector): Sử dụng một giá trị ngẫu nhiên cố định với độ dài 16 byte để tăng cường bảo mật khi mã hóa dữ liệu.
+
+Ứng dụng:
+
+Mã hóa mật khẩu người dùng trước khi lưu trữ hoặc gửi qua mạng.
+
+Bảo vệ dữ liệu QR code khỏi bị truy cập trái phép.
+
+`String encryptedData = EncryptionHelper.encryptData("sampleData", "yourSecretKey1234567890123456");
+String decryptedData = EncryptionHelper.decryptData(encryptedData, "yourSecretKey1234567890123456");`
+
+SecretKey khai báo trong .env
+
+6. Quy trình phát triển
+
+Tuân thủ Clean Architecture:
+
+Không viết logic nghiệp vụ trong UI.
+
+Tách biệt rõ ràng giữa các tầng Presentation, Domain và Data.
+
+7. Hướng dẫn setup
+
+a. Cài đặt môi trường
+
+Flutter SDK:
+
+Yêu cầu phiên bản >= 3.x.
+
+Hướng dẫn cài đặt Flutter
+
+Firebase CLI:
+
+Hướng dẫn cài đặt Firebase CLI
+
+b. Setup dự án
+
+Clone repo:
+
+git clone [https://github.com/thuanyg/mbosswater]
+
+Cài đặt dependencies:
+
+flutter pub get
+
+Cấu hình Firebase:
+
+Thêm tệp google-services.json (Android) hoặc GoogleService-Info.plist (iOS) vào thư mục tương ứng.
+
+c. Chạy ứng dụng:
+
+Development:
+
+flutter run
+
+Production build:
+
+flutter build apk
+
+* Thêm module Firebase mới
+
+Kích hoạt module trong Firebase Console.
+
+Cập nhật tệp cấu hình Firebase (google-services.json hoặc GoogleService-Info.plist).
+
+Sử dụng SDK Firebase tương ứng.
+
+8. Liên hệ hỗ trợ
+
+Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ qua email: [thuanht.nuce@gmail.com] hoặc tham khảo tài liệu kèm theo dự án.
+
