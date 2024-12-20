@@ -88,6 +88,9 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   ValueNotifier<int> techCount = ValueNotifier<int>(0);
   ValueNotifier<int> allCount = ValueNotifier<int>(0);
 
+  final GlobalKey _sliverAppBarContentKey = GlobalKey();
+  double _sliverAppBarHeight = kToolbarHeight;
+
   @override
   void initState() {
     super.initState();
@@ -104,6 +107,20 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     }
 
     mbossStaffBloc.fetchMbossStaffs();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _calculateSliverAppBarHeight();
+    });
+  }
+
+  void _calculateSliverAppBarHeight() {
+    final RenderBox? renderBox =
+    _sliverAppBarContentKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      setState(() {
+        _sliverAppBarHeight = renderBox.size.height + kToolbarHeight;
+      });
+    }
   }
 
   @override
@@ -129,6 +146,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
 
   buildSliverAppBarContent() {
     return Column(
+      key: _sliverAppBarContentKey,
       children: [
         Container(
           height: 40,
@@ -215,7 +233,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                 floating: true,
                 automaticallyImplyLeading: false,
                 backgroundColor: Colors.white,
-                expandedHeight: 210,
+                expandedHeight: _sliverAppBarHeight,
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Column(
@@ -284,6 +302,8 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                       if (mbossStaffBloc.isLoading) {
                         return ListView.builder(
                           itemCount: 8,
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
                           itemBuilder: (context, index) => Container(
                             margin: const EdgeInsets.symmetric(
                               horizontal: 20,
@@ -299,7 +319,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
                             children: [
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 12),
                               ListView.builder(
                                 itemCount: listUser.length,
                                 shrinkWrap: true,
@@ -1194,7 +1214,9 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                           CustomButton(
                             onTap: () async => handleCreateStaff(),
                             textButton: "TẠO TÀI KHOẢN",
-                          )
+                          ),
+                          const SizedBox(height: 28),
+
                         ],
                       ),
                     ),

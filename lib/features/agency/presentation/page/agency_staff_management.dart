@@ -1,13 +1,10 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
@@ -17,8 +14,6 @@ import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
-import 'package:mbosswater/core/widgets/fullname_formatter.dart';
-import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/core/widgets/text_field_label_item.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/create_agency_staff_bloc.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/delete_agency_staff_bloc.dart';
@@ -33,7 +28,6 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_active_screen/customer_info_step.dart';
-import 'package:mbosswater/features/mboss/presentation/page/mboss_staff_management.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
@@ -81,6 +75,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
 
   ValueNotifier<bool> isDistrictsUserFetched = ValueNotifier(false);
 
+  final GlobalKey _sliverAppBarContentKey = GlobalKey();
+  double _sliverAppBarHeight = kToolbarHeight;
   @override
   void initState() {
     super.initState();
@@ -96,6 +92,10 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
       provincesUserBloc.add(FetchProvinces());
     }
     fetchAgencyStaffBloc.fetchAgencyStaffs(userInfoBloc.user?.agency ?? "");
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _calculateSliverAppBarHeight();
+    });
   }
 
   @override
@@ -111,8 +111,19 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     scrollController.dispose();
   }
 
+  void _calculateSliverAppBarHeight() {
+    final RenderBox? renderBox =
+    _sliverAppBarContentKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      setState(() {
+        _sliverAppBarHeight = renderBox.size.height + kToolbarHeight;
+      });
+    }
+  }
+
   buildSliverAppBarContent() {
     return Column(
+      key: _sliverAppBarContentKey,
       children: [
         Container(
           height: 40,
@@ -199,7 +210,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                 floating: true,
                 automaticallyImplyLeading: false,
                 backgroundColor: Colors.white,
-                expandedHeight: 210,
+                expandedHeight: _sliverAppBarHeight,
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Column(
@@ -293,7 +304,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
                             children: [
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 10),
                               ListView.builder(
                                 itemCount: listUser.length,
                                 shrinkWrap: true,

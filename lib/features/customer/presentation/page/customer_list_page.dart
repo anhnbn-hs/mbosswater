@@ -53,6 +53,9 @@ class _CustomerListPageState extends State<CustomerListPage> {
   ValueNotifier<int> totalCustomer = ValueNotifier(0);
   ValueNotifier<int> totalProductSold = ValueNotifier(0);
 
+  final GlobalKey _sliverAppBarContentKey = GlobalKey();
+  double _sliverAppBarHeight = kToolbarHeight;
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +65,19 @@ class _CustomerListPageState extends State<CustomerListPage> {
     handleFetchCustomer();
     if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN) {
       agenciesBloc.fetchAgencies();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _calculateSliverAppBarHeight();
+    });
+  }
+
+  void _calculateSliverAppBarHeight() {
+    final RenderBox? renderBox =
+    _sliverAppBarContentKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      setState(() {
+        _sliverAppBarHeight = renderBox.size.height + kToolbarHeight;
+      });
     }
   }
 
@@ -78,6 +94,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
 
   Widget buildSliverAppBarContent() {
     return Column(
+      key: _sliverAppBarContentKey,
       children: [
         // Nội dung trong SliverAppBarContent
         buildHeaderSection(),
@@ -193,7 +210,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
                 floating: true,
                 automaticallyImplyLeading: false,
                 backgroundColor: Colors.white,
-                expandedHeight: 249,
+                expandedHeight: _sliverAppBarHeight,
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Column(

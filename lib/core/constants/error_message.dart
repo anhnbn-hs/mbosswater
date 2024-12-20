@@ -1,6 +1,6 @@
 class ErrorMessage {
   // Auth error
-  static const String IUI_ERROR_INVALID_CREDENTIALS = "Email hoặc mật khẩu không đúng";
+  static const String IUI_ERROR_INVALID_CREDENTIALS = "Số điện thoại hoặc mật khẩu không đúng";
   static const String IUI_ERROR_PASSWORD_CONFIRMATION_MISMATCH = "Mật khẩu không khớp";
   static const String IUI_ERROR_EMAIL_REQUIRED = "Vui lòng nhập email";
   static const String IUI_ERROR_PASSWORD_REQUIRED = "Vui lòng nhập mật khẩu";

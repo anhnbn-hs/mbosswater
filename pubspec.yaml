@@ -69,6 +69,7 @@ dependencies:
   flutter_localization: ^0.2.3
   url_launcher: ^6.3.1
   month_year_picker: ^0.4.0+1
+  rxdart: ^0.28.0
 
 
 

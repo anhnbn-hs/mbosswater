@@ -1,19 +1,25 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
-import 'package:mbosswater/features/customer/domain/usecase/list_all_customer.dart';
-import 'package:mbosswater/features/customer/domain/usecase/list_customer_by_agency.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_state.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
+import 'package:rxdart/rxdart.dart';
 
 class FetchCustomersBloc
     extends Bloc<FetchCustomersEvent, FetchCustomersState> {
-  final ListCustomerByAgencyUseCase listCustomerByAgencyUseCase;
-  final ListAllCustomerUseCase listAllCustomerUseCase;
+  // Cache stream
+  final BehaviorSubject<List<CustomerEntity>> _cachedCustomersStream =
+      BehaviorSubject<List<CustomerEntity>>();
+  final BehaviorSubject<List<CustomerEntity>> _cachedCustomersAgencyStream =
+      BehaviorSubject<List<CustomerEntity>>();
 
-  FetchCustomersBloc(
-      this.listCustomerByAgencyUseCase, this.listAllCustomerUseCase)
-      : super(FetchCustomersInitial()) {
+  bool _isDataFetched = false;
+  bool _isDataForAgencyFetched = false;
+
+  FetchCustomersBloc() : super(FetchCustomersInitial()) {
     on<FetchAllCustomers>(_fetchAllCustomer);
     on<FetchAllCustomersByAgency>(_fetchAllCustomersByAgency);
     on<SearchCustomers>(_searchCustomers);
@@ -23,9 +29,41 @@ class FetchCustomersBloc
       FetchAllCustomers event, Emitter<FetchCustomersState> emit) async {
     try {
       emit(FetchCustomersLoading());
-      final customers = await listAllCustomerUseCase();
-      emit(FetchCustomersSuccess(customers, customers));
-    } on Exception catch (e) {
+
+      if (_isDataFetched) {
+        emit(FetchCustomersSuccess(
+            _cachedCustomersStream.value, _cachedCustomersStream.value));
+        return;
+      }
+
+      final customersStream =
+          FirebaseFirestore.instance.collection('customers').snapshots();
+
+      await for (var snapshot in customersStream) {
+        List<CustomerEntity> customerEntities = [];
+
+        for (var doc in snapshot.docs) {
+          final customer = Customer.fromJson(doc.data());
+          final guaranteesQuery = await FirebaseFirestore.instance
+              .collection('guarantees')
+              .where("customerID", isEqualTo: customer.id)
+              .get();
+
+          List<Guarantee> guarantees = guaranteesQuery.docs
+              .map((doc) => Guarantee.fromJson(doc.data()))
+              .toList();
+
+          customerEntities.add(CustomerEntity(customer, guarantees));
+        }
+
+        // Cập nhật vào cache
+        _cachedCustomersStream.add(customerEntities);
+        _isDataFetched = true;
+
+        // Emit dữ liệu sau khi nhận và cache dữ liệu
+        emit(FetchCustomersSuccess(customerEntities, customerEntities));
+      }
+    } catch (e) {
       emit(FetchCustomersError(e.toString()));
     }
   }
@@ -34,9 +72,43 @@ class FetchCustomersBloc
       Emitter<FetchCustomersState> emit) async {
     try {
       emit(FetchCustomersLoading());
-      final customers = await listCustomerByAgencyUseCase(event.agency);
-      emit(FetchCustomersSuccess(customers, customers));
-    } on Exception catch (e) {
+
+      if (_isDataForAgencyFetched) {
+        emit(FetchCustomersSuccess(_cachedCustomersAgencyStream.value,
+            _cachedCustomersAgencyStream.value));
+        return;
+      }
+
+      final customersStream = FirebaseFirestore.instance
+          .collection('customers')
+          .where("agency", isEqualTo: event.agency)
+          .snapshots();
+
+      await for (var snapshot in customersStream) {
+        List<CustomerEntity> customerEntities = [];
+
+        for (var doc in snapshot.docs) {
+          final customer = Customer.fromJson(doc.data());
+          final guaranteesQuery = await FirebaseFirestore.instance
+              .collection('guarantees')
+              .where("customerID", isEqualTo: customer.id)
+              .get();
+
+          List<Guarantee> guarantees = guaranteesQuery.docs
+              .map((doc) => Guarantee.fromJson(doc.data()))
+              .toList();
+
+          customerEntities.add(CustomerEntity(customer, guarantees));
+        }
+
+        // Cập nhật vào cache
+        _cachedCustomersAgencyStream.add(customerEntities);
+        _isDataForAgencyFetched = true;
+
+        // Emit dữ liệu sau khi nhận và cache dữ liệu
+        emit(FetchCustomersSuccess(customerEntities, customerEntities));
+      }
+    } catch (e) {
       emit(FetchCustomersError(e.toString()));
     }
   }
@@ -87,12 +159,9 @@ class FetchCustomersBloc
         default:
           print("Invalid filter value: $filterValue");
           emit(FetchCustomersSuccess(
-              currentState.originalCustomers,
-              currentState
-                  .filteredCustomers));
+              currentState.originalCustomers, currentState.filteredCustomers));
           return; // Exit the function
       }
-
 
       final filteredCustomers = currentState.originalCustomers.where((c) {
         final hasValidGuarantee = c.guarantees.any((guarantee) {

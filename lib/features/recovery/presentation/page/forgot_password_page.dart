@@ -7,7 +7,6 @@ import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/custom_textfield.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
-import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_event.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_state.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_event.dart';

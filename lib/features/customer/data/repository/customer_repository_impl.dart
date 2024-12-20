@@ -28,19 +28,10 @@ import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
     return await datasource.fetchGuaranteesOfCustomer(customerID);
   }
 
-  @override
-  Future<List<CustomerEntity>> fetchCustomersOfAgency(String agencyID) async {
-    return await datasource.fetchCustomersOfAgency(agencyID);
-  }
 
   @override
   Future<List<Customer>> searchCustomersOfAgency(String phoneNumberQuery, String agencyID) async {
    return await datasource.searchCustomersOfAgency(phoneNumberQuery, agencyID);
-  }
-
-  @override
-  Future<List<CustomerEntity>> fetchCustomersEntity()async {
-    return await datasource.fetchCustomersEntity();
   }
 
   @override
