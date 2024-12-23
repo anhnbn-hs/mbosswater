@@ -114,8 +114,8 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   }
 
   void _calculateSliverAppBarHeight() {
-    final RenderBox? renderBox =
-    _sliverAppBarContentKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox = _sliverAppBarContentKey.currentContext
+        ?.findRenderObject() as RenderBox?;
     if (renderBox != null) {
       setState(() {
         _sliverAppBarHeight = renderBox.size.height + kToolbarHeight;
@@ -289,12 +289,11 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                         // Update ValueNotifiers outside the build phase
                         allCount.value = userOriginal.length;
                         ccCount.value = userOriginal
-                            .where((user) =>
-                                user.role == Roles.MBOSS_CUSTOMERCARE)
+                            .where(
+                                (user) => user.role == Roles.MBOSS_CUSTOMERCARE)
                             .length;
                         techCount.value = userOriginal
-                            .where(
-                                (user) => user.role == Roles.MBOSS_TECHNICAL)
+                            .where((user) => user.role == Roles.MBOSS_TECHNICAL)
                             .length;
                       }
                     },
@@ -326,8 +325,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   return Padding(
-                                    padding:
-                                        const EdgeInsets.only(bottom: 20),
+                                    padding: const EdgeInsets.only(bottom: 20),
                                     child: buildStaffItem(listUser[index]),
                                   );
                                 },
@@ -620,9 +618,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                             controller: phoneController,
                             focusNode: focusNodePhone,
                             inputType: TextInputType.phone,
-                            formatter: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
                           ),
                           const SizedBox(height: 12),
                           Align(
@@ -655,8 +651,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                                         Province(),
                                   );
                                   districtsUserBloc.add(FetchDistricts(
-                                      provincesUserBloc
-                                              .selectedProvince?.id ??
+                                      provincesUserBloc.selectedProvince?.id ??
                                           ""));
                                 }
                                 return buildAddressItem(
@@ -711,17 +706,16 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                                         null) {
                                       communesUserBloc.selectCommune(
                                         communesUserBloc.getCommuneByName(
-                                                user?.address?.commune ??
-                                                    "") ??
+                                                user?.address?.commune ?? "") ??
                                             Commune(),
                                       );
                                     }
                                   }
                                 },
                                 builder: (context, state) => buildAddressItem(
-                                  label: communesUserBloc
-                                          .selectedCommune?.name ??
-                                      "Phường/Xã",
+                                  label:
+                                      communesUserBloc.selectedCommune?.name ??
+                                          "Phường/Xã",
                                   addressType: AddressType.commune,
                                 ),
                               );
@@ -1143,9 +1137,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                             controller: phoneController,
                             focusNode: focusNodePhone,
                             inputType: TextInputType.phone,
-                            formatter: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
                           ),
                           const SizedBox(height: 12),
                           Align(
@@ -1168,21 +1160,21 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                           ),
                           const SizedBox(height: 12),
                           BlocBuilder(
-                              bloc: provincesUserBloc,
-                              builder: (context, state) {
-                                return buildAddressItem(
-                                  label: provincesUserBloc
-                                      .selectedProvince?.name ??
-                                      "Tỉnh/TP",
-                                  addressType: AddressType.province,
-                                );
-                              },),
+                            bloc: provincesUserBloc,
+                            builder: (context, state) {
+                              return buildAddressItem(
+                                label:
+                                    provincesUserBloc.selectedProvince?.name ??
+                                        "Tỉnh/TP",
+                                addressType: AddressType.province,
+                              );
+                            },
+                          ),
                           const SizedBox(height: 12),
                           BlocBuilder(
                             bloc: districtsUserBloc,
                             builder: (context, state) => buildAddressItem(
-                              label: districtsUserBloc
-                                  .selectedDistrict?.name ??
+                              label: districtsUserBloc.selectedDistrict?.name ??
                                   "Quận/Huyện",
                               addressType: AddressType.district,
                             ),
@@ -1191,8 +1183,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                           BlocBuilder(
                             bloc: communesUserBloc,
                             builder: (context, state) => buildAddressItem(
-                              label: communesUserBloc
-                                  .selectedCommune?.name ??
+                              label: communesUserBloc.selectedCommune?.name ??
                                   "Phường/Xã",
                               addressType: AddressType.commune,
                             ),
@@ -1216,7 +1207,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                             textButton: "TẠO TÀI KHOẢN",
                           ),
                           const SizedBox(height: 28),
-
                         ],
                       ),
                     ),
@@ -1238,12 +1228,14 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           ),
         );
       },
-    ).then((value) {
-      selectedFilter.value = null;
-      provincesUserBloc.selectedProvince = null;
-      districtsUserBloc.selectedDistrict = null;
-      communesUserBloc.selectedCommune = null;
-    },);
+    ).then(
+      (value) {
+        selectedFilter.value = null;
+        provincesUserBloc.selectedProvince = null;
+        districtsUserBloc.selectedDistrict = null;
+        communesUserBloc.selectedCommune = null;
+      },
+    );
   }
 
   handleDeleteStaff(UserModel? user) async {
@@ -1262,7 +1254,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   }
 
   handleUpdateStaff(UserModel user) async {
-
     String fullName = nameController.text.trim();
     String phoneNumber = phoneController.text.trim();
     String addressDetail = addressDetailController.text.trim();
@@ -1276,7 +1267,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
       focusNodeName.requestFocus();
       return;
     }
-
 
     if (phoneNumber.isEmpty) {
       DialogUtils.showWarningDialog(
@@ -1299,7 +1289,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
       return;
     }
 
-
     if (addressDetail.isEmpty) {
       DialogUtils.showWarningDialog(
         context: context,
@@ -1309,7 +1298,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
       focusNodeAddress.requestFocus();
       return;
     }
-
 
     DialogUtils.showConfirmationDialog(
       context: context,
@@ -1360,15 +1348,19 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
               phoneQuerySnapshot.docs.first.id != user.id;
 
           // Check if email exists
-          final emailQuerySnapshot = await FirebaseFirestore.instance
-              .collection("users")
-              .where("email", isEqualTo: userUpdate.email)
-              .where("isDelete", isEqualTo: false)
-              .limit(1)
-              .get();
+          if (userUpdate.email.isEmpty) {
+            isEmailExisted = false;
+          } else {
+            final emailQuerySnapshot = await FirebaseFirestore.instance
+                .collection("users")
+                .where("email", isEqualTo: userUpdate.email)
+                .where("isDelete", isEqualTo: false)
+                .limit(1)
+                .get();
 
-          isEmailExisted = emailQuerySnapshot.docs.isNotEmpty &&
-              emailQuerySnapshot.docs.first.id != user.id;
+            isEmailExisted = emailQuerySnapshot.docs.isNotEmpty &&
+                emailQuerySnapshot.docs.first.id != user.id;
+          }
         } on Exception catch (e) {
           throw Exception(e);
         } finally {
@@ -1462,6 +1454,29 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
             .get();
 
         if (userDoc.docs.isEmpty) {
+
+          // Check if email exists
+          if (email.isNotEmpty) {
+            final emailQuerySnapshot = await FirebaseFirestore.instance
+                .collection("users")
+                .where("email", isEqualTo: email)
+                .where("isDelete", isEqualTo: false)
+                .limit(1)
+                .get();
+
+            bool isEmailExisted = emailQuerySnapshot.docs.isNotEmpty;
+            if (isEmailExisted) {
+              DialogUtils.hide(context);
+              focusNodePhone.requestFocus();
+              DialogUtils.showWarningDialog(
+                context: context,
+                title: "Email đã được đăng ký!",
+                onClickOutSide: () {},
+              );
+              return;
+            }
+          }
+
           // Get role
           String newRole = "";
           if (selectedRole.value == dropdownItems.first) {
@@ -1485,7 +1500,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           );
 
           // Get text field value
-
           final user = UserModel(
             id: generateRandomId(6),
             fullName: fullName,
@@ -1517,7 +1531,6 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
 }
 
 enum ShowType { view, create, update }
-
 
 class BoxFieldItem extends StatefulWidget {
   final String hintValue;

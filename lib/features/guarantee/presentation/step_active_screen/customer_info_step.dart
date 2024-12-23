@@ -177,6 +177,9 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     textButton: "GỬI MÃ",
                     isPhoneField: true,
                     onTap: () {
+                      // Send OTP SMS
+
+                      // Assign flag isSent
                       isOTPSent.value = true;
                     },
                     onTapOutSide: (phone) async =>
@@ -203,18 +206,26 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     },
                   ),
                   const SizedBox(height: 20),
-                  buildTextFieldVerifyPhoneItem(
-                    label: "Nhập mã OTP",
-                    hint: "Nhập mã OTP",
-                    textButton: "XÁC NHẬN",
-                    isPhoneField: false,
-                    onTap: () async => verifyOTP(),
-                    onTapOutSide: (p0) {},
-                    focusNode: focusNodeOTP,
-                    onCompleted: (p0) {},
-                    isRequired: true,
-                    inputType: TextInputType.number,
-                    controller: otpController,
+                  ValueListenableBuilder(
+                    valueListenable: isOTPSent,
+                    builder: (context, value, child) {
+                      if (value == false) {
+                        return const SizedBox.shrink();
+                      }
+                      return buildTextFieldVerifyPhoneItem(
+                        label: "Nhập mã OTP",
+                        hint: "Nhập mã OTP",
+                        textButton: "XÁC NHẬN",
+                        isPhoneField: false,
+                        onTap: () async => verifyOTP(),
+                        onTapOutSide: (p0) {},
+                        focusNode: focusNodeOTP,
+                        onCompleted: (p0) {},
+                        isRequired: true,
+                        inputType: TextInputType.number,
+                        controller: otpController,
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
                   ValueListenableBuilder(

@@ -102,17 +102,9 @@ class ProductInfoStepState extends State<ProductInfoStep>
             const SizedBox(height: 40),
             CustomButton(
               onTap: () {
-                bool isAgency =
-                    Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role);
-                if (!isAgency && agencyBloc.selectedAgency == null) {
-                  DialogUtils.showWarningDialog(
-                    context: context,
-                    title: "Hãy chọn đại lý để tiếp tục!",
-                    onClickOutSide: () {},
-                  );
-                  return;
+                if(checkAgencySelected()){
+                  widget.onNextStep();
                 }
-                widget.onNextStep();
               },
               textButton: "TIẾP TỤC",
             ),
@@ -121,6 +113,20 @@ class ProductInfoStepState extends State<ProductInfoStep>
         ),
       ),
     );
+  }
+
+  bool checkAgencySelected(){
+    bool isAgency =
+    Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role);
+    if (!isAgency && agencyBloc.selectedAgency == null) {
+      DialogUtils.showWarningDialog(
+        context: context,
+        title: "Hãy chọn đại lý để tiếp tục!",
+        onClickOutSide: () {},
+      );
+      return false;
+    }
+    return true;
   }
 
   Widget buildAgencyBox() {

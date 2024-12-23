@@ -207,7 +207,7 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                           buildEasyStep(title: "Thông tin thêm", stepNumber: 3),
                         ],
                         onStepReached: (index) {
-                          if (index == 2) {
+                          if (index == 2 && stepBloc.currentStep != 0) {
                             customerStepKey.currentState
                                 ?.handleAndGoToNextStep();
                             if (customerStepKey.currentState!.checkInput()) {
@@ -227,7 +227,6 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
                       onPageChanged: (index) {
                         if (index == 2) {
                           customerStepKey.currentState?.handleAndGoToNextStep();
-
                           if (!customerStepKey.currentState!.checkInput()) {
                             stepBloc.changeStep(stepBloc.currentStep);
                             pageController.animateToPage(
@@ -455,12 +454,20 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
   }
 
   void animateToPage(int index, {bool isOnlyJump = false}) {
-    if (index == 1) {
-      productStepKey.currentState?.widget.onNextStep();
-      isCustomerStepCompleted = false;
+    int currentIndex = stepBloc.currentStep;
+    if ((index == 1 && currentIndex == 0) || (index == 2 && currentIndex == 0)) {
+      if (!productStepKey.currentState!.checkAgencySelected()) {
+        isCustomerStepCompleted = false;
+        stepBloc.changeStep(0);
+        pageController.animateToPage(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        return;
+      }
     }
     if (index == 2) {
-      print(isCustomerStepCompleted);
       if (!isCustomerStepCompleted) {
         customerStepKey.currentState?.handleAndGoToNextStep();
         stepBloc.changeStep(1);

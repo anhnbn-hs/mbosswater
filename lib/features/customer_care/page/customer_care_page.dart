@@ -58,7 +58,6 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
       List<Reminder> reminders = [];
       notifyGuaranteeDays.value.forEach((element) {
         if(element.dateTime.month == focusDayNotifier.value.month) {
-          print(element.dateTime.toIso8601String());
           element.reminders.forEach((r) => reminders.add(r));
         }
       });

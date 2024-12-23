@@ -182,6 +182,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       floatingActionButton: GestureDetector(
         onTap: () async => await showStaffCreation(),
         child: Container(
@@ -1383,6 +1384,29 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
             .get();
 
         if (userDoc.docs.isEmpty) {
+
+          // Check if email exists
+          if (email.isNotEmpty) {
+            final emailQuerySnapshot = await FirebaseFirestore.instance
+                .collection("users")
+                .where("email", isEqualTo: email)
+                .where("isDelete", isEqualTo: false)
+                .limit(1)
+                .get();
+
+            bool isEmailExisted = emailQuerySnapshot.docs.isNotEmpty;
+            if (isEmailExisted) {
+              DialogUtils.hide(context);
+              focusNodePhone.requestFocus();
+              DialogUtils.showWarningDialog(
+                context: context,
+                title: "Email đã được đăng ký!",
+                onClickOutSide: () {},
+              );
+              return;
+            }
+          }
+
           // Get role
           String newRole = "";
           if (selectedRole.value == dropdownItems.first) {
