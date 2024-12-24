@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mbosswater/features/recovery/data/datasource/recovery_datasource.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
@@ -9,16 +8,7 @@ class RecoveryDatasourceImpl extends RecoveryDatasource {
 
   @override
   Future<void> sendOTP(String email) async {
-    EmailOTP.config(
-      appName: "MbossWater",
-      otpType: OTPType.numeric,
-      expiry: 600000,
-      emailTheme: EmailTheme.v1,
-      appEmail: 'mbosswater@hamsa.com',
-      otpLength: 4,
-    );
 
-    EmailOTP.sendOTP(email: email);
   }
 
   @override

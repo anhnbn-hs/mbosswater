@@ -179,7 +179,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     onTap: () {
                       // Send OTP SMS
 
-                      // Assign flag isSent
+                      // Assign flag
                       isOTPSent.value = true;
                     },
                     onTapOutSide: (phone) async =>

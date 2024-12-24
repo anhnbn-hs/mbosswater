@@ -166,8 +166,11 @@ class _HomePageState extends State<HomePage> {
                       margin: const EdgeInsets.only(bottom: 50),
                       child: Column(
                         children: [
-                          buildSearchSection(context),
-                          const SizedBox(height: 30),
+                          BlocBuilder(
+                            bloc: userInfoBloc,
+                            builder: (context, state) =>
+                                buildSearchSection(context),
+                          ),
                           BlocBuilder(
                             bloc: userInfoBloc,
                             builder: (context, state) {
@@ -468,178 +471,171 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildSearchSection(BuildContext context) {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xffeeeeee),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Stack(
-        children: [
-          Container(
-            padding: const EdgeInsets.only(left: 28),
-            child: TypeAheadField<Customer>(
-              suggestionsCallback: (search) async {
-                if (search.isNotEmpty) {
-                  if (Roles.LIST_ROLES_AGENCY
-                      .contains(userInfoBloc.user?.role)) {
-                    // Search for Agency user
-                    String? agencyID = userInfoBloc.user?.agency;
-                    bloc.add(
-                      SearchAgencyCustomersByPhone(
-                        search.trim(),
-                        agencyID ?? "",
-                      ),
-                    );
-                  } else {
-                    bloc.add(SearchAllCustomersByPhone(search.trim()));
-                  }
-                  await for (final state in bloc.stream) {
-                    if (state is CustomerSearchLoaded) {
-                      return state.customers;
-                    } else if (state is CustomerSearchError) {
-                      // Handle error case
-                      return [];
-                    }
-                  }
+    if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.only(bottom: 30),
+        decoration: BoxDecoration(
+          color: const Color(0xffeeeeee),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: TypeAheadField<Customer>(
+          suggestionsCallback: (search) async {
+            if (search.isNotEmpty) {
+              if (Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role)) {
+                // Search for Agency user
+                String? agencyID = userInfoBloc.user?.agency;
+                bloc.add(
+                  SearchAgencyCustomersByPhone(
+                    search.trim(),
+                    agencyID ?? "",
+                  ),
+                );
+              } else {
+                bloc.add(SearchAllCustomersByPhone(search.trim()));
+              }
+              await for (final state in bloc.stream) {
+                if (state is CustomerSearchLoaded) {
+                  return state.customers;
+                } else if (state is CustomerSearchError) {
+                  // Handle error case
                   return [];
                 }
-                return null;
-              },
-              builder: (context, controller, focusNode) {
-                return TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(
-                    fontFamily: "BeVietnam",
-                    color: Colors.black87,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
+              }
+              return [];
+            }
+            return null;
+          },
+          builder: (context, controller, focusNode) {
+            return TextField(
+              controller: controller,
+              focusNode: focusNode,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(
+                fontFamily: "BeVietnam",
+                color: Colors.black87,
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+              ),
+              textAlignVertical: TextAlignVertical.center,
+              onTapOutside: (event) =>
+                  FocusScope.of(context).requestFocus(FocusNode()),
+              decoration: const InputDecoration(
+                border: UnderlineInputBorder(
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey,
+                ),
+                hintText: "Tìm kiếm theo SĐT",
+                hintStyle: TextStyle(
+                  fontFamily: "BeVietnam",
+                  color: Color(0xffA7A7A7),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                ),
+                isCollapsed: true,
+              ),
+            );
+          },
+          loadingBuilder: (context) {
+            return Container(
+              height: 100,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              child: Center(
+                child: Lottie.asset(
+                  AppAssets.aLoading,
+                  height: 50,
+                ),
+              ),
+            );
+          },
+          emptyBuilder: (context) {
+            return Container(
+              height: 100,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              child: const Center(
+                child: Text("Không tìm thấy khách hàng!"),
+              ),
+            );
+          },
+          errorBuilder: (context, error) {
+            return Container(
+              height: 100,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              child: const Center(
+                child: Text("Xảy ra lỗi. Hãy thử lại!"),
+              ),
+            );
+          },
+          itemBuilder: (context, customer) {
+            return Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(
+                    color: Color(0xFFEEEEEE),
+                    width: .3,
                   ),
-                  onTapOutside: (event) =>
-                      FocusScope.of(context).requestFocus(FocusNode()),
-                  decoration: const InputDecoration(
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide.none,
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+              child: Row(
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.only(top: 3),
+                    child: Icon(
+                      Icons.person_outlined,
+                      color: Colors.black54,
+                      size: 18,
                     ),
-                    hintText: "Tìm kiếm theo SĐT",
-                    hintStyle: TextStyle(
-                      fontFamily: "BeVietnam",
-                      color: Color(0xffA7A7A7),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                    ),
                   ),
-                );
-              },
-              loadingBuilder: (context) {
-                return Container(
-                  height: 100,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                  ),
-                  child: Center(
-                    child: Lottie.asset(
-                      AppAssets.aLoading,
-                      height: 50,
-                    ),
-                  ),
-                );
-              },
-              emptyBuilder: (context) {
-                return Container(
-                  height: 100,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                  ),
-                  child: const Center(
-                    child: Text("Không tìm thấy khách hàng!"),
-                  ),
-                );
-              },
-              errorBuilder: (context, error) {
-                return Container(
-                  height: 100,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                  ),
-                  child: const Center(
-                    child: Text("Xảy ra lỗi. Hãy thử lại!"),
-                  ),
-                );
-              },
-              itemBuilder: (context, customer) {
-                return Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Color(0xFFEEEEEE),
-                        width: .3,
-                      ),
-                    ),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      const Padding(
-                        padding: EdgeInsets.only(top: 3),
-                        child: Icon(
-                          Icons.person_outlined,
-                          color: Colors.black54,
-                          size: 18,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Align(
+                      alignment: FractionalOffset.centerLeft,
+                      child: Text(
+                        "${customer.fullName} (${customer.phoneNumber})",
+                        style: const TextStyle(
+                          color: Color(0xff282828),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Align(
-                          alignment: FractionalOffset.centerLeft,
-                          child: Text(
-                            "${customer.fullName} (${customer.phoneNumber})",
-                            style: const TextStyle(
-                              color: Color(0xff282828),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                );
-              },
-              onSelected: (Customer value) {
-                context.push(
-                  "/customer-detail",
-                  extra: value,
-                );
-              },
-              // Additional customization options
-              debounceDuration: const Duration(milliseconds: 800),
-              hideOnEmpty: false,
-              hideOnLoading: false,
-            ),
-          ),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Icon(
-              Icons.search,
-              size: 22,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
-    );
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+          onSelected: (Customer value) {
+            context.push(
+              "/customer-detail",
+              extra: value,
+            );
+          },
+          // Additional customization options
+          debounceDuration: const Duration(milliseconds: 800),
+          hideOnEmpty: false,
+          hideOnLoading: false,
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Future<void> handleLogout(BuildContext context) async {
@@ -651,6 +647,7 @@ class _HomePageState extends State<HomePage> {
         await FirebaseMessaging.instance.deleteToken();
       }
       await Future.delayed(const Duration(milliseconds: 800));
+      userInfoBloc.reset();
       DialogUtils.hide(context);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginPage()),

@@ -82,6 +82,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   // await createRemindersForAllGuarantees();
+  // await batchUpdateCustomerTimestamps();
   runApp(
     MultiBlocProvider(
       providers: [
@@ -140,6 +141,45 @@ void main() async {
   );
 }
 
+
+Future<void> batchUpdateCustomerTimestamps() async {
+  try {
+    final collectionRef = FirebaseFirestore.instance.collection('customers');
+
+    // Lấy tất cả các documents từ collection 'customers'
+    final querySnapshot = await collectionRef.get();
+
+    // Tạo Firestore batch
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (var doc in querySnapshot.docs) {
+      final data = doc.data();
+      final updatedAt = data['updatedAt'] as Timestamp?;
+      final createdAt = data['createdAt'] as Timestamp?;
+
+      if (updatedAt != null) {
+        // Nếu updatedAt không null, gán giá trị của nó cho createdAt
+        batch.update(doc.reference, {
+          'createdAt': updatedAt,
+        });
+      } else {
+        batch.update(doc.reference, {
+          'createdAt': Timestamp.now(),
+          'updatedAt': Timestamp.now(),
+        });
+      }
+    }
+
+    // Commit batch
+    await batch.commit();
+
+    print("Batch update completed successfully.");
+  } catch (e) {
+    print("Error during batch update: $e");
+  }
+}
+
+
 Future<void> createRemindersForAllGuarantees() async {
   final querySnapshot =
       await FirebaseFirestore.instance.collection('guarantees').get();
@@ -185,7 +225,14 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
         MonthYearPickerLocalizations.delegate,
       ],
-      builder: DevicePreview.appBuilder,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaleFactor: 1.0, // Chặn mọi thay đổi kích thước chữ
+          ),
+          child: child!,
+        );
+      },
       theme: AppTheme.lightTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,

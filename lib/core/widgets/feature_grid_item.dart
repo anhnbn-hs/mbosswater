@@ -42,6 +42,7 @@ class FeatureGridItem extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 title,
+                textAlign: TextAlign.center,
                 style: AppStyle.titleItem,
               ),
               const SizedBox(height: 4),

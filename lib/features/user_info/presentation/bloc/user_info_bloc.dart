@@ -19,4 +19,9 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
       }
     });
   }
+
+  void reset(){
+    user = null;
+    emit(UserInfoInitial());
+  }
 }

@@ -1,14 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
-import 'package:mbosswater/core/utils/encryption_helper.dart';
-import 'package:mbosswater/core/utils/image_helper.dart';
-import 'package:mbosswater/core/widgets/floating_action_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_activate_page.dart';
@@ -95,11 +89,9 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
     isProcessingScan = true;
 
     try {
-      // Handle decrypt data in qr code
-      String dataDecrypted =
-          EncryptionHelper.decryptData(code, dotenv.env["SECRET_KEY_QR_CODE"]!);
-      Map<String, dynamic> data = jsonDecode(dataDecrypted);
-      if (data["code"] == "mbosswater") {
+      // Handle extract in qr code
+      Map<String, dynamic> data = jsonDecode(code);
+      if (data["c"] == "mbosswater") {
         if (widget.scanType == ScanType.activate) {
           await handleActiveGuarantee(data);
         }
@@ -146,8 +138,8 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
     // QR code valid
     DialogUtils.showLoadingDialog(context);
     // Extract data to get product
-    if (data["product"] != null) {
-      final productItem = Product.fromJson(data["product"]);
+    if (data["p"] != null) {
+      final productItem = Product.fromJson(data["p"]);
       // Stop camera
       await controller.stop().then((value) => controller.stop());
       // Check guarantee product existed
@@ -196,8 +188,8 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
     // QR code valid
     DialogUtils.showLoadingDialog(context);
     // Extract data to get product
-    if (data["product"] != null) {
-      final productItem = Product.fromJson(data["product"]);
+    if (data["p"] != null) {
+      final productItem = Product.fromJson(data["p"]);
       // Stop camera
       await controller.stop().then((value) => controller.stop());
       // Check guarantee product existed

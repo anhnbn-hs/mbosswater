@@ -37,7 +37,9 @@ class FetchCustomersBloc
       }
 
       final customersStream =
-          FirebaseFirestore.instance.collection('customers').snapshots();
+          FirebaseFirestore.instance.collection('customers')
+              .orderBy("updatedAt", descending: true)
+              .snapshots();
 
       await for (var snapshot in customersStream) {
         List<CustomerEntity> customerEntities = [];
@@ -47,6 +49,7 @@ class FetchCustomersBloc
           final guaranteesQuery = await FirebaseFirestore.instance
               .collection('guarantees')
               .where("customerID", isEqualTo: customer.id)
+              .orderBy("createdAt", descending: true)
               .get();
 
           List<Guarantee> guarantees = guaranteesQuery.docs

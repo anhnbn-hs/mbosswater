@@ -26,18 +26,22 @@ class FetchCustomersCubit extends Cubit<FetchCustomersState> {
 
   FetchCustomersCubit() : super(FetchCustomersInitial());
 
+  void reset() => emit(FetchCustomersInitial());
+
   Future<void> fetchCustomersByIds(List<Reminder> reminders) async {
     emit(FetchCustomersLoading());
 
     try {
-      List<CustomerReminder> customerReminders = await _fetchCustomerReminders(reminders);
+      List<CustomerReminder> customerReminders =
+          await _fetchCustomerReminders(reminders);
       emit(FetchCustomersLoaded(customerReminders));
     } catch (e) {
       emit(FetchCustomersError('Failed to load customers: $e'));
     }
   }
 
-  Future<List<CustomerReminder>> _fetchCustomerReminders(List<Reminder> reminders) async {
+  Future<List<CustomerReminder>> _fetchCustomerReminders(
+      List<Reminder> reminders) async {
     try {
       // Extract unique customer IDs from reminders
       final customerIds = reminders.map((r) => r.customerId).toSet().toList();
@@ -58,15 +62,17 @@ class FetchCustomersCubit extends Cubit<FetchCustomersState> {
           .toList();
 
       // Create a mapping of customer ID to Customer
-      final customerMap = {for (var customer in customers) customer.id!: customer};
+      final customerMap = {
+        for (var customer in customers) customer.id!: customer
+      };
 
       // Pair each Reminder with its corresponding Customer
       return reminders
           .where((reminder) => customerMap.containsKey(reminder.customerId))
           .map((reminder) => CustomerReminder(
-        reminder: reminder,
-        customer: customerMap[reminder.customerId]!,
-      ))
+                reminder: reminder,
+                customer: customerMap[reminder.customerId]!,
+              ))
           .toList();
     } catch (e) {
       throw Exception('Error fetching customer reminders: $e');

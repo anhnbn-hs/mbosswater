@@ -16,10 +16,9 @@ import 'package:mbosswater/features/customer_care/bloc/cycle_event.dart';
 import 'package:mbosswater/features/customer_care/bloc/cycle_state.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_customers_cubit.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_guarantee_by_id_cubit.dart';
-import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
-import 'package:month_year_picker/month_year_picker.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -36,12 +35,18 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
   late ValueNotifier<DateTime> focusDayNotifier;
   late final ValueNotifier<List<GuaranteeDateModel>> notifyGuaranteeDays;
 
+  late ValueNotifier<int> needCallNotifier;
+  late ValueNotifier<int> incompleteNotifier;
+
   final TextEditingController noteController = TextEditingController();
 
   // Bloc
   late final CycleBloc cycleBloc;
   late final FetchCustomersCubit fetchCustomersCubit;
   late final FetchGuaranteeByIdCubit fetchGuaranteeByIdCubit;
+
+  final GlobalKey _sliverAppBarContentKey = GlobalKey();
+  double _sliverAppBarHeight = kToolbarHeight;
 
   @override
   void initState() {
@@ -53,16 +58,18 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     cycleBloc.add(FetchQuarterlyCycles(now.month, now.year));
     focusDayNotifier = ValueNotifier(now);
     notifyGuaranteeDays = ValueNotifier([]);
+    needCallNotifier = ValueNotifier(0);
+    incompleteNotifier = ValueNotifier(0);
 
     notifyGuaranteeDays.addListener(() {
       List<Reminder> reminders = [];
       notifyGuaranteeDays.value.forEach((element) {
-        if(element.dateTime.month == focusDayNotifier.value.month) {
+        if (element.dateTime.month == focusDayNotifier.value.month) {
           element.reminders.forEach((r) => reminders.add(r));
         }
       });
       // Fetch customers
-      fetchCustomersCubit.fetchCustomersByIds(reminders);
+      // fetchCustomersCubit.fetchCustomersByIds(reminders);
     });
 
     focusDayNotifier.addListener(() {
@@ -76,6 +83,34 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
         // Fetch customers
         fetchCustomersCubit.fetchCustomersByIds(reminders);
       }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _calculateSliverAppBarHeight();
+    });
+  }
+
+  void _calculateSliverAppBarHeight() {
+    final RenderBox? renderBox = _sliverAppBarContentKey.currentContext
+        ?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _sliverAppBarHeight = renderBox.size.height + kToolbarHeight;
+        });
+      });
+    }
+  }
+
+  // Add new method to handle page changes
+  _handlePageChanged(DateTime dayOfMonth) async {
+    focusDayNotifier.value = dayOfMonth;
+    cycleBloc.add(FetchQuarterlyCycles(dayOfMonth.month, dayOfMonth.year));
+    needCallNotifier.value = 0;
+    incompleteNotifier.value = 0;
+    // Add slight delay to ensure the new page is rendered
+    await Future.delayed(const Duration(milliseconds: 300), () {
+      _calculateSliverAppBarHeight();
     });
   }
 
@@ -103,6 +138,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     focusDayNotifier.dispose();
     notifyGuaranteeDays.dispose();
     noteController.dispose();
+    fetchCustomersCubit.reset();
     super.dispose();
   }
 
@@ -121,7 +157,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                 floating: true,
                 automaticallyImplyLeading: false,
                 backgroundColor: Colors.white,
-                expandedHeight: 455,
+                expandedHeight: _sliverAppBarHeight,
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Column(
@@ -175,7 +211,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
             },
             child: Column(
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 const Text(
                   "Danh sách khách hàng",
                   style: TextStyle(
@@ -185,16 +221,94 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                     color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      ValueListenableBuilder(
+                        valueListenable: needCallNotifier,
+                        builder: (context, value, child) => buildRowInfoItem(
+                          label: "Cần gọi",
+                          value: value.toString(),
+                        ),
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: incompleteNotifier,
+                        builder: (context, value, child) => buildRowInfoItem(
+                          label: "Đã hoàn thành",
+                          value: value.toString(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
                 Expanded(
-                  child: BlocBuilder<FetchCustomersCubit, FetchCustomersState>(
+                  child: BlocConsumer<FetchCustomersCubit, FetchCustomersState>(
+                    listener: (context, state) {
+                      if (state is FetchCustomersLoaded) {
+                        final customers = state.customers;
+                        int needCall = 0;
+                        int inComplete = 0;
+
+                        DateTime nextMonth = DateTime(
+                          focusDayNotifier.value.year,
+                          focusDayNotifier.value.month + 1,
+                          focusDayNotifier.value.day,
+                        );
+
+                        customers.forEach((c) {
+                          c.reminder.reminderDates?.forEach((r) {
+                            if (isInLastThreeDaysOfMonth(
+                                    focusDayNotifier.value) &&
+                                focusDayNotifier.value.month != 12) {
+                              if (r.reminderDate.toDate().month ==
+                                      nextMonth.month &&
+                                  r.reminderDate.toDate().year ==
+                                      focusDayNotifier.value.year) {
+                                if (!r.isNotified) {
+                                  needCall++;
+                                } else {
+                                  inComplete++;
+                                }
+                              }
+                            } else if (isInLastThreeDaysOfMonth(
+                                    focusDayNotifier.value) &&
+                                focusDayNotifier.value.month == 12) {
+                              if (r.reminderDate.toDate().month ==
+                                      nextMonth.month &&
+                                  r.reminderDate.toDate().year ==
+                                      nextMonth.year) {
+                                if (!r.isNotified) {
+                                  needCall++;
+                                } else {
+                                  inComplete++;
+                                }
+                              }
+                            } else {
+                              if (r.reminderDate.toDate().month ==
+                                      focusDayNotifier.value.month &&
+                                  r.reminderDate.toDate().year ==
+                                      focusDayNotifier.value.year) {
+                                if (!r.isNotified) {
+                                  needCall++;
+                                } else {
+                                  inComplete++;
+                                }
+                              }
+                            }
+                          });
+                        });
+                        needCallNotifier.value = needCall;
+                        incompleteNotifier.value = inComplete;
+                      }
+                    },
                     builder: (context, state) {
                       if (state is FetchCustomersLoading) {
                         return Center(
                           child: Lottie.asset(AppAssets.aLoading, height: 60),
                         );
                       }
-
                       if (state is FetchCustomersLoaded) {
                         final customers = state.customers;
                         return ListView.builder(
@@ -224,17 +338,17 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                     reminderDate.month == nextMonth.month) {
                                   return true;
                                 }
-                              } else if(isInLastThreeDaysOfMonth(
-                                  focusDayNotifier.value) &&
-                                  focusDayNotifier.value.month == 12){
+                              } else if (isInLastThreeDaysOfMonth(
+                                      focusDayNotifier.value) &&
+                                  focusDayNotifier.value.month == 12) {
                                 if (reminderDate.year ==
-                                    focusDayNotifier.value.year + 1 &&
+                                        focusDayNotifier.value.year + 1 &&
                                     reminderDate.month == nextMonth.month) {
                                   return true;
                                 }
                               } else {
                                 if (reminderDate.year ==
-                                    focusDayNotifier.value.year &&
+                                        focusDayNotifier.value.year &&
                                     reminderDate.month ==
                                         focusDayNotifier.value.month) {
                                   return true;
@@ -299,6 +413,34 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
         date.isAtSameMomentAs(threeDaysBeforeLast);
   }
 
+  Widget buildRowInfoItem({required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: AppStyle.titleItem.copyWith(
+                color: Colors.black,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: AppStyle.titleItem.copyWith(
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildCustomerCardItem({
     required String phoneNumber,
     required String fullName,
@@ -359,12 +501,15 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
       valueListenable: focusDayNotifier,
       builder: (context, value, child) {
         return TableCalendar(
+          key: _sliverAppBarContentKey,
           locale: 'vi_VN',
           focusedDay: value,
           firstDay: DateTime.utc(2023, 01, 01),
           lastDay: now.add(const Duration(days: 365 * 3)),
           rowHeight: 50,
+          pageAnimationCurve: Curves.easeInExpo,
           headerStyle: HeaderStyle(
+            headerPadding: const EdgeInsets.all(0),
             formatButtonVisible: false,
             titleCentered: true,
             headerMargin: const EdgeInsets.only(bottom: 6),
@@ -377,28 +522,42 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                 'Tháng ${date.month} - ${date.year}',
           ),
           onHeaderTapped: (focusedDay) async {
-            final selectedDate = await showMonthYearPicker(
+            final selectedDate = await showMonthPicker(
               context: context,
               initialDate: focusedDay,
               firstDate: DateTime(2023),
               lastDate: DateTime(now.year + 2),
-              builder: (context, child) {
-                return Theme(
-                  data: Theme.of(context).copyWith(
-                    colorScheme: ColorScheme.light(
-                      primary: AppColors.primaryColor,
-                      onPrimary: Colors.white, // Header text color
-                      onSurface: Colors.black, // Body text color
-                    ),
+              cancelWidget: const Text(
+                "Hủy",
+                style: TextStyle(color: Colors.black87),
+              ),
+              confirmWidget: Text(
+                "Chọn",
+                style: TextStyle(color: AppColors.primaryColor),
+              ),
+              monthPickerDialogSettings: MonthPickerDialogSettings(
+                buttonsSettings: PickerButtonsSettings(
+                  selectedDateRadius: 1,
+                  unselectedMonthsTextColor: Colors.black87,
+                  unselectedYearsTextColor: Colors.black87,
+                  buttonBorder: const CircleBorder(),
+                  selectedMonthBackgroundColor: AppColors.primaryColor,
+                ),
+                headerSettings: PickerHeaderSettings(
+                  headerBackgroundColor: AppColors.primaryColor,
+                  headerCurrentPageTextStyle: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
                   ),
-                  child: MediaQuery(
-                    data: MediaQuery.of(context).copyWith(
-                      textScaleFactor: 0.93,
-                    ),
-                    child: child!,
-                  ),
-                );
-              },
+                ),
+              ),
+              headerTitle: const Text(
+                "Chọn tháng/năm",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                ),
+              ),
             );
 
             if (selectedDate != null) {
@@ -479,11 +638,8 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
               return null;
             },
           ),
-          onPageChanged: (dayOfMonth) {
-            focusDayNotifier.value = dayOfMonth;
-            cycleBloc
-                .add(FetchQuarterlyCycles(dayOfMonth.month, dayOfMonth.year));
-          },
+          onPageChanged: (dayOfMonth) async =>
+              await _handlePageChanged(dayOfMonth),
         );
       },
     );
@@ -654,8 +810,16 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    buildGuaranteeItem(
-                                        state.guarantee, reminderDate),
+                                    GestureDetector(
+                                      onTap: () {
+                                        context.push(
+                                          '/guarantee-history',
+                                          extra: [state.guarantee, customer],
+                                        );
+                                      },
+                                      child: buildGuaranteeItem(
+                                          state.guarantee, reminderDate),
+                                    ),
                                     const SizedBox(height: 16),
                                     const Text(
                                       "Ghi chú",
@@ -743,6 +907,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
         );
       },
     );
+    noteController.text = "";
   }
 
   Widget buildGuaranteeItem(Guarantee guarantee, DateTime reminderDate) {
@@ -953,9 +1118,12 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
       reminderUpdate.reminderDates = reminderDates;
 
       await reminderRef.update(reminderUpdate.toJson());
+      noteController.text = "";
       List<Reminder> reminders = [];
       notifyGuaranteeDays.value.forEach((element) {
-        element.reminders.forEach((r) => reminders.add(r));
+        if(element.dateTime.day == focusDayNotifier.value.day){
+          element.reminders.forEach((r) => reminders.add(r));
+        }
       });
       // Fetch customers
       fetchCustomersCubit.fetchCustomersByIds(reminders);

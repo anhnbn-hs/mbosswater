@@ -317,11 +317,11 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
         ),
         const SizedBox(height: 12),
         Container(
-          height: 36,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xffBDBDBD), width: .5),
+            color: const Color(0xffF6F6F6),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Align(

@@ -9,6 +9,7 @@ class Customer {
   String? agency;
   AdditionalInfo? additionalInfo;
   Timestamp? updatedAt;
+  Timestamp? createdAt;
 
   Customer({
     this.id,
@@ -19,6 +20,7 @@ class Customer {
     this.additionalInfo,
     this.agency,
     this.updatedAt,
+    this.createdAt,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class Customer {
           ? AdditionalInfo.fromJson(json['additionalInfo'])
           : null,
       agency: json['agency'] as String?,
+      createdAt: json["createdAt"],
     );
   }
 
@@ -46,6 +49,7 @@ class Customer {
       'email': email,
       'agency': agency,
       'updatedAt': updatedAt,
+      'createdAt': createdAt,
       'additionalInfo': additionalInfo?.toJson(),
     };
   }

@@ -23,10 +23,10 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] as String,
-      name: json['name'] as String?,
-      model: json['model'] as String? ,
-      seriDow: json['seriDow'] as String?,
-      guaranteeDuration: json['guaranteeDuration'] as String?,
+      name: json['n'] as String?,
+      model: json['m'] as String? ,
+      seriDow: json['s'] as String?,
+      guaranteeDuration: json['g'] as String?,
     );
   }
 
