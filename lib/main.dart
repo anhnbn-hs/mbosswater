@@ -30,12 +30,14 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/address/province
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/staffs/fetch_staffs_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agencies_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/product_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/upload/upload_image_cubit.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_agency_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/create_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/mboss/presentation/bloc/delete_agency_bloc.dart';
@@ -105,6 +107,9 @@ void main() async {
         BlocProvider(create: (_) => sl<AgencyBloc>()),
         BlocProvider(create: (_) => sl<AgenciesBloc>()),
         BlocProvider(create: (_) => sl<GuaranteeHistoryBloc>()),
+        BlocProvider(create: (_) => UploadCubit()),
+        BlocProvider(create: (_) => FetchStaffsCubit()),
+
         // Management for MBoss
         BlocProvider(create: (_) => sl<FetchMbossStaffBloc>()),
         BlocProvider(create: (_) => sl<CreateMbossStaffBloc>()),
@@ -140,7 +145,6 @@ void main() async {
     ),
   );
 }
-
 
 Future<void> batchUpdateCustomerTimestamps() async {
   try {
@@ -179,7 +183,6 @@ Future<void> batchUpdateCustomerTimestamps() async {
   }
 }
 
-
 Future<void> createRemindersForAllGuarantees() async {
   final querySnapshot =
       await FirebaseFirestore.instance.collection('guarantees').get();
@@ -212,6 +215,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("Screen size: ${MediaQuery.of(context).size}");
+    print("Device pixel ratio: ${MediaQuery.of(context).devicePixelRatio}");
+    print("Text scale factor: ${MediaQuery.of(context).textScaleFactor}");
+
     return MaterialApp.router(
       title: 'MBossWater',
       locale: const Locale('vi', 'VN'),
@@ -227,9 +234,8 @@ class MyApp extends StatelessWidget {
       ],
       builder: (context, child) {
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaleFactor: 1.0, // Chặn mọi thay đổi kích thước chữ
-          ),
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(1)),
           child: child!,
         );
       },

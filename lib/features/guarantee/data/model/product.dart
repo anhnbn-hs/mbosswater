@@ -1,15 +1,15 @@
 class Product {
   final String id;
   final String? name;
-  final String? model;
-  final String? seriDow;
+  String? model;
+  String? note;
   final String? guaranteeDuration;
 
   Product({
     required this.id,
     this.name,
     this.model,
-    this.seriDow,
+    this.note,
     this.guaranteeDuration,
   });
 
@@ -23,9 +23,18 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] as String,
+      name: json['name'] as String?,
+      model: json['model'] as String? ,
+      guaranteeDuration: json['guaranteeDuration'] as String?,
+      note: json['note'] as String?,
+    );
+  }
+
+  factory Product.fromJsonQRCode(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] as String,
       name: json['n'] as String?,
       model: json['m'] as String? ,
-      seriDow: json['s'] as String?,
       guaranteeDuration: json['g'] as String?,
     );
   }
@@ -35,8 +44,8 @@ class Product {
       'id': id,
       'name': name,
       'model': model,
-      'seriDow': seriDow,
       'guaranteeDuration': guaranteeDuration,
+      'note': note,
     };
   }
 }

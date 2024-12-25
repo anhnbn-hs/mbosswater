@@ -65,6 +65,8 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
   final agencyBossPhoneController = TextEditingController();
   final agencyBossEmailController = TextEditingController();
   final agencyBossAddressController = TextEditingController();
+  final agencyBossCCCDController = TextEditingController();
+
 
   PageController pageController = PageController();
 
@@ -123,6 +125,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
     agencyBossPhoneController.dispose();
     agencyBossEmailController.dispose();
     agencyBossAddressController.dispose();
+    agencyBossCCCDController.dispose();
     agencyNameFocusNode.dispose();
     agencyAddressFocusNode.dispose();
     agencyBossNameFocusNode.dispose();
@@ -737,6 +740,13 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
                           isRequired: false,
                           controller: agencyBossEmailController,
                         ),
+                        const SizedBox(height: 12),
+                        TextFieldLabelItem(
+                          label: "Căn cước công dân",
+                          hint: "Số CMT/CCCD",
+                          isRequired: false,
+                          controller: agencyBossCCCDController,
+                        ),
                         const SizedBox(height: 28),
                         CustomButton(
                           onTap: () async => handleCreateAgency(),
@@ -847,6 +857,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
     String bossName = agencyBossNameController.text.trim();
     String bossPhone = agencyBossPhoneController.text.trim();
     String bossEmail = agencyBossEmailController.text.trim();
+    String bossCCCD = agencyBossCCCDController.text.trim();
     String bossAddress = agencyBossAddressController.text.trim();
 
     if (agencyName.isEmpty) {
@@ -979,6 +990,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
           // Get text field value
           final user = UserModel(
             id: generateRandomId(8),
+            cccd: bossCCCD,
             fullName: bossName,
             dob: null,
             email: bossEmail,

@@ -1,6 +1,7 @@
 // Save state for step 1 - Product
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/domain/usecase/agency_usecase.dart';
 
@@ -28,7 +29,18 @@ class AgencyBloc extends Cubit<AgencyState> {
       emit(AgencyLoading()); // Emit loading state
       var agencies = await useCase.getAgencies();
       this.agencies = List.from(agencies);
-      emit(AgenciesLoaded(agencies));
+      this.agencies.insert(
+        0,
+        Agency(
+          "guess",
+          "",
+          "Khách lẻ",
+          null,
+          Timestamp.now(),
+          false,
+        ),
+      );
+      emit(AgenciesLoaded(this.agencies));
     } catch (e) {
       emit(AgencyError(e.toString())); // Emit error state
     }

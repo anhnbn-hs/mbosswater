@@ -1,9 +1,5 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -55,6 +51,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
+  final cccdController = TextEditingController();
   final addressDetailController = TextEditingController();
 
   PageController pageController = PageController();
@@ -130,6 +127,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     phoneController.dispose();
     emailController.dispose();
     addressDetailController.dispose();
+    cccdController.dispose();
     focusNodeName.dispose();
     focusNodePhone.dispose();
     focusNodeAddress.dispose();
@@ -513,6 +511,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     phoneController.text = user?.phoneNumber ?? "";
     addressDetailController.text = user?.address?.detail ?? "";
     emailController.text = user?.email ?? "";
+    cccdController.text = user?.cccd ?? "";
 
     await showModalBottomSheet(
       context: context,
@@ -599,6 +598,15 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                           ),
                           const SizedBox(height: 12),
                           buildRoleSelection(user?.role),
+                          const SizedBox(height: 12),
+                          TextFieldLabelItem(
+                            label: "CCCD",
+                            hint: "Số CMT/CCCD",
+                            isRequired: false,
+                            controller: cccdController,
+                            inputType: TextInputType.number,
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
+                          ),
                           const SizedBox(height: 23),
                           Align(
                             alignment: Alignment.center,
@@ -1031,6 +1039,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     phoneController.text = "";
     addressDetailController.text = "";
     emailController.text = "";
+    cccdController.text = "";
 
     showModalBottomSheet(
       context: context,
@@ -1117,6 +1126,15 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
                           ),
                           const SizedBox(height: 12),
                           buildRoleSelection(null),
+                          const SizedBox(height: 12),
+                          TextFieldLabelItem(
+                            label: "CCCD",
+                            hint: "Số CMT/CCCD",
+                            isRequired: false,
+                            controller: cccdController,
+                            inputType: TextInputType.number,
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
+                          ),
                           const SizedBox(height: 28),
                           Align(
                             alignment: Alignment.center,
@@ -1330,6 +1348,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
         );
         userUpdate.phoneNumber = phoneController.text.trim();
         userUpdate.email = emailController.text.trim();
+        userUpdate.cccd = cccdController.text.trim();
 
         // Check email and phone exist
         bool isPhoneExisted = false;
@@ -1396,6 +1415,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
     String phoneNumber = phoneController.text.trim();
     String addressDetail = addressDetailController.text.trim();
     String email = emailController.text.trim();
+    String cccd = cccdController.text.trim();
 
     if (fullName.isEmpty) {
       DialogUtils.showWarningDialog(
@@ -1502,6 +1522,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           // Get text field value
           final user = UserModel(
             id: generateRandomId(6),
+            cccd: cccd,
             fullName: fullName,
             dob: null,
             email: email,

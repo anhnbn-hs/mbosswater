@@ -3,6 +3,7 @@ import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 
 class UserModel {
   String id;
+  String? cccd;
   String email;
   String? fullName;
   final String? dob;
@@ -17,6 +18,7 @@ class UserModel {
 
   UserModel({
     required this.id,
+    this.cccd,
     required this.fullName,
     required this.dob,
     required this.email,
@@ -34,6 +36,7 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as String,
+      cccd: json['cccd'] as String?,
       fullName: json['fullName'] as String?,
       dob: json['dob'] as String?,
       gender: json['gender'] as String?,
@@ -54,6 +57,7 @@ class UserModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'cccd': cccd,
       'fullName': fullName,
       'address': address?.toJson(),
       'dob': dob,

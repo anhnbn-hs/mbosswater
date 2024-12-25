@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
@@ -11,6 +15,7 @@ import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bl
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
@@ -36,6 +41,8 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
   late FetchCustomerBloc fetchCustomerBloc;
   Customer? customer;
 
+  ValueNotifier<XFile?> pickedImageNotifier = ValueNotifier(null);
+
   @override
   void initState() {
     super.initState();
@@ -45,74 +52,223 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
   }
 
   @override
+  void dispose() {
+    pickedImageNotifier.dispose();
+    super.dispose();
+  }
+
+  Future<Guarantee?> fetchGuaranteeByProductID(String productID) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    try {
+      final querySnapshot = await firestore
+          .collection('guarantees')
+          .where('product.id', isEqualTo: productID)
+          .limit(1)
+          .get();
+      if (querySnapshot.docs.isEmpty) {
+        return null;
+      }
+
+      final doc = querySnapshot.docs.first;
+
+      return Guarantee.fromJson(doc.data());
+    } on Exception catch (e) {
+      print('Error fetching guarantee: $e');
+      return null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     super.build(context);
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    return BlocBuilder(
-      bloc: fetchCustomerBloc,
-      builder: (context, state) {
-        if (state is FetchCustomerLoading) {
-          return Center(
-            child: Lottie.asset(AppAssets.aLoading, height: 50),
-          );
-        }
-        if (state is FetchCustomerSuccess) {
-          customer = state.customer;
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                buildBoxFieldCannotEdit(
-                  label: "Khách hàng",
-                  value: state.customer.fullName ?? "",
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldCannotEdit(
-                  label: "Số điện thoại",
-                  value: state.customer.phoneNumber ?? "",
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldCannotEdit(
-                  label: "Sản phẩm",
-                  value: widget.product.name!,
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldCannotEdit(
-                  label: "Kỹ thuật viên phụ trách",
-                  value: userInfoBloc.user!.fullName!,
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldCannotEdit(
-                  label: "Thời gian",
-                  value: DateFormat("dd/MM/yyyy").format(now),
-                ),
-                const SizedBox(height: 20),
-                buildBoxFieldAreaGuarantee(
-                  label: "Nguyên nhân bảo hành",
-                  hint: "Mô tả tình trạng sản phẩm",
-                  controller: widget.reasonController,
-                ),
-                const SizedBox(height: 40),
-                CustomButton(
-                  onTap: () {
-                    if (widget.reasonController.text.trim().isEmpty) {
-                      DialogUtils.showWarningDialog(
-                        context: context,
-                        title: "Hãy nhập nguyên nhân bảo hành tiếp tục!",
-                        onClickOutSide: () {},
-                      );
-                      return;
-                    }
-                    widget.onNextStep();
-                  },
-                  textButton: "TIẾP TỤC",
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          );
-        }
-        return const SizedBox.shrink();
-      },
+    return Container(
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: BlocBuilder(
+        bloc: fetchCustomerBloc,
+        builder: (context, state) {
+          if (state is FetchCustomerLoading) {
+            return Center(
+              child: Lottie.asset(AppAssets.aLoading, height: 50),
+            );
+          }
+          if (state is FetchCustomerSuccess) {
+            customer = state.customer;
+
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  buildBoxFieldCannotEdit(
+                    label: "Khách hàng",
+                    value: state.customer.fullName ?? "",
+                  ),
+                  const SizedBox(height: 20),
+                  buildBoxFieldCannotEdit(
+                    label: "Số điện thoại",
+                    value: state.customer.phoneNumber ?? "",
+                  ),
+                  const SizedBox(height: 20),
+                  buildBoxFieldCannotEdit(
+                    label: "Sản phẩm",
+                    value: widget.product.name!,
+                  ),
+                  FutureBuilder<Guarantee?>(
+                    future: fetchGuaranteeByProductID(widget.product.id),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data != null) {
+                        return Container(
+                          margin: const EdgeInsets.only(top: 20),
+                          child: buildBoxFieldCannotEdit(
+                            label: "Model máy",
+                            value: snapshot.data?.product.model ?? widget.product.model ?? "",
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  buildBoxFieldCannotEdit(
+                    label: "Kỹ thuật viên phụ trách",
+                    value: userInfoBloc.user!.fullName!,
+                  ),
+                  const SizedBox(height: 20),
+                  buildBoxFieldCannotEdit(
+                    label: "Thời gian",
+                    value: DateFormat("dd/MM/yyyy").format(now),
+                  ),
+                  const SizedBox(height: 20),
+                  buildBoxFieldAreaGuarantee(
+                    label: "Nguyên nhân bảo hành",
+                    hint: "Mô tả tình trạng sản phẩm",
+                    controller: widget.reasonController,
+                  ),
+                  const SizedBox(height: 20),
+                  ValueListenableBuilder(
+                    valueListenable: pickedImageNotifier,
+                    builder: (context, value, child) {
+                      if (value != null) {
+                        return Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          clipBehavior: Clip.hardEdge,
+                          child: Image.file(
+                            File(value.path),
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  InkWell(
+                    onTap: () async => await pickImage(ImageSource.camera),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xffD9D9D9),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.camera_alt,
+                            color: AppColors.primaryColor,
+                          ),
+                          Text(
+                            "Chụp ảnh",
+                            style: TextStyle(
+                              color: AppColors.primaryColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: "BeVietnam",
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  CustomButton(
+                    onTap: () {
+                      if (widget.reasonController.text.trim().isEmpty) {
+                        DialogUtils.showWarningDialog(
+                          context: context,
+                          title: "Hãy nhập nguyên nhân bảo hành để tiếp tục!",
+                          onClickOutSide: () {},
+                        );
+                        return;
+                      }
+                      if (pickedImageNotifier.value == null) {
+                        DialogUtils.showWarningDialog(
+                          context: context,
+                          title:
+                              "Hãy chụp ảnh tình trạng trước bảo hành để tiếp tục!",
+                          onClickOutSide: () {},
+                        );
+                        return;
+                      }
+                      widget.onNextStep();
+                    },
+                    textButton: "TIẾP TỤC",
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  Future<void> pickImage(ImageSource source) async {
+    final ImagePicker imagePicker = ImagePicker();
+    final XFile? image = await imagePicker.pickImage(source: source);
+
+    if (image == null) return;
+
+    pickedImageNotifier.value = image;
+
+    // Upload image logic
+    // await uploadImage(image);
+  }
+
+  Widget _buildImagePickerOptions() {
+    return SafeArea(
+      child: Wrap(
+        children: [
+          ListTile(
+            leading: Icon(Icons.camera_alt),
+            title: Text("Take a Photo"),
+            onTap: () async {
+              Navigator.pop(context);
+              await pickImage(ImageSource.camera);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.photo_library),
+            title: Text("Choose from Gallery"),
+            onTap: () async {
+              Navigator.pop(context);
+              await pickImage(ImageSource.gallery);
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -203,7 +359,8 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
           child: TextField(
               maxLines: 6,
               controller: controller,
-              onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
+              onTapOutside: (event) =>
+                  FocusScope.of(context).requestFocus(FocusNode()),
               decoration: InputDecoration.collapsed(
                 hintText: "Mô tả tình trạng sản phẩm",
                 hintStyle: AppStyle.boxField.copyWith(

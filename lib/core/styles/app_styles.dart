@@ -57,7 +57,7 @@ class AppStyle {
 
   static TextStyle boxFieldLabel = const TextStyle(
     fontFamily: "BeVietnam",
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: FontWeight.w500,
     color: Color(0xff828282),
   );

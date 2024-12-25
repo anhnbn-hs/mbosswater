@@ -473,7 +473,7 @@ class _HomePageState extends State<HomePage> {
   Widget buildSearchSection(BuildContext context) {
     if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN) {
       return Container(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 2),
         margin: const EdgeInsets.only(bottom: 30),
         decoration: BoxDecoration(
           color: const Color(0xffeeeeee),
@@ -517,6 +517,7 @@ class _HomePageState extends State<HomePage> {
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
               ),
+              cursorColor: Colors.grey,
               textAlignVertical: TextAlignVertical.center,
               onTapOutside: (event) =>
                   FocusScope.of(context).requestFocus(FocusNode()),

@@ -45,6 +45,7 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
   TextEditingController agencyBossPhoneController = TextEditingController();
   TextEditingController agencyBossAddressController = TextEditingController();
   TextEditingController agencyBossEmailController = TextEditingController();
+  TextEditingController agencyBossCCCDController = TextEditingController();
 
   PageController pageController = PageController();
 
@@ -118,6 +119,7 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
     agencyBossNameController.dispose();
     agencyBossPhoneController.dispose();
     agencyBossEmailController.dispose();
+    agencyBossCCCDController.dispose();
     agencyNameFocusNode.dispose();
     agencyAddressFocusNode.dispose();
     agencyBossNameFocusNode.dispose();
@@ -317,7 +319,8 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
                         agencyBossEmailController.text = agencyAdmin?.email ?? "";
                         agencyBossAddressController.text =
                             agencyAdmin?.address?.detail ?? "";
-
+                        agencyBossCCCDController.text =
+                            agencyAdmin?.cccd ?? "";
                         isValueAssigned = true;
 
                       return Column(
@@ -460,6 +463,13 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
                             hint: "Email",
                             isRequired: false,
                             controller: agencyBossEmailController,
+                          ),
+                          const SizedBox(height: 20),
+                          TextFieldLabelItem(
+                            label: "Căn cước công dân",
+                            hint: "Số CMT/CCCD",
+                            isRequired: false,
+                            controller: agencyBossCCCDController,
                           ),
                         ],
                       );
@@ -639,6 +649,7 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
     String bossName = agencyBossNameController.text.trim();
     String bossPhone = agencyBossPhoneController.text.trim();
     String bossEmail = agencyBossEmailController.text.trim();
+    String bossCCCD = agencyBossCCCDController.text.trim();
     String bossAddress = agencyBossAddressController.text.trim();
 
     if (agencyName.isEmpty) {
@@ -693,6 +704,7 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
     agencyAdmin?.fullName = bossName;
     agencyAdmin?.phoneNumber = bossPhone;
     agencyAdmin?.email = bossEmail;
+    agencyAdmin?.cccd = bossCCCD;
     agencyAdmin?.address = Address(
       province: provincesUserBloc.selectedProvince?.name,
       district: districtsUserBloc.selectedDistrict?.name,

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
@@ -39,11 +42,30 @@ class GuaranteeBeforeWithoutQRCodeStepState
   late UserInfoBloc userInfoBloc;
   Customer? customer;
   Guarantee? guarantee;
+  ValueNotifier<XFile?> pickedImageNotifier = ValueNotifier(null);
 
   @override
   void initState() {
     super.initState();
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
+  }
+
+  @override
+  void dispose() {
+    pickedImageNotifier.dispose();
+    super.dispose();
+  }
+
+  Future<void> pickImage(ImageSource source) async {
+    final ImagePicker imagePicker = ImagePicker();
+    final XFile? image = await imagePicker.pickImage(source: source);
+
+    if (image == null) return;
+
+    pickedImageNotifier.value = image;
+
+    // Upload image logic
+    // await uploadImage(image);
   }
 
   @override
@@ -54,56 +76,128 @@ class GuaranteeBeforeWithoutQRCodeStepState
       guarantee = widget.confirmStepKey.currentState?.guaranteeSelected.value;
     }
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          buildBoxFieldCannotEdit(
-            label: "Khách hàng",
-            value: customer?.fullName ?? "",
-          ),
-          const SizedBox(height: 20),
-          buildBoxFieldCannotEdit(
-            label: "Số điện thoại",
-            value: customer?.phoneNumber ?? "",
-          ),
-          const SizedBox(height: 20),
-          buildBoxFieldCannotEdit(
-            label: "Sản phẩm",
-            value: guarantee?.product.name ?? "",
-          ),
-          const SizedBox(height: 20),
-          buildBoxFieldCannotEdit(
-            label: "Kỹ thuật viên phụ trách",
-            value: userInfoBloc.user!.fullName!,
-          ),
-          const SizedBox(height: 20),
-          buildBoxFieldCannotEdit(
-            label: "Thời gian",
-            value: DateFormat("dd/MM/yyyy").format(now),
-          ),
-          const SizedBox(height: 20),
-          buildBoxFieldAreaGuarantee(
-            label: "Nguyên nhân bảo hành",
-            hint: "Mô tả tình trạng sản phẩm",
-            controller: widget.reasonController,
-          ),
-          const SizedBox(height: 40),
-          CustomButton(
-            onTap: () {
-              if (widget.reasonController.text.trim().isEmpty) {
-                DialogUtils.showWarningDialog(
-                  context: context,
-                  title: "Hãy nhập nguyên nhân bảo hành tiếp tục!",
-                  onClickOutSide: () {},
-                );
-                return;
-              }
-              widget.onNextStep();
-            },
-            textButton: "TIẾP TỤC",
-          ),
-          const SizedBox(height: 24),
-        ],
+    return Container(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            buildBoxFieldCannotEdit(
+              label: "Khách hàng",
+              value: customer?.fullName ?? "",
+            ),
+            const SizedBox(height: 20),
+            buildBoxFieldCannotEdit(
+              label: "Số điện thoại",
+              value: customer?.phoneNumber ?? "",
+            ),
+            const SizedBox(height: 20),
+            buildBoxFieldCannotEdit(
+              label: "Sản phẩm",
+              value: guarantee?.product.name ?? "",
+            ),
+            const SizedBox(height: 20),
+            buildBoxFieldCannotEdit(
+              label: "Model máy",
+              value: guarantee?.product.model ?? "",
+            ),
+            const SizedBox(height: 20),
+            buildBoxFieldCannotEdit(
+              label: "Kỹ thuật viên phụ trách",
+              value: userInfoBloc.user!.fullName!,
+            ),
+            const SizedBox(height: 20),
+            buildBoxFieldCannotEdit(
+              label: "Thời gian",
+              value: DateFormat("dd/MM/yyyy").format(now),
+            ),
+            const SizedBox(height: 20),
+            buildBoxFieldAreaGuarantee(
+              label: "Nguyên nhân bảo hành",
+              hint: "Mô tả tình trạng sản phẩm",
+              controller: widget.reasonController,
+            ),
+            const SizedBox(height: 20),
+            ValueListenableBuilder(
+              valueListenable: pickedImageNotifier,
+              builder: (context, value, child) {
+                if (value != null) {
+                  return Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: Image.file(
+                      File(value.path),
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            const SizedBox(height: 20),
+            InkWell(
+              onTap: () async => await pickImage(ImageSource.camera),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xffD9D9D9),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.camera_alt,
+                      color: AppColors.primaryColor,
+                    ),
+                    Text(
+                      "Chụp ảnh",
+                      style: TextStyle(
+                        color: AppColors.primaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: "BeVietnam",
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            CustomButton(
+              onTap: () {
+                if (widget.reasonController.text.trim().isEmpty) {
+                  DialogUtils.showWarningDialog(
+                    context: context,
+                    title: "Hãy nhập nguyên nhân bảo hành để tiếp tục!",
+                    onClickOutSide: () {},
+                  );
+                  return;
+                }
+
+                if (pickedImageNotifier.value == null) {
+                  DialogUtils.showWarningDialog(
+                    context: context,
+                    title: "Hãy chụp ảnh tình trạng trước bảo hành để tiếp tục!",
+                    onClickOutSide: () {},
+                  );
+                  return;
+                }
+                widget.onNextStep();
+              },
+              textButton: "TIẾP TỤC",
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }

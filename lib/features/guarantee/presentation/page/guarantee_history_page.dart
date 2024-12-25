@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +7,7 @@ import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
+import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
@@ -13,6 +15,8 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guaran
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_event.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_state.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/widgets/image_preview_popup.dart';
+import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
 class GuaranteeHistoryPage extends StatefulWidget {
   final Guarantee guarantee;
@@ -42,6 +46,23 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
     super.initState();
   }
 
+  Future<String?> getUserFullNameByTechnicalID(String technicalID) async {
+    try {
+      final DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(technicalID)
+          .get();
+
+      if (documentSnapshot.exists) {
+        return documentSnapshot.get('fullName')?.toString();
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching user: $e');
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     bool expired = isExpired(widget.guarantee.endDate);
@@ -54,6 +75,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const LeadingBackButton(),
+        scrolledUnderElevation: 0,
         title: Text(
           "#${widget.guarantee.id.toUpperCase()}",
           style: AppStyle.appBarTitle,
@@ -117,10 +139,6 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 label: "Model máy",
                 value: widget.guarantee.product.model ?? "",
               ),
-              buildGuaranteeInfoItem(
-                label: "Seri màng lọc Dow",
-                value: widget.guarantee.product.seriDow ?? "SRDxxx",
-              ),
               BlocBuilder(
                 bloc: agencyBloc,
                 builder: (context, state) {
@@ -132,11 +150,70 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                   }
                   return buildGuaranteeInfoItem(
                     label: "Đại lý",
-                    value: "",
+                    value: "Khách lẻ",
                   );
                 },
               ),
-              const SizedBox(height: 16),
+              FutureBuilder<String?>(
+                future:
+                    getUserFullNameByTechnicalID(widget.guarantee.technicalID),
+                builder: (context, snapshot) => buildGuaranteeInfoItem(
+                  label: "Nhân viên kỹ thuật",
+                  value: snapshot.data ?? "",
+                ),
+              ),
+              if (widget.guarantee.technicalSupportID != null)
+                FutureBuilder<String?>(
+                  future: getUserFullNameByTechnicalID(
+                      widget.guarantee.technicalSupportID!),
+                  builder: (context, snapshot) => buildGuaranteeInfoItem(
+                    label: "Nhân viên hỗ trợ",
+                    value: snapshot.data ?? "",
+                  ),
+                ),
+              if (widget.guarantee.product.note != "")
+                Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    const Align(
+                      alignment: FractionalOffset.centerLeft,
+                      child: Text(
+                        "Ghi chú",
+                        style: TextStyle(
+                          fontFamily: "BeVietnam",
+                          color: Color(0xff820a1a),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      alignment: Alignment.centerLeft,
+                      decoration: BoxDecoration(
+                        color: const Color(0xffF6F6F6),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Align(
+                        alignment: FractionalOffset.centerLeft,
+                        child: Text(
+                          widget.guarantee.product.note ?? "",
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 12),
               const Align(
                 alignment: FractionalOffset.centerLeft,
                 child: Text(
@@ -178,7 +255,9 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          expired ? "Hết hạn" : "Còn $remainingMonth tháng bảo hành",
+                          expired
+                              ? "Hết hạn"
+                              : "Còn $remainingMonth tháng bảo hành",
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 14,
@@ -277,12 +356,18 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                                 value: state.guaranteeHistories[index]
                                         .beforeStatus ??
                                     "",
+                                imageUrl: state.guaranteeHistories[index]
+                                        .imageBefore ??
+                                    "",
                               ),
                               const SizedBox(height: 16),
                               buildHistoryItem(
                                 label: "Sau khi bảo hành",
                                 value: state.guaranteeHistories[index]
                                         .afterStatus ??
+                                    "",
+                                imageUrl: state
+                                        .guaranteeHistories[index].imageAfter ??
                                     "",
                               )
                             ],
@@ -301,7 +386,11 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
     );
   }
 
-  Widget buildHistoryItem({required String label, required String value}) {
+  Widget buildHistoryItem({
+    required String label,
+    required String value,
+    required String? imageUrl,
+  }) {
     return Column(
       children: [
         Align(
@@ -316,25 +405,48 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-            color: const Color(0xffF6F6F6),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Align(
-            alignment: FractionalOffset.centerLeft,
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(
+                color: const Color(0xffF6F6F6),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Align(
+                alignment: FractionalOffset.centerLeft,
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ),
             ),
-          ),
+            const SizedBox(height: 12),
+            if (imageUrl != null && imageUrl != "")
+              GestureDetector(
+                onTap: () {
+                  final size = MediaQuery.of(context).size;
+                  ImagePreviewPopup(
+                    imageUrl: imageUrl,
+                    maxWidth: size.width * 0.85,
+                    maxHeight: size.height * 0.6,
+                  ).show(context);
+                },
+                child: ImageHelper.loadNetworkImage(
+                  height: 90,
+                  width: 140,
+                  imageUrl,
+                  fit: BoxFit.cover,
+                ),
+              ),
+          ],
         )
       ],
     );

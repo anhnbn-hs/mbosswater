@@ -1,4 +1,5 @@
 // Step 2: Customer Information
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -597,6 +598,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     }
     if (checkInput()) {
       if (customerBloc.customer == null) {
+        final now = Timestamp.now();
         customerBloc.emitCustomer(
           Customer(
             id: generateRandomId(8),
@@ -610,6 +612,8 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
               commune: communesBloc.selectedCommune?.name,
               detail: addressController.text.trim(),
             ),
+            createdAt: now,
+            updatedAt: now,
           ),
         );
       }

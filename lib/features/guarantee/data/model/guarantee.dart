@@ -7,6 +7,7 @@ class Guarantee {
   final Product product;
   final String customerID;
   final String technicalID;
+  final String? technicalSupportID;
   final DateTime endDate;
 
   Guarantee({
@@ -16,6 +17,7 @@ class Guarantee {
     required this.customerID,
     required this.technicalID,
     required this.endDate,
+    this.technicalSupportID,
   });
 
   // Factory constructor to create a Guarantee from JSON
@@ -27,6 +29,7 @@ class Guarantee {
       customerID: json['customerID'] as String,
       endDate: DateTime.parse(json['endDate'] as String),
       technicalID: json['technicalID'] as String,
+      technicalSupportID: json['technicalSupportID'] as String?,
     );
   }
 
@@ -39,6 +42,7 @@ class Guarantee {
       'customerID': customerID,
       'endDate': endDate.toIso8601String(),
       'technicalID': technicalID,
+      'technicalSupportID': technicalSupportID,
     };
   }
 }

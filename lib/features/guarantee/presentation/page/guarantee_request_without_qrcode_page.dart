@@ -13,6 +13,7 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guaran
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_event.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_state.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/step_bloc.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/upload/upload_image_cubit.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_after_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/guarantee_before_step.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/confirm_phone_number_step.dart';
@@ -32,6 +33,8 @@ class _GuaranteeRequestWithoutQrCodePageState
   late StepBloc stepBloc;
   late UserInfoBloc userInfoBloc;
   late GuaranteeHistoryBloc guaranteeHistoryBloc;
+  late UploadCubit uploadCubit;
+
   final PageController pageController = PageController();
   final reasonController = TextEditingController();
   final stateAfterController = TextEditingController();
@@ -46,6 +49,7 @@ class _GuaranteeRequestWithoutQrCodePageState
     stepBloc = BlocProvider.of<StepBloc>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
     guaranteeHistoryBloc = BlocProvider.of<GuaranteeHistoryBloc>(context);
+    uploadCubit = BlocProvider.of<UploadCubit>(context);
   }
 
   @override
@@ -79,6 +83,7 @@ class _GuaranteeRequestWithoutQrCodePageState
           }
         },
         child: Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(
             leading: LeadingBackButton(
               onTap: backToPreviousPage,
@@ -118,7 +123,7 @@ class _GuaranteeRequestWithoutQrCodePageState
                       ),
                       GuaranteeAfterStep(
                         stateAfterController: stateAfterController,
-                        onConfirm: () {
+                        onConfirm: (file) {
                           DialogUtils.showConfirmationDialog(
                             context: context,
                             title: "Bạn chắc chắn xác nhận thông tin trên?",
@@ -128,36 +133,70 @@ class _GuaranteeRequestWithoutQrCodePageState
                             acceptPressed: () async {
                               DialogUtils.hide(context);
                               DialogUtils.showLoadingDialog(context);
-                              // Get customer
-                              final customer =
-                                  beforeStepKey.currentState?.customer;
+                              // Upload images
+                              final imageBefore = beforeStepKey
+                                  .currentState?.pickedImageNotifier.value;
+                              final imageAfter = file;
 
-                              // Save History Guarantees
-                              final gDocs = await FirebaseFirestore.instance
-                                  .collection("guarantees")
-                                  .where("customerID",
-                                      isEqualTo: customer?.id ?? "")
-                                  .limit(1)
-                                  .get();
-
-                              final gHistory = GuaranteeHistory(
-                                guaranteeID: gDocs.docs.first.id,
-                                afterStatus: stateAfterController.text.trim(),
-                                beforeStatus: reasonController.text.trim(),
-                                technicalID: userInfoBloc.user?.id ?? "",
-                                technicalName:
-                                    userInfoBloc.user?.fullName ?? "",
-                                date: Timestamp.now(),
-                              );
-
-                              guaranteeHistoryBloc
-                                  .add(CreateGuaranteeHistory(gHistory));
+                              if (imageBefore != null && imageAfter != null) {
+                                uploadCubit.uploadFilesFromXFiles(
+                                    [imageBefore, imageAfter]);
+                              }
                             },
                           );
                         },
                       ),
                     ],
                   ),
+                ),
+                // Listener for Upload image
+                BlocListener<UploadCubit, UploadState>(
+                  listener: (context, state) async {
+                    if (state is UploadInProgress) {
+                      print("UPLOADING ___ WAITING");
+                    }
+                    if (state is UploadFailure) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: AppColors.primaryColor,
+                          content: Text(
+                            "Xảy ra lỗi khi tải ảnh lên. Vui lòng thử lại!",
+                            style: AppStyle.boxField.copyWith(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    if (state is UploadSuccess) {
+                      // Get customer
+                      final customer = beforeStepKey.currentState?.customer;
+
+                      // Save History Guarantees
+                      final gDocs = await FirebaseFirestore.instance
+                          .collection("guarantees")
+                          .where("customerID", isEqualTo: customer?.id ?? "")
+                          .limit(1)
+                          .get();
+
+                      final gHistory = GuaranteeHistory(
+                        guaranteeID: gDocs.docs.first.id,
+                        afterStatus: stateAfterController.text.trim(),
+                        beforeStatus: reasonController.text.trim(),
+                        imageBefore: state.downloadUrls[0],
+                        imageAfter: state.downloadUrls[1],
+                        technicalID: userInfoBloc.user?.id ?? "",
+                        technicalName: userInfoBloc.user?.fullName ?? "",
+                        date: Timestamp.now(),
+                      );
+
+                      guaranteeHistoryBloc
+                          .add(CreateGuaranteeHistory(gHistory));
+                    }
+                  },
+                  child: const SizedBox.shrink(),
                 )
               ],
             ),
@@ -277,20 +316,35 @@ class _GuaranteeRequestWithoutQrCodePageState
       beforeStepKey.currentState?.setState(() {});
     }
 
-    if (reasonController.text.trim().isEmpty && index == 2) {
-      DialogUtils.showWarningDialog(
-        context: context,
-        title: "Hãy nhập nguyên nhân bảo hành để tiếp tục",
-        onClickOutSide: () {},
-      );
-      stepBloc.changeStep(1);
-      pageController.animateToPage(
-        1,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      return;
+    if (index == 2) {
+      if (reasonController.text.trim().isEmpty) {
+        DialogUtils.showWarningDialog(
+          context: context,
+          title: "Hãy nhập nguyên nhân bảo hành để tiếp tục",
+          onClickOutSide: () {},
+        );
+        pageController.animateToPage(
+          1,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        return;
+      }
+      if (beforeStepKey.currentState?.pickedImageNotifier.value == null) {
+        DialogUtils.showWarningDialog(
+          context: context,
+          title: "Hãy chụp ảnh tình trạng trước bảo hành để tiếp tục!",
+          onClickOutSide: () {},
+        );
+        pageController.animateToPage(
+          1,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        return;
+      }
     }
+
     stepBloc.changeStep(index);
     pageController.animateToPage(
       index,

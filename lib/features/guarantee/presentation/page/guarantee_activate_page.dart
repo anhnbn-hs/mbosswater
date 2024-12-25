@@ -20,6 +20,7 @@ import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_event.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/active_guarantee_state.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/staffs/fetch_staffs_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/additional_info_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/customer_bloc.dart';
@@ -370,15 +371,24 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
   }
 
   void handleConfirmAndActiveGuarantee() async {
-    Product? product = productBloc.product;
+    Product? product = productStepKey.currentState?.widget.product;
+    product?.note = productStepKey.currentState?.noteController.text.trim();
+    product?.model = productStepKey.currentState?.modelController.text.trim() ??
+        product.model;
+
     Customer? customer = customerBloc.customer;
     AdditionalInfo? additionalInfo = additionalInfoBloc.additionalInfo;
 
-    if (product != null && customer != null && additionalInfo != null) {
+    if (product != null && customer != null) {
       if (Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role)) {
         customer.agency = userInfoBloc.user?.agency;
       } else {
-        customer.agency = agencyBloc.selectedAgency?.id;
+        final agencyID = agencyBloc.selectedAgency?.id;
+        if(agencyID != 'guess') {
+          customer.agency = agencyBloc.selectedAgency?.id;
+        } else {
+          customer.agency = null;
+        }
       }
       // Save additional info to customer
       customer.additionalInfo = additionalInfo;
@@ -389,7 +399,6 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
         textAcceptButton: "Xác nhận",
         acceptPressed: () async {
           // Check customer exist
-
           DialogUtils.showLoadingDialog(context);
           await Future.delayed(const Duration(milliseconds: 800));
           switch (customerStepKey.currentState?.actionType) {
@@ -420,12 +429,20 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
     final createdAt = Timestamp.now();
     final endDate =
         DateTime.now().toUtc().add(const Duration(days: 365, hours: 7));
+
+    String? technicalSupportID;
+    final fetchStaffsCubit = BlocProvider.of<FetchStaffsCubit>(context);
+    if(fetchStaffsCubit.selectedUser != null){
+      technicalSupportID = fetchStaffsCubit.selectedUser?.id ?? "";
+    }
+
     final guarantee = Guarantee(
       id: generateRandomId(6),
       createdAt: createdAt,
       product: product,
       customerID: customer.id!,
       technicalID: userID ?? "",
+      technicalSupportID: technicalSupportID,
       endDate: endDate,
     );
     final reminder = Reminder(
@@ -455,8 +472,10 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
 
   void animateToPage(int index, {bool isOnlyJump = false}) {
     int currentIndex = stepBloc.currentStep;
-    if ((index == 1 && currentIndex == 0) || (index == 2 && currentIndex == 0)) {
-      if (!productStepKey.currentState!.checkAgencySelected()) {
+    if ((index == 1 && currentIndex == 0) ||
+        (index == 2 && currentIndex == 0)) {
+      if (!productStepKey.currentState!.checkAgencySelected() ||
+          !productStepKey.currentState!.checkModelTextEditingController()) {
         isCustomerStepCompleted = false;
         stepBloc.changeStep(0);
         pageController.animateToPage(

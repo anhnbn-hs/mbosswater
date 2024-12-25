@@ -139,7 +139,7 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
     DialogUtils.showLoadingDialog(context);
     // Extract data to get product
     if (data["p"] != null) {
-      final productItem = Product.fromJson(data["p"]);
+      final productItem = Product.fromJsonQRCode(data["p"]);
       // Stop camera
       await controller.stop().then((value) => controller.stop());
       // Check guarantee product existed
@@ -189,7 +189,7 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
     DialogUtils.showLoadingDialog(context);
     // Extract data to get product
     if (data["p"] != null) {
-      final productItem = Product.fromJson(data["p"]);
+      final productItem = Product.fromJsonQRCode(data["p"]);
       // Stop camera
       await controller.stop().then((value) => controller.stop());
       // Check guarantee product existed
@@ -375,7 +375,8 @@ class _QrcodeScannerPageState extends State<QrcodeScannerPage>
   buildButtonRequestWithoutQRCode() {
     if (widget.scanType == ScanType.activate) return const SizedBox.shrink();
     return TextButton(
-      onPressed: () {
+      onPressed: () async {
+        await controller.stop().then((value) => controller.stop());
         context.push("/guarantee-request-without-qrcode");
       },
       child: const Text(

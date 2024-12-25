@@ -620,10 +620,6 @@ class ConfirmPhoneNumberStepState extends State<ConfirmPhoneNumberStep>
             value: guarantee.product.model ?? "",
           ),
           buildCustomerInfoItem(
-            label: "Seri màng lọc",
-            value: guarantee.product.seriDow ?? "",
-          ),
-          buildCustomerInfoItem(
             label: "Ngày kích hoạt",
             value: startDateFormatted,
           ),
