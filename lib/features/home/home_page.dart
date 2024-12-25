@@ -1,10 +1,7 @@
 import 'dart:io';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -12,7 +9,6 @@ import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
-import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/utils/storage.dart';
 import 'package:mbosswater/core/widgets/feature_grid_item.dart';
@@ -471,7 +467,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildSearchSection(BuildContext context) {
-    if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN) {
+    if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN ||
+        userInfoBloc.user?.role == Roles.AGENCY_BOSS) {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 2),
         margin: const EdgeInsets.only(bottom: 30),
@@ -482,7 +479,7 @@ class _HomePageState extends State<HomePage> {
         child: TypeAheadField<Customer>(
           suggestionsCallback: (search) async {
             if (search.isNotEmpty) {
-              if (Roles.LIST_ROLES_AGENCY.contains(userInfoBloc.user?.role)) {
+              if (userInfoBloc.user?.role == Roles.AGENCY_BOSS) {
                 // Search for Agency user
                 String? agencyID = userInfoBloc.user?.agency;
                 bloc.add(
