@@ -94,18 +94,25 @@ class ProductInfoStepState extends State<ProductInfoStep>
                   widget.product?.name ?? "Máy Lọc Nước Tạo Kiềm MBossWater",
             ),
             const SizedBox(height: 16),
-            userInfoBloc.user?.role == Roles.MBOSS_ADMIN
-                ? TextFieldLabelItem(
-                    isRequired: false,
-                    label: "Model máy",
-                    hint: "Model máy",
-                    controller: modelController,
-                    focusNode: modelFocusNode,
-                  )
-                : BoxLabelItem(
-                    label: "Model máy",
-                    fieldValue: widget.product?.model ?? "",
-                  ),
+            TextFieldLabelItem(
+              isRequired: true,
+              label: "Model máy",
+              hint: "Model máy",
+              controller: modelController,
+              focusNode: modelFocusNode,
+            ),
+            // userInfoBloc.user?.role == Roles.MBOSS_ADMIN
+            //     ? TextFieldLabelItem(
+            //         isRequired: false,
+            //         label: "Model máy",
+            //         hint: "Model máy",
+            //         controller: modelController,
+            //         focusNode: modelFocusNode,
+            //       )
+            //     : BoxLabelItem(
+            //         label: "Model máy",
+            //         fieldValue: widget.product?.model ?? "",
+            //       ),
             const SizedBox(height: 16),
             BoxLabelItem(
               label: "Ngày bắt đầu bảo hành",

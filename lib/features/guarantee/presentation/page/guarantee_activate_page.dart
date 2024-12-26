@@ -373,8 +373,7 @@ class GuaranteeActivatePageState extends State<GuaranteeActivatePage> {
   void handleConfirmAndActiveGuarantee() async {
     Product? product = productStepKey.currentState?.widget.product;
     product?.note = productStepKey.currentState?.noteController.text.trim();
-    product?.model = productStepKey.currentState?.modelController.text.trim() ??
-        product.model;
+    product?.model = productStepKey.currentState?.modelController.text.trim();
 
     Customer? customer = customerBloc.customer;
     AdditionalInfo? additionalInfo = additionalInfoBloc.additionalInfo;

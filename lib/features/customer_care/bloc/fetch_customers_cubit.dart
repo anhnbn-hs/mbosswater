@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 
@@ -78,6 +80,14 @@ class FetchCustomersCubit extends Cubit<FetchCustomersState> {
       throw Exception('Error fetching customer reminders: $e');
     }
   }
+
+  void rebuildWhenLoaded() {
+    if (state is FetchCustomersLoaded) {
+      final loadedState = state as FetchCustomersLoaded;
+      emit(FetchCustomersLoaded(List.from(loadedState.customers)));
+    }
+  }
+
 }
 
 class CustomerReminder {

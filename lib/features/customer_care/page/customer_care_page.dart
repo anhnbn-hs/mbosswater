@@ -17,7 +17,9 @@ import 'package:mbosswater/features/customer_care/bloc/cycle_state.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_customers_cubit.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_guarantee_by_id_cubit.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
+import 'package:mbosswater/features/guarantee/data/model/province.dart';
 import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -37,14 +39,14 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
 
   late ValueNotifier<int> needCallNotifier;
   late ValueNotifier<int> incompleteNotifier;
-
+  late ValueNotifier<String?> selectedProvinceFilter;
   final TextEditingController noteController = TextEditingController();
 
   // Bloc
   late final CycleBloc cycleBloc;
   late final FetchCustomersCubit fetchCustomersCubit;
   late final FetchGuaranteeByIdCubit fetchGuaranteeByIdCubit;
-
+  late final ProvincesBloc provincesBloc;
   final GlobalKey _sliverAppBarContentKey = GlobalKey();
   double _sliverAppBarHeight = kToolbarHeight;
 
@@ -54,12 +56,14 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     cycleBloc = BlocProvider.of<CycleBloc>(context);
     fetchCustomersCubit = BlocProvider.of<FetchCustomersCubit>(context);
     fetchGuaranteeByIdCubit = BlocProvider.of<FetchGuaranteeByIdCubit>(context);
+    provincesBloc = BlocProvider.of<ProvincesBloc>(context);
 
     cycleBloc.add(FetchQuarterlyCycles(now.month, now.year));
     focusDayNotifier = ValueNotifier(now);
     notifyGuaranteeDays = ValueNotifier([]);
     needCallNotifier = ValueNotifier(0);
     incompleteNotifier = ValueNotifier(0);
+    selectedProvinceFilter = ValueNotifier(null);
 
     notifyGuaranteeDays.addListener(() {
       List<Reminder> reminders = [];
@@ -139,6 +143,9 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     notifyGuaranteeDays.dispose();
     noteController.dispose();
     fetchCustomersCubit.reset();
+    selectedProvinceFilter.dispose();
+    needCallNotifier.dispose();
+    incompleteNotifier.dispose();
     super.dispose();
   }
 
@@ -242,7 +249,38 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () async => await showBottomSheetChooseProvinces(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: <Widget>[
+                        const Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: ValueListenableBuilder(
+                            valueListenable: selectedProvinceFilter,
+                            builder: (context, value, child) => Text(
+                              value ?? "Tỉnh/Thành phố",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                fontFamily: 'BeVietnam',
+                                color: Colors.black87,
+                                height: 1.2,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Expanded(
                   child: BlocConsumer<FetchCustomersCubit, FetchCustomersState>(
                     listener: (context, state) {
@@ -310,7 +348,17 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                         );
                       }
                       if (state is FetchCustomersLoaded) {
-                        final customers = state.customers;
+                        List<CustomerReminder> customers = state.customers;
+                        if (selectedProvinceFilter.value != null &&
+                            selectedProvinceFilter.value != "Tất cả") {
+                          customers = customers.where((c) {
+                            if (c.customer.address?.province ==
+                                selectedProvinceFilter.value) {
+                              return true;
+                            }
+                            return false;
+                          }).toList();
+                        }
                         return ListView.builder(
                           itemCount: customers.length,
                           itemBuilder: (context, index) {
@@ -368,6 +416,9 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                   customers[index].customer.phoneNumber ?? "",
                               fullName:
                                   customers[index].customer.fullName ?? "",
+                              province:
+                                  customers[index].customer.address?.province ??
+                                      "",
                               isNotified: isNotified,
                               onTap: () async {
                                 // Fetch guarantee
@@ -444,35 +495,22 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
   Widget buildCustomerCardItem({
     required String phoneNumber,
     required String fullName,
+    required String province,
     required VoidCallback onTap,
     bool isNotified = false,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color:
-                !isNotified ? const Color(0xff800000) : const Color(0xffDADADA),
-            width: !isNotified ? 2.5 : 1,
-          ),
-          borderRadius: BorderRadius.circular(10),
-          color: const Color(0xffFAFAFA),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Text(
-              fullName,
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 8,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              province,
               style: const TextStyle(
                 color: Colors.black,
                 fontSize: 14,
@@ -480,18 +518,54 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                 fontFamily: "BeVietnam",
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              phoneNumber,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                fontFamily: "BeVietnam",
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: onTap,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: !isNotified
+                      ? const Color(0xff800000)
+                      : const Color(0xffDADADA),
+                  width: !isNotified ? 2.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xffFAFAFA),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Text(
+                    fullName,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: "BeVietnam",
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    phoneNumber,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: "BeVietnam",
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1117,7 +1191,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
       noteController.text = "";
       List<Reminder> reminders = [];
       notifyGuaranteeDays.value.forEach((element) {
-        if(element.dateTime.day == focusDayNotifier.value.day){
+        if (element.dateTime.day == focusDayNotifier.value.day) {
           element.reminders.forEach((r) => reminders.add(r));
         }
       });
@@ -1134,5 +1208,130 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
       DialogUtils.hide(context);
       DialogUtils.hide(context);
     }
+  }
+
+  showBottomSheetChooseProvinces() async {
+    final size = MediaQuery.of(context).size;
+    if (provincesBloc.provinces == null ||
+        provincesBloc.state is! ProvincesLoaded) {
+      provincesBloc.add(FetchProvinces());
+    }
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          height: size.height * 0.6,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Chọn tỉnh thành",
+                  style: AppStyle.heading2.copyWith(fontSize: 18),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  height: 40,
+                  width: double.infinity,
+                  alignment: Alignment.centerLeft,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: const Color(0xffEEEEEE),
+                  ),
+                  child: Center(
+                    child: TextField(
+                      style: AppStyle.boxField.copyWith(fontSize: 15),
+                      onChanged: (value) {
+                        provincesBloc.add(SearchProvinces(value));
+                      },
+                      textAlignVertical: TextAlignVertical.center,
+                      onTapOutside: (event) =>
+                          FocusScope.of(context).requestFocus(FocusNode()),
+                      decoration: InputDecoration(
+                        hintText: "Tìm kiếm tỉnh thành",
+                        hintStyle: AppStyle.boxField.copyWith(fontSize: 15),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                        isCollapsed: true,
+                        border: const UnderlineInputBorder(
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: BlocBuilder(
+                    bloc: provincesBloc,
+                    builder: (context, state) {
+                      if (state is ProvincesLoading) {
+                        return Center(
+                          child: Lottie.asset(AppAssets.aLoading, height: 50),
+                        );
+                      }
+                      if (state is ProvincesLoaded) {
+                        final provinces = List.from(state.provinces);
+                        provinces.insert(0, Province(name: "Tất cả"));
+                        return ListView.builder(
+                          itemCount: provinces.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey.shade400,
+                                    width: .2,
+                                  ),
+                                ),
+                              ),
+                              child: ListTile(
+                                onTap: () {
+                                  selectedProvinceFilter.value =
+                                      provinces[index].name;
+                                  // Rebuild List Customer
+                                  fetchCustomersCubit.rebuildWhenLoaded();
+                                  context.pop();
+                                },
+                                leading: null,
+                                minTileHeight: 48,
+                                titleAlignment: ListTileTitleAlignment.center,
+                                contentPadding: const EdgeInsets.all(0),
+                                title: Text(
+                                  provinces[index].name ?? "",
+                                  style: AppStyle.boxField.copyWith(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    provincesBloc.emitProvincesFullList();
   }
 }
