@@ -55,6 +55,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
   final addressDetailController = TextEditingController();
+  final cccdController = TextEditingController();
+
   ValueNotifier<String?> selectedRole = ValueNotifier(null);
 
   final List<String> dropdownItems = [
@@ -105,6 +107,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     phoneController.dispose();
     emailController.dispose();
     addressDetailController.dispose();
+    cccdController.dispose();
     focusNodeName.dispose();
     focusNodePhone.dispose();
     focusNodeAddress.dispose();
@@ -500,6 +503,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     phoneController.text = user?.phoneNumber ?? "";
     addressDetailController.text = user?.address?.detail ?? "";
     emailController.text = user?.email ?? "";
+    cccdController.text = user?.cccd ?? "";
 
     await showModalBottomSheet(
       context: context,
@@ -586,6 +590,15 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           ),
                           const SizedBox(height: 12),
                           buildRoleSelection(user?.role),
+                          const SizedBox(height: 12),
+                          TextFieldLabelItem(
+                            label: "CCCD",
+                            hint: "Số CMT/CCCD",
+                            isRequired: false,
+                            controller: cccdController,
+                            inputType: TextInputType.number,
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
+                          ),
                           const SizedBox(height: 23),
                           Align(
                             alignment: Alignment.center,
@@ -952,6 +965,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     phoneController.text = "";
     addressDetailController.text = "";
     emailController.text = "";
+    cccdController.text = "";
 
     await showModalBottomSheet(
       context: context,
@@ -1038,6 +1052,15 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           ),
                           const SizedBox(height: 12),
                           buildRoleSelection(null),
+                          const SizedBox(height: 12),
+                          TextFieldLabelItem(
+                            label: "CCCD",
+                            hint: "Số CMT/CCCD",
+                            isRequired: false,
+                            controller: cccdController,
+                            inputType: TextInputType.number,
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
+                          ),
                           const SizedBox(height: 28),
                           Align(
                             alignment: Alignment.center,
@@ -1179,6 +1202,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     String fullName = nameController.text.trim();
     String phoneNumber = phoneController.text.trim();
     String addressDetail = addressDetailController.text.trim();
+    String cccd = cccdController.text.trim();
+
 
     if (fullName.isEmpty) {
       DialogUtils.showWarningDialog(
@@ -1264,6 +1289,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
         );
         userUpdate.phoneNumber = phoneController.text.trim();
         userUpdate.email = emailController.text.trim();
+        userUpdate.cccd = cccd;
 
         // Check email and phone exist
         bool isPhoneExisted = false;
@@ -1326,6 +1352,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     String phoneNumber = phoneController.text.trim();
     String address = addressDetailController.text.trim();
     String email = emailController.text.trim();
+    String cccd = cccdController.text.trim();
 
     if (fullName.isEmpty) {
       DialogUtils.showWarningDialog(
@@ -1434,6 +1461,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
           final user = UserModel(
             id: generateRandomId(6),
             fullName: fullName,
+            cccd: cccd,
             dob: null,
             email: email,
             gender: "Male",
@@ -1531,11 +1559,13 @@ enum ShowType { view, create, update }
 class SearchField extends StatefulWidget {
   final Function(String) onSearch;
   final String hint;
+  TextEditingController? controller;
 
-  const SearchField({
+  SearchField({
     super.key,
     required this.onSearch,
     required this.hint,
+    this.controller,
   });
 
   @override
@@ -1552,7 +1582,7 @@ class _SearchFieldState extends State<SearchField> {
     }
 
     // Tạo Timer mới
-    _debounce = Timer(const Duration(milliseconds: 500), () {
+    _debounce = Timer(const Duration(milliseconds: 800), () {
       widget.onSearch(query);
     });
   }
@@ -1567,6 +1597,7 @@ class _SearchFieldState extends State<SearchField> {
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: widget.controller,
       onChanged: (value) => _onSearchChanged(value),
       onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()),
       style: const TextStyle(

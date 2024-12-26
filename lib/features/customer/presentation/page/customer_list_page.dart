@@ -1,24 +1,21 @@
-import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
 import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
-import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_event.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_state.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_event.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_state.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
-import 'package:mbosswater/features/customer/presentation/widgets/filter_dropdown_agency.dart';
-import 'package:mbosswater/features/guarantee/data/model/agency.dart';
-import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agencies_bloc.dart';
-import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
+import 'package:mbosswater/features/guarantee/data/model/province.dart';
+import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class CustomerListPage extends StatefulWidget {
@@ -29,10 +26,13 @@ class CustomerListPage extends StatefulWidget {
 }
 
 class _CustomerListPageState extends State<CustomerListPage> {
-  late FetchCustomersBloc fetchCustomersBloc;
-  late UserInfoBloc userInfoBloc;
-  late AgenciesBloc agenciesBloc;
+  final _pageSize = 10;
 
+  final _searchController = TextEditingController();
+
+  late FetchCustomersPaginateBloc fetchCustomersBloc;
+  late UserInfoBloc userInfoBloc;
+  late final ProvincesBloc provincesBloc;
   final List<String> dropdownTimeItems = [
     'Tất cả',
     'Tháng này',
@@ -41,15 +41,12 @@ class _CustomerListPageState extends State<CustomerListPage> {
     'Năm nay'
   ];
 
-  List<Agency> dropdownAgenciesItems = [];
   ValueNotifier<String?> searchNotifier = ValueNotifier(null);
   ValueNotifier<String?> selectedTimeFilter = ValueNotifier(null);
-  ValueNotifier<Agency?> selectedAgencyFilter = ValueNotifier(null);
+  late ValueNotifier<String?> selectedProvinceFilter = ValueNotifier(null);
   final ScrollController _scrollController = ScrollController();
 
   // Variable
-  List<CustomerEntity> customerSearchResult = [];
-  List<CustomerEntity> customerOriginal = [];
   ValueNotifier<int> totalCustomer = ValueNotifier(0);
   ValueNotifier<int> totalProductSold = ValueNotifier(0);
 
@@ -59,21 +56,41 @@ class _CustomerListPageState extends State<CustomerListPage> {
   @override
   void initState() {
     super.initState();
-    fetchCustomersBloc = BlocProvider.of<FetchCustomersBloc>(context);
-    agenciesBloc = BlocProvider.of<AgenciesBloc>(context);
+    fetchCustomersBloc = BlocProvider.of<FetchCustomersPaginateBloc>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
+    provincesBloc = BlocProvider.of<ProvincesBloc>(context);
     handleFetchCustomer();
-    if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN) {
-      agenciesBloc.fetchAgencies();
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _calculateSliverAppBarHeight();
     });
+    // Add scroll listener for infinite pagination
+    _setupScrollController();
+  }
+
+  void _setupScrollController() {
+    _scrollController.addListener(() {
+      if (_shouldLoadMore(_scrollController)) {
+        fetchCustomersBloc.add(FetchNextPage(_pageSize));
+      }
+    });
+  }
+
+  bool _shouldLoadMore(ScrollController scrollController) {
+    if (!scrollController.hasClients) return false;
+
+    final maxScroll = scrollController.position.maxScrollExtent;
+    final currentScroll = scrollController.position.pixels;
+
+    return currentScroll >= (maxScroll - 80);
+  }
+
+  Widget _buildLoadingIndicator() {
+    return const CustomerCardShimmer();
   }
 
   void _calculateSliverAppBarHeight() {
-    final RenderBox? renderBox =
-    _sliverAppBarContentKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox = _sliverAppBarContentKey.currentContext
+        ?.findRenderObject() as RenderBox?;
     if (renderBox != null) {
       setState(() {
         _sliverAppBarHeight = renderBox.size.height + kToolbarHeight;
@@ -85,10 +102,13 @@ class _CustomerListPageState extends State<CustomerListPage> {
     final user = userInfoBloc.user;
     bool isAgency = Roles.LIST_ROLES_AGENCY.contains(user?.role);
     if (isAgency && user?.agency != null) {
-      fetchCustomersBloc.add(FetchAllCustomersByAgency(user!.agency!));
+      fetchCustomersBloc.add(FetchCustomers(
+        limit: _pageSize,
+        agencyID: user?.agency,
+      ));
     } else {
       // Fetch all customer (for MBoss)
-      fetchCustomersBloc.add(FetchAllCustomers());
+      fetchCustomersBloc.add(FetchCustomers(limit: _pageSize));
     }
   }
 
@@ -111,49 +131,28 @@ class _CustomerListPageState extends State<CustomerListPage> {
               Container(
                 margin: const EdgeInsets.only(right: 3),
                 alignment: Alignment.centerLeft,
-                child: FilterDropdown(
-                  selectedValue: selectedTimeFilter.value ?? 'Tất cả',
-                  onChanged: (value) {
-                    setState(() {
+                child: ValueListenableBuilder(
+                  valueListenable: selectedTimeFilter,
+                  builder: (context, value, child) => FilterDropdown(
+                    selectedValue: selectedTimeFilter.value ?? 'Tất cả',
+                    onChanged: (value) {
                       selectedTimeFilter.value = value;
-                    });
-                  },
-                  options: dropdownTimeItems,
+                      fetchCustomersBloc.add(FetchCustomers(
+                        limit: _pageSize,
+                        searchQuery: _searchController.text != ""
+                            ? _searchController.text
+                            : null,
+                        provinceFilter: selectedProvinceFilter.value,
+                        dateFilter: selectedTimeFilter.value,
+                        agencyID: userInfoBloc.user?.agency,
+                      ));
+                    },
+                    options: dropdownTimeItems,
+                  ),
                 ),
               ),
               if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN)
-                Container(
-                  alignment: Alignment.centerLeft,
-                  child: BlocBuilder(
-                    bloc: agenciesBloc,
-                    builder: (context, state) {
-                      if (state is AgenciesLoaded) {
-                        dropdownAgenciesItems.clear();
-                        dropdownAgenciesItems = List.from(state.agencies);
-                        dropdownAgenciesItems.insert(
-                          0,
-                          Agency(
-                            "",
-                            "",
-                            "Tất cả",
-                            null,
-                            Timestamp.now(),
-                            false,
-                          ),
-                        );
-                        return FilterDropdownAgency(
-                          onChanged: (value) {
-                            setState(() {
-                              selectedAgencyFilter.value = value;
-                            });
-                          },
-                          options: dropdownAgenciesItems,
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
+                buildFilterProvince(),
             ],
           ),
         ),
@@ -188,9 +187,189 @@ class _CustomerListPageState extends State<CustomerListPage> {
     );
   }
 
+  Widget buildFilterProvince() {
+    return GestureDetector(
+      onTap: () async => showBottomSheetChooseProvinces(),
+      child: Container(
+        height: 29,
+        width: MediaQuery.of(context).size.width / 2 - 24 - 3,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: const Color(0xffEFEFF0),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ValueListenableBuilder(
+                  valueListenable: selectedProvinceFilter,
+                  builder: (context, value, child) => Text(
+                    value ?? "Tỉnh/Thành phố",
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontFamily: "BeVietnam",
+                      color: Colors.black,
+                      fontSize: 14,
+                      height: 1.4,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.arrow_drop_down,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  showBottomSheetChooseProvinces() async {
+    final size = MediaQuery.of(context).size;
+    if (provincesBloc.provinces == null ||
+        provincesBloc.state is! ProvincesLoaded) {
+      provincesBloc.add(FetchProvinces());
+    }
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          height: size.height * 0.6,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Chọn tỉnh thành",
+                  style: AppStyle.heading2.copyWith(fontSize: 18),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  height: 40,
+                  width: double.infinity,
+                  alignment: Alignment.centerLeft,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: const Color(0xffEEEEEE),
+                  ),
+                  child: Center(
+                    child: TextField(
+                      style: AppStyle.boxField.copyWith(fontSize: 15),
+                      onChanged: (value) {
+                        provincesBloc.add(SearchProvinces(value));
+                      },
+                      textAlignVertical: TextAlignVertical.center,
+                      onTapOutside: (event) =>
+                          FocusScope.of(context).requestFocus(FocusNode()),
+                      decoration: InputDecoration(
+                        hintText: "Tìm kiếm tỉnh thành",
+                        hintStyle: AppStyle.boxField.copyWith(fontSize: 15),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                        isCollapsed: true,
+                        border: const UnderlineInputBorder(
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: BlocBuilder(
+                    bloc: provincesBloc,
+                    builder: (context, state) {
+                      if (state is ProvincesLoading) {
+                        return Center(
+                          child: Lottie.asset(AppAssets.aLoading, height: 50),
+                        );
+                      }
+                      if (state is ProvincesLoaded) {
+                        final provinces = List.from(state.provinces);
+                        provinces.insert(0, Province(name: "Tất cả"));
+                        return ListView.builder(
+                          itemCount: provinces.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey.shade400,
+                                    width: .2,
+                                  ),
+                                ),
+                              ),
+                              child: ListTile(
+                                onTap: () {
+                                  selectedProvinceFilter.value =
+                                      provinces[index].name;
+
+                                  fetchCustomersBloc.add(FetchCustomers(
+                                    limit: _pageSize,
+                                    searchQuery: _searchController.text != ""
+                                        ? _searchController.text
+                                        : null,
+                                    provinceFilter:
+                                        selectedProvinceFilter.value,
+                                    dateFilter: selectedTimeFilter.value,
+                                    agencyID: userInfoBloc.user?.agency,
+                                  ));
+
+                                  context.pop();
+                                },
+                                leading: null,
+                                minTileHeight: 48,
+                                titleAlignment: ListTileTitleAlignment.center,
+                                contentPadding: const EdgeInsets.all(0),
+                                title: Text(
+                                  provinces[index].name ?? "",
+                                  style: AppStyle.boxField.copyWith(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    provincesBloc.emitProvincesFullList();
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
+    selectedProvinceFilter.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -253,8 +432,23 @@ class _CustomerListPageState extends State<CustomerListPage> {
               ),
             ];
           },
-          body: BlocBuilder(
+          body: BlocConsumer(
             bloc: fetchCustomersBloc,
+            listener: (context, state) {
+              if (state is FetchCustomersLoaded) {
+                if(state.customers.isEmpty){
+                  totalCustomer.value = 0;
+                  totalProductSold.value = 0;
+                } else {
+                  totalCustomer.value = state.customers.length;
+                  totalProductSold.value = state.customers.fold(
+                    0,
+                        (sum, customer) => sum += customer.totalProduct ?? 0,
+                  );
+                }
+
+              }
+            },
             builder: (context, state) {
               if (state is FetchCustomersLoading) {
                 return ListView.builder(
@@ -268,11 +462,12 @@ class _CustomerListPageState extends State<CustomerListPage> {
                   ),
                 );
               }
-              if (state is FetchCustomersSuccess) {
-                customerSearchResult = state.filteredCustomers;
-                customerOriginal = state.originalCustomers;
-
-                return buildCustomerList();
+              if (state is FetchCustomersLoaded) {
+                return buildCustomerList(
+                  state.customers,
+                  state.hasMore,
+                  state.isLoadingMore,
+                );
               }
               return const SizedBox.shrink();
             },
@@ -336,11 +531,16 @@ class _CustomerListPageState extends State<CustomerListPage> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: SearchField(
+              controller: _searchController,
               hint: "Tìm kiếm theo tên hoặc số điện thoại",
               onSearch: (value) {
-                setState(() {
-                  searchNotifier.value = value.trim().toLowerCase();
-                });
+                fetchCustomersBloc.add(FetchCustomers(
+                  limit: _pageSize,
+                  searchQuery: value,
+                  provinceFilter: selectedProvinceFilter.value,
+                  dateFilter: selectedTimeFilter.value,
+                  agencyID: userInfoBloc.user?.agency,
+                ));
               },
             ),
           ),
@@ -349,84 +549,25 @@ class _CustomerListPageState extends State<CustomerListPage> {
     );
   }
 
-  Widget buildCustomerList() {
-    // Perform filtering outside the build process
-    customerSearchResult = customerOriginal.where((customer) {
-      // 1. Filter by search
-      final matchesSearch = searchNotifier.value == null ||
-          customer.customer.fullName!
-              .toLowerCase()
-              .contains(searchNotifier.value!.toLowerCase()) ||
-          customer.customer.phoneNumber!
-              .toLowerCase()
-              .contains(searchNotifier.value!.toLowerCase()) ||
-          customer.customer.address!
-              .displayAddress()
-              .toLowerCase()
-              .contains(searchNotifier.value!.toLowerCase());
-
-      // 2. Filter by agency
-      final matchesAgency = selectedAgencyFilter.value == null ||
-          selectedAgencyFilter.value?.id == "" || // "Tất cả"
-          customer.customer.agency == selectedAgencyFilter.value?.id;
-
-      // 3. Filter by time
-      final matchesTime = () {
-        if (selectedTimeFilter.value == null ||
-            selectedTimeFilter.value == "Tất cả") return true;
-        DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
-        DateTime? updatedAt = customer.customer.updatedAt?.toDate();
-
-        switch (selectedTimeFilter.value) {
-          case "Tháng này":
-            return updatedAt?.year == now.year && updatedAt?.month == now.month;
-          case "30 ngày gần đây":
-            return updatedAt != null &&
-                updatedAt.isAfter(now.subtract(const Duration(days: 30)));
-          case "90 ngày gần đây":
-            return updatedAt != null &&
-                updatedAt.isAfter(now.subtract(const Duration(days: 90)));
-          case "Năm nay":
-            return updatedAt?.year == now.year;
-          default:
-            return true;
-        }
-      }();
-
-      // Combine all filters
-      return matchesSearch && matchesAgency && matchesTime;
-    }).toList();
-
-    // Update stats outside build phase
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      totalCustomer.value = customerSearchResult.length;
-      totalProductSold.value = customerSearchResult.fold(
-          0, (sum, customer) => sum + customer.guarantees.length);
-    });
-
-    if (customerSearchResult.isEmpty) {
-      return const Center(
-        child: Text("Không tìm thấy khách hàng!"),
-      );
-    }
-
-    return Container(
+  Widget buildCustomerList(
+    List<Customer> customers,
+    bool hasMore,
+    bool isLoadingMore,
+  ) {
+    return ListView.builder(
+      itemCount: customers.length + (hasMore ? 1 : 0),
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      margin: const EdgeInsets.only(bottom: 20),
-      child: ListView.builder(
-        itemCount: customerSearchResult.length,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: CustomerCardItem(
-              customerEntity: customerSearchResult[index],
-            ),
-          );
-        },
-      ),
+      itemBuilder: (context, index) {
+        if (index == customers.length) {
+          return isLoadingMore
+              ? _buildLoadingIndicator()
+              : const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: CustomerCardItem(customer: customers[index]),
+        );
+      },
     );
   }
 }
-

@@ -1,20 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource.dart';
-import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
 import 'package:mbosswater/features/customer/domain/repository/customer_repository.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
- class CustomerRepositoryImpl extends CustomerRepository {
+
+class CustomerRepositoryImpl extends CustomerRepository {
   final CustomerDatasource datasource;
 
   CustomerRepositoryImpl(this.datasource);
 
   @override
-  Future<Customer > fetchCustomer(String phoneNumber) async {
+  Future<Customer> fetchCustomer(String phoneNumber) async {
     return await datasource.fetchCustomer(phoneNumber);
   }
 
   @override
-  Future<List<Customer>> fetchCustomers()  async {
+  Future<List<Customer>> fetchCustomers() async {
     return await datasource.fetchCustomers();
   }
 
@@ -28,10 +29,10 @@ import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
     return await datasource.fetchGuaranteesOfCustomer(customerID);
   }
 
-
   @override
-  Future<List<Customer>> searchCustomersOfAgency(String phoneNumberQuery, String agencyID) async {
-   return await datasource.searchCustomersOfAgency(phoneNumberQuery, agencyID);
+  Future<List<Customer>> searchCustomersOfAgency(
+      String phoneNumberQuery, String agencyID) async {
+    return await datasource.searchCustomersOfAgency(phoneNumberQuery, agencyID);
   }
 
   @override
@@ -39,5 +40,22 @@ import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
     return await datasource.fetchCustomerByProductID(productID);
   }
 
-
+  @override
+  Future<Map<String, dynamic>> fetchAllCustomersWithPagination({
+    required int limit,
+    DocumentSnapshot<Object?>? lastDocument,
+    String? provinceFilter,
+    String? dateFilter,
+    String? searchQuery,
+    String? agencyID,
+  }) async {
+    return await datasource.fetchAllCustomersWithPagination(
+      limit: limit,
+      lastDocument: lastDocument,
+      searchQuery: searchQuery,
+      agencyID: agencyID,
+      dateFilter: dateFilter,
+      provinceFilter: provinceFilter,
+    );
+  }
 }

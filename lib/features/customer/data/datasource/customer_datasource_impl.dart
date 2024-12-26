@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource.dart';
-import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 
@@ -132,8 +131,89 @@ class CustomerDatasourceImpl extends CustomerDatasource {
     } catch (e) {
       // Handle any errors appropriately
       print("Error fetching customer by product ID: $e");
-      rethrow; // Re-throw the error to allow the caller to handle it
+      rethrow;
     }
   }
 
+  @override
+  Future<Map<String, dynamic>> fetchAllCustomersWithPagination({
+    required int limit,
+    DocumentSnapshot<Object?>? lastDocument,
+    String? provinceFilter,
+    String? dateFilter,
+    String? searchQuery,
+    String? agencyID,
+  }) async {
+    Query query = FirebaseFirestore.instance
+        .collection('customers')
+        .orderBy('updatedAt', descending: true);
+
+    // Apply province filter
+    if (provinceFilter != null && provinceFilter != 'Tất cả') {
+      query = query.where('address.province', isEqualTo: provinceFilter);
+    }
+
+    // Apply date filter
+    if (dateFilter != null && dateFilter != 'Tất cả') {
+      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+      DateTime startDate;
+
+      switch (dateFilter) {
+        case 'Tháng này':
+          startDate = DateTime(now.year, now.month, 1);
+          break;
+        case '30 ngày gần đây':
+          startDate = now.subtract(const Duration(days: 30));
+          break;
+        case '90 ngày gần đây':
+          startDate = now.subtract(const Duration(days: 90));
+          break;
+        case 'Năm nay':
+          startDate = DateTime(now.year, 1, 1);
+          break;
+        default:
+          startDate = now;
+      }
+
+      query = query.where('updatedAt', isGreaterThanOrEqualTo: startDate);
+    }
+
+    // Apply search query
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      String cleanSearch = searchQuery.trim();
+      if (RegExp(r'^\d+$').hasMatch(cleanSearch)) {
+        query = query
+            .where('phoneNumber', isGreaterThanOrEqualTo: cleanSearch)
+            .where('phoneNumber', isLessThanOrEqualTo: '$cleanSearch\uf8ff');
+      } else {
+        // Search by full name using prefix match
+        query = query
+            .where('fullName', isGreaterThanOrEqualTo: cleanSearch)
+            .where('fullName', isLessThanOrEqualTo: '$cleanSearch\uf8ff');
+      }
+    }
+
+    // Apply agency filter if provided
+    if (agencyID != null) {
+      query = query.where('agency', isEqualTo: agencyID);
+    }
+
+    // Apply limit and pagination
+    query = query.limit(limit);
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    QuerySnapshot querySnapshot = await query.get();
+
+    List<Customer> customers = querySnapshot.docs
+        .map((doc) => Customer.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
+
+    return {
+      'customers': customers,
+      'lastDocument':
+          querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null,
+    };
+  }
 }

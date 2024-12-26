@@ -10,13 +10,14 @@ import 'package:mbosswater/features/customer/data/datasource/customer_datasource
 import 'package:mbosswater/features/customer/data/datasource/customer_datasource_impl.dart';
 import 'package:mbosswater/features/customer/data/repository/customer_repository_impl.dart';
 import 'package:mbosswater/features/customer/domain/repository/customer_repository.dart';
+import 'package:mbosswater/features/customer/domain/usecase/fetch_customers_with_pagination.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_by_phone.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_by_product.dart';
 import 'package:mbosswater/features/customer/domain/usecase/get_customer_guarantee.dart';
 import 'package:mbosswater/features/customer/domain/usecase/search_customer.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/guarantee/data/datasource/address_datasource.dart';
 import 'package:mbosswater/features/guarantee/data/datasource/guarantee_datasource.dart';
@@ -182,6 +183,10 @@ void initServiceLocator() {
     () => GetCustomerByProductUseCase(sl<CustomerRepository>()),
   );
 
+  sl.registerLazySingleton<FetchCustomersWithPaginationUC>(
+    () => FetchCustomersWithPaginationUC(sl<CustomerRepository>()),
+  );
+
   sl.registerLazySingleton<GetCustomerByPhoneUseCase>(
     () => GetCustomerByPhoneUseCase(sl<CustomerRepository>()),
   );
@@ -191,6 +196,10 @@ void initServiceLocator() {
         sl<GetCustomerByProductUseCase>(), sl<GetCustomerByPhoneUseCase>()),
   );
 
+  sl.registerLazySingleton<FetchCustomersPaginateBloc>(
+        () => FetchCustomersPaginateBloc(sl<FetchCustomersWithPaginationUC>()),
+  );
+
   sl.registerLazySingleton<CustomerGuaranteeBloc>(
     () => CustomerGuaranteeBloc(sl<GetCustomerGuaranteeUseCase>()),
   );
@@ -198,9 +207,6 @@ void initServiceLocator() {
   sl.registerLazySingleton<CustomerSearchBloc>(
     () => CustomerSearchBloc(sl<SearchCustomerUseCase>()),
   );
-
-  sl.registerLazySingleton<FetchCustomersBloc>(() => FetchCustomersBloc());
-
   // User
   sl.registerLazySingleton<UserDatasource>(() => UserDatasourceImpl());
 

@@ -15,7 +15,7 @@ import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_
 import 'package:mbosswater/features/agency/presentation/bloc/update_agency_staff_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/cycle_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_customers_cubit.dart';
@@ -101,8 +101,8 @@ void main() async {
         BlocProvider(create: (_) => sl<CommunesAgencyBloc>()),
         BlocProvider(create: (_) => sl<ActiveGuaranteeBloc>()),
         BlocProvider(create: (_) => sl<CustomerSearchBloc>()),
+        BlocProvider(create: (_) => sl<FetchCustomersPaginateBloc>()),
         BlocProvider(create: (_) => sl<CustomerGuaranteeBloc>()),
-        BlocProvider(create: (_) => sl<FetchCustomersBloc>()),
         BlocProvider(create: (_) => sl<FetchCustomerBloc>()),
         BlocProvider(create: (_) => sl<AgencyBloc>()),
         BlocProvider(create: (_) => sl<AgenciesBloc>()),

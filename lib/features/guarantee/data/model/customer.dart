@@ -10,6 +10,7 @@ class Customer {
   AdditionalInfo? additionalInfo;
   Timestamp? updatedAt;
   Timestamp? createdAt;
+  int? totalProduct;
 
   Customer({
     this.id,
@@ -21,6 +22,7 @@ class Customer {
     this.agency,
     this.updatedAt,
     this.createdAt,
+    this.totalProduct,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,7 @@ class Customer {
           : null,
       agency: json['agency'] as String?,
       createdAt: json["createdAt"],
+      totalProduct: json['totalProduct']
     );
   }
 
@@ -51,6 +54,7 @@ class Customer {
       'updatedAt': updatedAt,
       'createdAt': createdAt,
       'additionalInfo': additionalInfo?.toJson(),
+      'totalProduct': totalProduct,
     };
   }
 }

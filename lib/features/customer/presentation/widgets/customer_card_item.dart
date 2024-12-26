@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mbosswater/features/customer/domain/entity/customer_entity.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 
 class CustomerCardItem extends StatelessWidget {
-  final CustomerEntity customerEntity;
+  final Customer customer;
 
-  const CustomerCardItem({super.key, required this.customerEntity});
+  const CustomerCardItem({super.key, required this.customer});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class CustomerCardItem extends StatelessWidget {
       onTap: () {
         context.push(
           "/customer-detail",
-          extra: customerEntity.customer,
+          extra: customer,
         );
       },
       child: Container(
@@ -33,7 +33,7 @@ class CustomerCardItem extends StatelessWidget {
             Align(
               alignment: FractionalOffset.centerLeft,
               child: Text(
-                "KH: ${customerEntity.customer.phoneNumber}",
+                "KH: ${customer.phoneNumber}",
                 style: const TextStyle(
                   fontFamily: "BeVietNam",
                   color: Color(0xff820a1a),
@@ -45,15 +45,15 @@ class CustomerCardItem extends StatelessWidget {
             const SizedBox(height: 12),
             buildCustomerInfoItem(
               label: "Họ và tên",
-              value: "${customerEntity.customer.fullName}",
+              value: "${customer.fullName}",
             ),
             buildCustomerInfoItem(
               label: "Địa chỉ",
-              value: customerEntity.customer.address!.displayAddress(),
+              value: customer.address!.displayAddress(),
             ),
             buildCustomerInfoItem(
               label: "Số sản phẩm",
-              value: "${customerEntity.guarantees.length}",
+              value: customer.totalProduct.toString(),
             ),
           ],
         ),
