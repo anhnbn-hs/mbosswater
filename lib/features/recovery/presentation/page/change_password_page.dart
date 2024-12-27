@@ -7,7 +7,6 @@ import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/custom_textfield.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
-import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   ChangePasswordPage({super.key});
@@ -23,13 +22,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   late ChangePasswordBloc changePasswordBloc;
 
-  late VerifyEmailBloc verifyEmailBloc;
 
   @override
   void initState() {
     super.initState();
     changePasswordBloc = BlocProvider.of<ChangePasswordBloc>(context);
-    verifyEmailBloc = BlocProvider.of<VerifyEmailBloc>(context);
   }
 
   @override
@@ -162,9 +159,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       return;
     }
 
-    changePasswordBloc.add(PressedChangePasswordByEmail(
-      email: verifyEmailBloc.email,
-      newPassword: password,
-    ));
+    ///  Todo change password
   }
 }

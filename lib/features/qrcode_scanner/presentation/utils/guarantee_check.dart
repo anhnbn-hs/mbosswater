@@ -12,7 +12,6 @@ class GuaranteeCheck {
 
       return querySnapshot.docs.isNotEmpty;
     } catch (e) {
-      // Handle errors appropriately (e.g., log the error, show a message, etc.)
       print("Error checking product guarantee: $e");
       return false;
     }

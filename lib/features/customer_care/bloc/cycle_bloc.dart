@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 
 import 'cycle_event.dart';

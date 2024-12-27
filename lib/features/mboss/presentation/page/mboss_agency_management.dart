@@ -244,8 +244,6 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
 
                           if (!fetchAgenciesBloc.isLoading &&
                               state.isNotEmpty) {
-                            List<Agency> agencyOriginal =
-                                fetchAgenciesBloc.getAgenciesOriginal;
                             List<Agency> agencyFiltered = List.from(
                                 state); // Initialize with search result
 

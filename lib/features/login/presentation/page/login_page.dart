@@ -1,13 +1,10 @@
-import 'dart:io';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mbosswater/core/constants/error_message.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
-import 'package:mbosswater/core/utils/storage.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/custom_textfield.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_bloc.dart';
@@ -31,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   late LoginBloc loginBloc;
   late UserInfoBloc userInfoBloc;
   late NotificationCubit notificationCubit;
+
   @override
   void initState() {
     super.initState();
@@ -95,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
               BlocConsumer(
                 bloc: loginBloc,
                 listener: (context, state) {
-                  if(state is LoginSuccess){
+                  if (state is LoginSuccess) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       // Make sure the context is valid here
                       if (mounted) {
@@ -148,31 +146,16 @@ class _LoginPageState extends State<LoginPage> {
     String phone = phoneController.text;
     String password = passwordController.text;
 
-    if(phone.trim().isEmpty || password.trim().isEmpty){
+    if (phone.trim().isEmpty || password.trim().isEmpty) {
       return;
     }
 
     // Show loading dialog
     DialogUtils.showLoadingDialog(context);
-    // Get FCM Token
-    if (Platform.isAndroid) {
-      final token = await FirebaseMessaging.instance.getToken();
-      if (token == null) {
-        throw Exception("Không thể lấy FCM token.");
-      }
-    }
 
-    if (Platform.isIOS) {
-      // final token = await FirebaseMessaging.instance.getAPNSToken();
-      // if (token == null) {
-      //   throw Exception("Không thể lấy FCM token.");
-      // }
-    }
     loginBloc.add(PressLogin(
       phone: phone,
       password: password,
     ));
   }
 }
-
-

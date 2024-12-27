@@ -1,5 +1,3 @@
-import 'package:mbosswater/features/guarantee/data/model/province.dart';
-
 class ApiResponse<T> {
   int? total;
   List<T>? data;

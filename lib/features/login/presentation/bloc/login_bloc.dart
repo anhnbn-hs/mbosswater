@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_event.dart';
 import 'package:mbosswater/features/login/presentation/bloc/login_state.dart';

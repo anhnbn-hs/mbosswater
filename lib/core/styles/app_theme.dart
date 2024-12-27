@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 
 class AppTheme {
@@ -8,15 +7,11 @@ class AppTheme {
     scaffoldBackgroundColor: Colors.white,
     textTheme: TextTheme(
       displayLarge: AppStyle.heading1,
-      // Thay thế cho headline1
       displayMedium: AppStyle.heading2,
-      // Thay thế cho headline2
       bodyLarge: AppStyle.bodyText,
-      // Thay thế cho bodyText1
       bodyMedium:
           AppStyle.bodyText.copyWith(fontSize: 14, color: Colors.black54),
-      // Thay thế cho bodyText2
-      labelSmall: AppStyle.caption, // Thay thế cho caption
+      labelSmall: AppStyle.caption,
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.white,

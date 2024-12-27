@@ -4,18 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
-import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_event.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
-import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/guarantee/presentation/step_request_screen/confirm_phone_number_step.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 

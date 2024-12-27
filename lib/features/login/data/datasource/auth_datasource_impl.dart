@@ -1,14 +1,12 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/storage.dart';
 import 'package:mbosswater/features/login/data/datasource/auth_datasource.dart';
 import 'package:mbosswater/features/user_info/data/model/user_model.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthDatasourceImpl extends AuthDatasource {
   @override
@@ -61,6 +59,8 @@ class AuthDatasourceImpl extends AuthDatasource {
       }
 
       if (Platform.isIOS) {
+        /// Delete this comment when setting APNs Cloud Messaging to assign token to user
+
         // token = await FirebaseMessaging.instance.getAPNSToken();
         // if (token == null) {
         //   throw Exception("Không thể lấy FCM token.");
@@ -78,7 +78,7 @@ class AuthDatasourceImpl extends AuthDatasource {
       );
 
       return UserModel.fromJson(userData);
-    } on Exception catch (e) {
+    } on Exception {
       throw Exception('Password or Phone is not correct.');
     }
   }

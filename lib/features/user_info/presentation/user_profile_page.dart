@@ -6,7 +6,6 @@ import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
-import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/box_label_item.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';

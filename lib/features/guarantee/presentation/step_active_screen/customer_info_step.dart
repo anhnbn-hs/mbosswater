@@ -178,7 +178,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     textButton: "GỬI MÃ",
                     isPhoneField: true,
                     onTap: () {
-                      // Send OTP SMS
+                      /// Todo Send OTP SMS
 
                       // Assign flag
                       isOTPSent.value = true;
@@ -342,23 +342,6 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                     },
                   ),
                   const SizedBox(height: 24),
-                  // Handle Listener
-                  // BlocListener<StepBloc, int>(
-                  //   bloc: stepBloc,
-                  //   listener: (context, state) {
-                  //     if (state == 2) {
-                  //       if (!checkInput()) {
-                  //         DialogUtils.showWarningDialog(
-                  //           context: context,
-                  //           title: "Vui lòng hoàn thành bước trước đó!",
-                  //           canDismissible: false,
-                  //           onClickOutSide: () {},
-                  //         );
-                  //       }
-                  //     }
-                  //   },
-                  //   child: const SizedBox.shrink(),
-                  // ),
                 ],
               );
             },

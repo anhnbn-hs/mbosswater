@@ -51,7 +51,6 @@ class BoxLabelItem extends StatelessWidget {
                 child: Text(
                   fieldValue,
                   style: AppStyle.boxField.copyWith(),
-                  maxLines: 2,
                 ),
               ),
               icon != null

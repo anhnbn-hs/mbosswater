@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
-import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_state.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_event.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_state.dart';
 import 'package:mbosswater/features/home/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/home/bloc/search_customer_event.dart';
 import 'package:mbosswater/features/home/bloc/search_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
-import 'package:mbosswater/features/guarantee/data/model/product.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class ConfirmPhoneNumberStep extends StatefulWidget {

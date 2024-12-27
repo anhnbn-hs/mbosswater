@@ -59,9 +59,7 @@ import 'package:mbosswater/features/recovery/data/datasource/recovery_datasource
 import 'package:mbosswater/features/recovery/data/repository/recovery_repository_impl.dart';
 import 'package:mbosswater/features/recovery/domain/repository/recovery_repository.dart';
 import 'package:mbosswater/features/recovery/domain/usecase/change_password.dart';
-import 'package:mbosswater/features/recovery/domain/usecase/verify_email.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
-import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
 import 'package:mbosswater/features/user_info/data/datasource/user_datasource.dart';
 import 'package:mbosswater/features/user_info/data/datasource/user_datasource_impl.dart';
@@ -88,18 +86,6 @@ void initServiceLocator() {
 
   sl.registerLazySingleton<RecoveryRepository>(
     () => RecoveryRepositoryImpl(sl<RecoveryDatasource>()),
-  );
-
-  sl.registerLazySingleton<VerifyEmailUseCase>(
-    () => VerifyEmailUseCase(sl<RecoveryRepository>()),
-  );
-
-  sl.registerLazySingleton<VerifyEmailBloc>(
-    () => VerifyEmailBloc(sl<VerifyEmailUseCase>()),
-  );
-
-  sl.registerLazySingleton<VerifyOtpBloc>(
-    () => VerifyOtpBloc(sl<VerifyEmailUseCase>()),
   );
 
   sl.registerLazySingleton<ChangePasswordUseCase>(
@@ -197,7 +183,7 @@ void initServiceLocator() {
   );
 
   sl.registerLazySingleton<FetchCustomersPaginateBloc>(
-        () => FetchCustomersPaginateBloc(sl<FetchCustomersWithPaginationUC>()),
+    () => FetchCustomersPaginateBloc(sl<FetchCustomersWithPaginationUC>()),
   );
 
   sl.registerLazySingleton<CustomerGuaranteeBloc>(

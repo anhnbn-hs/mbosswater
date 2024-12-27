@@ -8,17 +8,12 @@ class RecoveryRepositoryImpl extends RecoveryRepository {
   RecoveryRepositoryImpl(this._datasource);
 
   @override
-  Future<void> sendOTP(String email) async {
-    return await _datasource.sendOTP(email);
+  Future<void> sendOTP(String phoneNumber) async {
+    return await _datasource.sendOTP(phoneNumber);
   }
 
   @override
-  Future<bool> verifyEmail(String email) async {
-    return await _datasource.verifyEmail(email);
-  }
-
-  @override
-  Future<UserModel> changePassword(String email, String newPassword) async {
-    return await _datasource.changePassword(email, newPassword);
+  Future<UserModel> changePassword(String phoneNumber, String newPassword) async {
+    return await _datasource.changePassword(phoneNumber, newPassword);
   }
 }

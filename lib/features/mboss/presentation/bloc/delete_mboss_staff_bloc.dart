@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:mbosswater/features/mboss/domain/repository/mboss_manager_repository.dart';
-import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
 class DeleteMbossStaffBloc extends Cubit<bool> {
   final MbossManagerRepository repository;

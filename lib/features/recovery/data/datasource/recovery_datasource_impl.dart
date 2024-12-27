@@ -20,7 +20,7 @@ class RecoveryDatasourceImpl extends RecoveryDatasource {
           .get();
 
       return docs.docs.isNotEmpty;
-    } on Exception catch (e) {
+    } on Exception {
       rethrow;
     }
   }

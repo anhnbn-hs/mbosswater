@@ -6,13 +6,8 @@ import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/custom_textfield.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
-import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
-import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_state.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
-import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_event.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_state.dart';
-import 'package:mbosswater/features/recovery/presentation/widget/otp_input_field.dart';
-import 'package:mbosswater/features/recovery/presentation/widget/resend_button.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -26,13 +21,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   final otpController = TextEditingController();
 
-  late VerifyEmailBloc verifyEmailBloc;
   late VerifyOtpBloc verifyOtpBloc;
 
   @override
   void initState() {
     super.initState();
-    verifyEmailBloc = BlocProvider.of<VerifyEmailBloc>(context);
     verifyOtpBloc = BlocProvider.of<VerifyOtpBloc>(context);
   }
 
@@ -64,75 +57,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 controller: emailController,
                 hintText: "Số điện thoại",
               ),
-              BlocBuilder(
-                bloc: verifyEmailBloc,
-                builder: (context, state) {
-                  if (state is VerifyEmailError) {
-                    DialogUtils.hide(context);
-                    return Container(
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        state.error,
-                        style: TextStyle(
-                          fontFamily: "BeVietNam",
-                          color: AppColors.textErrorColor,
-                          fontStyle: FontStyle.italic,
-                          fontSize: 12,
-                        ),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
               const SizedBox(height: 40),
               CustomButton(
                 textButton: "GỬI MÃ OTP",
                 onTap: () => handleSendOTP(context),
-              ),
-              BlocBuilder(
-                bloc: verifyEmailBloc,
-                builder: (context, state) {
-                  if (state is VerifyEmailSuccess) {
-                    DialogUtils.hide(context);
-                    verifyOtpBloc.sendOTP(emailController.text);
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-                        Text(
-                          "Mã OTP đã được gửi đến email",
-                          style: TextStyle(
-                            fontFamily: "BeVietnam",
-                            color: AppColors.textErrorColor,
-                            fontStyle: FontStyle.italic,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        ResendButton(
-                          onResend: () {
-                            handleSendOTP(context);
-                          },
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                          ),
-                          margin: const EdgeInsets.only(top: 40),
-                          child: OTPCodeTextField(
-                            otpController: otpController,
-                            onComplete: (value) {
-                              verifyOtpBloc.add(HandleVerifyOTP(value));
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
               ),
               BlocListener(
                 bloc: verifyOtpBloc,

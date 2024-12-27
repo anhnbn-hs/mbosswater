@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mbosswater/core/constants/roles.dart';
-import 'package:mbosswater/core/services/firebase_cloud_functions.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/mboss/data/datasource/mboss_manager_datasource.dart';
 import 'package:mbosswater/features/user_info/data/datasource/user_datasource.dart';
@@ -8,7 +7,6 @@ import 'package:mbosswater/features/user_info/data/model/user_model.dart';
 
 class MbossManagerDatasourceImpl extends MbossManagerDatasource {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-  final FirebaseCloudFunctions cloudFunctions = FirebaseCloudFunctions.instance;
   final UserDatasource userDatasource;
 
   MbossManagerDatasourceImpl(this.userDatasource);

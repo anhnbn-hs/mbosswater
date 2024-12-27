@@ -8,7 +8,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mbosswater/core/services/firebase_cloud_message.dart';
 import 'package:mbosswater/core/services/notification_service.dart';
 import 'package:mbosswater/core/styles/app_theme.dart';
-import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/create_agency_staff_bloc.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/delete_agency_staff_bloc.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/fetch_agency_staff_bloc.dart';
@@ -22,9 +21,6 @@ import 'package:mbosswater/features/home/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/cycle_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_customers_cubit.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_guarantee_by_id_cubit.dart';
-import 'package:mbosswater/features/guarantee/data/model/customer.dart';
-import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
-import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/districts_agency_bloc.dart';
@@ -52,7 +48,6 @@ import 'package:mbosswater/features/mboss/presentation/bloc/update_agency_bloc.d
 import 'package:mbosswater/features/mboss/presentation/bloc/update_mboss_staff_bloc.dart';
 import 'package:mbosswater/features/notification/notification_cubit.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/change_password_bloc.dart';
-import 'package:mbosswater/features/recovery/presentation/bloc/verify_email_bloc.dart';
 import 'package:mbosswater/features/recovery/presentation/bloc/verify_otp_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 import 'package:mbosswater/go_router.dart';
@@ -64,37 +59,38 @@ import 'package:month_year_picker/month_year_picker.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load();
-
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp();
     FirebaseFirestore.instance.settings = const Settings(
       persistenceEnabled: true,
     );
   }
+
+  // Initialize .env
+  await dotenv.load();
+
   // Initialize NotificationService
   await NotificationService.init();
 
-  // Initialize FirebaseCloudMessage
+  // Initialize FirebaseCloudMessaging
   final FirebaseCloudMessage fcm = FirebaseCloudMessage();
 
   await fcm.initialize();
 
   // Initialize Service Locator - GetIt Dependency Injection
   initServiceLocator();
+
+  // Restricts the app's orientation to portrait mode only
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-
-  // await updateAllCustomersWithSearchTerms();
 
   runApp(
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<LoginBloc>()),
         BlocProvider(create: (_) => sl<UserInfoBloc>()),
-        BlocProvider(create: (_) => sl<VerifyEmailBloc>()),
         BlocProvider(create: (_) => sl<VerifyOtpBloc>()),
         BlocProvider(create: (_) => sl<ChangePasswordBloc>()),
         BlocProvider(create: (_) => sl<ProvincesBloc>()),
@@ -152,24 +148,6 @@ void main() async {
   );
 }
 
-Future<void> updateAllCustomersWithSearchTerms() async {
-  final QuerySnapshot snapshot =
-      await FirebaseFirestore.instance.collection('customers').get();
-
-  final batch = FirebaseFirestore.instance.batch();
-
-  for (var doc in snapshot.docs) {
-    final data = doc.data() as Map<String, dynamic>;
-    final fullName = data['fullName'] as String;
-
-    batch.update(doc.reference, {
-      'searchTerms': Customer.generateSearchTerms(fullName),
-    });
-  }
-
-  await batch.commit();
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -190,8 +168,9 @@ class MyApp extends StatelessWidget {
       ],
       builder: (context, child) {
         return MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: const TextScaler.linear(1)),
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1),
+          ),
           child: child!,
         );
       },

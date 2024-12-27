@@ -19,7 +19,6 @@ class _ResendButtonState extends State<ResendButton> {
   @override
   void initState() {
     super.initState();
-    // Bắt đầu bộ đếm ngược
     startTimer();
   }
 
@@ -27,12 +26,12 @@ class _ResendButtonState extends State<ResendButton> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_start == 0) {
         setState(() {
-          _isButtonEnabled = true; // Kích hoạt lại button khi đếm ngược xong
-          _timer?.cancel(); // Hủy timer
+          _isButtonEnabled = true;
+          _timer?.cancel();
         });
       } else {
         setState(() {
-          _start--; // Giảm thời gian đếm ngược
+          _start--;
         });
       }
     });
@@ -47,7 +46,7 @@ class _ResendButtonState extends State<ResendButton> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _isButtonEnabled ? widget.onResend : null, // Gọi hàm khi nhấn
+      onTap: _isButtonEnabled ? widget.onResend : null,
       child: RichText(
         text: TextSpan(
           children: [

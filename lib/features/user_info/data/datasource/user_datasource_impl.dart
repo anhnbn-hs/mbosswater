@@ -28,6 +28,9 @@ class UserDatasourceImpl extends UserDatasource {
   Future<void> deleteUserInformation(String userID) async {
     await _firebaseFirestore.collection("users").doc(userID).update({
       'isDelete': true,
+      'phoneNumber': "",
+      'email': "",
+      "cccd": "",
     });
   }
 
