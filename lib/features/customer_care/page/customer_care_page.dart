@@ -11,13 +11,13 @@ import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/provinces_metadata_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/cycle_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/cycle_event.dart';
 import 'package:mbosswater/features/customer_care/bloc/cycle_state.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_customers_cubit.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_guarantee_by_id_cubit.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
-import 'package:mbosswater/features/guarantee/data/model/province.dart';
 import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
@@ -46,7 +46,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
   late final CycleBloc cycleBloc;
   late final FetchCustomersCubit fetchCustomersCubit;
   late final FetchGuaranteeByIdCubit fetchGuaranteeByIdCubit;
-  late final ProvincesBloc provincesBloc;
+  late final ProvincesMetadataBloc provincesBloc;
   final GlobalKey _sliverAppBarContentKey = GlobalKey();
   double _sliverAppBarHeight = kToolbarHeight;
 
@@ -56,7 +56,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
     cycleBloc = BlocProvider.of<CycleBloc>(context);
     fetchCustomersCubit = BlocProvider.of<FetchCustomersCubit>(context);
     fetchGuaranteeByIdCubit = BlocProvider.of<FetchGuaranteeByIdCubit>(context);
-    provincesBloc = BlocProvider.of<ProvincesBloc>(context);
+    provincesBloc = BlocProvider.of<ProvincesMetadataBloc>(context);
 
     cycleBloc.add(FetchQuarterlyCycles(now.month, now.year));
     focusDayNotifier = ValueNotifier(now);
@@ -1212,10 +1212,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
 
   showBottomSheetChooseProvinces() async {
     final size = MediaQuery.of(context).size;
-    if (provincesBloc.provinces == null ||
-        provincesBloc.state is! ProvincesLoaded) {
-      provincesBloc.add(FetchProvinces());
-    }
+    provincesBloc.add(FetchProvincesMetaData());
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1252,7 +1249,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                     child: TextField(
                       style: AppStyle.boxField.copyWith(fontSize: 15),
                       onChanged: (value) {
-                        provincesBloc.add(SearchProvinces(value));
+                        provincesBloc.add(SearchProvincesMetaData(value));
                       },
                       textAlignVertical: TextAlignVertical.center,
                       onTapOutside: (event) =>
@@ -1278,14 +1275,14 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                   child: BlocBuilder(
                     bloc: provincesBloc,
                     builder: (context, state) {
-                      if (state is ProvincesLoading) {
+                      if (state is ProvincesMetaDataLoading) {
                         return Center(
                           child: Lottie.asset(AppAssets.aLoading, height: 50),
                         );
                       }
-                      if (state is ProvincesLoaded) {
-                        final provinces = List.from(state.provinces);
-                        provinces.insert(0, Province(name: "Tất cả"));
+                      if (state is ProvincesMetaDataLoaded) {
+                        final provinces = List<String>.from(state.provinces);
+                        provinces.insert(0, "Tất cả");
                         return ListView.builder(
                           itemCount: provinces.length,
                           itemBuilder: (context, index) {
@@ -1301,7 +1298,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                               child: ListTile(
                                 onTap: () {
                                   selectedProvinceFilter.value =
-                                      provinces[index].name;
+                                      provinces[index];
                                   // Rebuild List Customer
                                   fetchCustomersCubit.rebuildWhenLoaded();
                                   context.pop();
@@ -1311,7 +1308,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                 titleAlignment: ListTileTitleAlignment.center,
                                 contentPadding: const EdgeInsets.all(0),
                                 title: Text(
-                                  provinces[index].name ?? "",
+                                  provinces[index],
                                   style: AppStyle.boxField.copyWith(
                                     color: Colors.black87,
                                     fontWeight: FontWeight.w500,

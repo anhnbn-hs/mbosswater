@@ -128,6 +128,40 @@ exports.deleteUser = onCall(async (request) => {
   }
 });
 
+// Function cập nhật danh sách các tỉnh
+exports.updateProvinces = onDocumentCreated("customers/{customerId}", async (event) => {
+  const newValue = event.data.data(); 
+  if (!newValue || !newValue.address || !newValue.address.province) {
+    console.log("Không tìm thấy 'province'");
+    return;
+  }
+
+  const newProvince = newValue.address.province; // Lấy tên tỉnh
+  const metadataRef = admin.firestore().collection("metadata").doc("provinces");
+
+  try {
+    // Sử dụng transaction để đảm bảo tính nhất quán
+    await admin.firestore().runTransaction(async (transaction) => {
+      const metadataDoc = await transaction.get(metadataRef);
+      let provinces = [];
+      if (metadataDoc.exists) {
+        provinces = metadataDoc.data().provinces || [];
+      }
+
+      // Chỉ thêm nếu tỉnh chưa tồn tại
+      if (!provinces.includes(newProvince)) {
+        provinces.push(newProvince);
+        transaction.set(metadataRef, { provinces });
+        console.log(`Thêm tỉnh mới: ${newProvince}`);
+      } else {
+        console.log(`Tỉnh '${newProvince}' đã tồn tại`);
+      }
+    });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật danh sách tỉnh:", error);
+  }
+});
+
 
 
 // exports.sendNotifications = onSchedule(

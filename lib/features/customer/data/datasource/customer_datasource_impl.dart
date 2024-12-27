@@ -186,10 +186,8 @@ class CustomerDatasourceImpl extends CustomerDatasource {
             .where('phoneNumber', isGreaterThanOrEqualTo: cleanSearch)
             .where('phoneNumber', isLessThanOrEqualTo: '$cleanSearch\uf8ff');
       } else {
-        // Search by full name using prefix match
-        query = query
-            .where('fullName', isGreaterThanOrEqualTo: cleanSearch)
-            .where('fullName', isLessThanOrEqualTo: '$cleanSearch\uf8ff');
+        String normalizedSearch = Customer.generateSearchTerms(cleanSearch)[0];
+        query = query.where('searchTerms', arrayContains: normalizedSearch);
       }
     }
 

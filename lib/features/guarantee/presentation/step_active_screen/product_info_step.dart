@@ -261,8 +261,7 @@ class ProductInfoStepState extends State<ProductInfoStep>
   }
 
   bool checkModelTextEditingController() {
-    if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN &&
-        modelController.text.isEmpty) {
+    if (modelController.text.isEmpty) {
       DialogUtils.showWarningDialog(
         context: context,
         title: "Hãy nhập model sản phẩm để tiếp tục!",

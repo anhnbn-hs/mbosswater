@@ -121,8 +121,8 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
             return;
         }
 
-        const technicalName = userSnapshot.data().fullName;
-        const agencyID = userSnapshot.data().agency;
+        const technicalName = userData?.fullName || "Unknown";
+        const agencyID = userData?.agency;
 
         // Gửi thông báo cho Agency Admin
         await sendNotificationToAgencyAdmin(agencyID, guaranteeId, technicalName);
@@ -135,8 +135,7 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
             return;
         }
 
-        const agencyName = agencySnapshot.data().name;
-
+        const agencyName = agencySnapshot.data()?.name || "Unknown";
         await sendNotificationToMbossAdmin(guaranteeId, agencyName);
 
     } catch (error) {

@@ -3,10 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
-import 'package:mbosswater/core/styles/app_assets.dart';
-import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
@@ -126,6 +122,10 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     pageController.dispose();
     addressController.dispose();
     emailController.dispose();
+    customerBloc.reset();
+    provincesBloc.selectedProvince = null;
+    districtsBloc.selectedDistrict = null;
+    communesBloc.selectedCommune = null;
   }
 
   @override

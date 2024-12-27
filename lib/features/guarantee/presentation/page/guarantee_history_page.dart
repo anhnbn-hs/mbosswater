@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mbosswater/core/constants/roles.dart';
 import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_colors.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
+import 'package:mbosswater/core/utils/dialogs.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/leading_back_button.dart';
@@ -16,7 +18,7 @@ import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guaran
 import 'package:mbosswater/features/guarantee/presentation/bloc/guarantee/guarantee_history_state.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/steps/agency_bloc.dart';
 import 'package:mbosswater/features/guarantee/presentation/widgets/image_preview_popup.dart';
-import 'package:mbosswater/features/user_info/data/model/user_model.dart';
+import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class GuaranteeHistoryPage extends StatefulWidget {
   final Guarantee guarantee;
@@ -35,11 +37,15 @@ class GuaranteeHistoryPage extends StatefulWidget {
 class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
   late AgencyBloc agencyBloc;
   late GuaranteeHistoryBloc guaranteeHistoryBloc;
+  late ValueNotifier<String> modelNotifier;
+  late UserInfoBloc userInfoBloc;
 
   @override
   void initState() {
+    modelNotifier = ValueNotifier(widget.guarantee.product.model ?? "");
     agencyBloc = BlocProvider.of<AgencyBloc>(context);
     guaranteeHistoryBloc = BlocProvider.of<GuaranteeHistoryBloc>(context);
+    userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
     // Fetch data
     agencyBloc.fetchAgency(widget.customer.agency ?? "");
     guaranteeHistoryBloc.add(FetchListGuaranteeHistory(widget.guarantee.id));
@@ -135,9 +141,31 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              buildGuaranteeInfoItem(
-                label: "Model máy",
-                value: widget.guarantee.product.model ?? "",
+              GestureDetector(
+                onTap: () async {
+                  if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN) {
+                    await showBottomSheetEditModel();
+                  }
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ValueListenableBuilder(
+                      valueListenable: modelNotifier,
+                      builder: (context, value, child) => Expanded(
+                        child: buildGuaranteeInfoItem(
+                          label: "Model máy",
+                          value: modelNotifier.value,
+                        ),
+                      ),
+                    ),
+                    if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8, left: 3),
+                      child: Icon(Icons.edit_outlined, size: 20),
+                    )
+                  ],
+                ),
               ),
               BlocBuilder(
                 bloc: agencyBloc,
@@ -490,5 +518,149 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
         ],
       ),
     );
+  }
+
+  final modelController = TextEditingController();
+  final modelFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    super.dispose();
+    modelController.dispose();
+    modelFocusNode.dispose();
+    modelNotifier.dispose();
+  }
+
+  showBottomSheetEditModel() async {
+    final updatedModel = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        modelController.text = modelNotifier.value;
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Cập nhật Model máy',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: "BeVietnam",
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: modelController,
+                  focusNode: modelFocusNode,
+                  onTapOutside: (event) =>
+                      FocusScope.of(context).requestFocus(FocusNode()),
+                  decoration: InputDecoration(
+                    labelText: 'Model máy',
+                    labelStyle: const TextStyle(color: Colors.black54),
+                    hintText: 'Nhập model máy',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1.5,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    prefixIcon: const Icon(Icons.phone_android),
+                  ),
+                  cursorColor: Colors.grey,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                        ),
+                      ),
+                      child: const Text(
+                        'Hủy',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: "BeVietnam",
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () =>
+                          Navigator.pop(context, modelController.text),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        backgroundColor: AppColors.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Lưu thay đổi',
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.2,
+                          fontFamily: "BeVietnam",
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (updatedModel != null &&
+        updatedModel.trim() != widget.guarantee.product.model) {
+      DialogUtils.showLoadingDialog(context);
+      await FirebaseFirestore.instance
+          .collection("guarantees")
+          .doc(widget.guarantee.id)
+          .update({"product.model": updatedModel});
+      modelNotifier.value = updatedModel;
+      widget.guarantee.product.model = updatedModel;
+      DialogUtils.hide(context);
+    }
+    modelController.text = "";
   }
 }

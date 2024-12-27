@@ -53,14 +53,10 @@
 
 ## 5. Mã hóa dữ liệu
 
-Ứng dụng sử dụng thuật toán **AES (Advanced Encryption Standard)** với chế độ **CBC (Cipher Block Chaining)** để mã hóa và giải mã dữ liệu nhạy cảm như mật khẩu và dữ liệu QR code.
+Ứng dụng sử dụng thuật toán **AES (Advanced Encryption Standard)** với chế độ **CBC (Cipher Block Chaining)** để mã hóa và giải mã dữ liệu nhạy cảm như mật khẩu.
 
 - **Secret Key**: Được yêu cầu có độ dài chính xác 32 ký tự, đảm bảo tính bảo mật và khả năng tương thích với thuật toán AES.
 - **IV (Initialization Vector)**: Sử dụng một giá trị ngẫu nhiên cố định với độ dài 16 byte để tăng cường bảo mật khi mã hóa dữ liệu.
-
-Ứng dụng:
-- Mã hóa mật khẩu người dùng trước khi lưu trữ hoặc gửi qua mạng.
-- Bảo vệ dữ liệu QR code khỏi bị truy cập trái phép.
 
 Ví dụ mã hóa và giải mã:
 
@@ -126,5 +122,3 @@ String decryptedData = EncryptionHelper.decryptData(encryptedData, "yourSecretKe
 - Sử dụng SDK Firebase tương ứng.
 
 ## 8. Liên hệ hỗ trợ
-
-Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ qua email: [thuanht.nuce@gmail.com](mailto:thuanht.nuce@gmail.com) hoặc tham khảo tài liệu kèm theo dự án.

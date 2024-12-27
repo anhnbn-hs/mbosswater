@@ -14,6 +14,7 @@ import 'package:mbosswater/features/guarantee/presentation/page/guarantee_histor
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_request_page.dart';
 import 'package:mbosswater/features/guarantee/presentation/page/guarantee_request_without_qrcode_page.dart';
 import 'package:mbosswater/features/home/home_page.dart';
+import 'package:mbosswater/features/import_data/pages/import_customers.dart';
 import 'package:mbosswater/features/login/presentation/page/login_page.dart';
 import 'package:mbosswater/features/mboss/presentation/page/mboss_agency_management.dart';
 import 'package:mbosswater/features/mboss/presentation/page/mboss_edit_agency_page.dart';
@@ -30,6 +31,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const SplashPage(),
+    ),
+    GoRoute(
+      path: '/i',
+      builder: (context, state) => const ImportCustomerExcelPage(),
     ),
     GoRoute(
       path: '/login',

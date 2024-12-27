@@ -28,6 +28,7 @@ class FetchStaffsCubit extends Cubit<FetchStaffsState> {
     try {
       final querySnapshot = await firestore.collection('users')
           .where("role", isNotEqualTo: Roles.MBOSS_ADMIN)
+          .where("isDelete", isEqualTo: false)
           .get();
 
       final users = querySnapshot.docs.map((doc) {
@@ -47,6 +48,7 @@ class FetchStaffsCubit extends Cubit<FetchStaffsState> {
     try {
       final querySnapshot = await firestore.collection('users')
           .where("role", whereNotIn: [Roles.MBOSS_ADMIN, Roles.AGENCY_BOSS])
+          .where("isDelete", isEqualTo: false)
           .get();
 
       final users = querySnapshot.docs.map((doc) {

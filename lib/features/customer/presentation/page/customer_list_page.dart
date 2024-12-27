@@ -11,11 +11,10 @@ import 'package:mbosswater/features/agency/presentation/page/agency_staff_manage
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_state.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/provinces_metadata_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
-import 'package:mbosswater/features/guarantee/data/model/province.dart';
-import 'package:mbosswater/features/guarantee/presentation/bloc/address/provinces_bloc.dart';
 import 'package:mbosswater/features/user_info/presentation/bloc/user_info_bloc.dart';
 
 class CustomerListPage extends StatefulWidget {
@@ -32,7 +31,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
 
   late FetchCustomersPaginateBloc fetchCustomersBloc;
   late UserInfoBloc userInfoBloc;
-  late final ProvincesBloc provincesBloc;
+  late final ProvincesMetadataBloc provincesBloc;
   final List<String> dropdownTimeItems = [
     'Tất cả',
     'Tháng này',
@@ -58,7 +57,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
     super.initState();
     fetchCustomersBloc = BlocProvider.of<FetchCustomersPaginateBloc>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
-    provincesBloc = BlocProvider.of<ProvincesBloc>(context);
+    provincesBloc = BlocProvider.of<ProvincesMetadataBloc>(context);
     handleFetchCustomer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _calculateSliverAppBarHeight();
@@ -70,22 +69,25 @@ class _CustomerListPageState extends State<CustomerListPage> {
   void _setupScrollController() {
     _scrollController.addListener(() {
       if (_shouldLoadMore(_scrollController)) {
-        fetchCustomersBloc.add(FetchNextPage(_pageSize));
+        // fetchCustomersBloc.add(FetchNextPage(_pageSize));
       }
     });
   }
 
   bool _shouldLoadMore(ScrollController scrollController) {
-    if (!scrollController.hasClients) return false;
-
-    final maxScroll = scrollController.position.maxScrollExtent;
-    final currentScroll = scrollController.position.pixels;
-
-    return currentScroll >= (maxScroll - 80);
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.8);
   }
 
   Widget _buildLoadingIndicator() {
-    return const CustomerCardShimmer();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Center(
+        child: Lottie.asset(AppAssets.aLoading, height: 50),
+      ),
+    );
   }
 
   void _calculateSliverAppBarHeight() {
@@ -232,10 +234,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
 
   showBottomSheetChooseProvinces() async {
     final size = MediaQuery.of(context).size;
-    if (provincesBloc.provinces == null ||
-        provincesBloc.state is! ProvincesLoaded) {
-      provincesBloc.add(FetchProvinces());
-    }
+    provincesBloc.add(FetchProvincesMetaData());
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -272,7 +271,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
                     child: TextField(
                       style: AppStyle.boxField.copyWith(fontSize: 15),
                       onChanged: (value) {
-                        provincesBloc.add(SearchProvinces(value));
+                        provincesBloc.add(SearchProvincesMetaData(value));
                       },
                       textAlignVertical: TextAlignVertical.center,
                       onTapOutside: (event) =>
@@ -298,14 +297,14 @@ class _CustomerListPageState extends State<CustomerListPage> {
                   child: BlocBuilder(
                     bloc: provincesBloc,
                     builder: (context, state) {
-                      if (state is ProvincesLoading) {
+                      if (state is ProvincesMetaDataLoading) {
                         return Center(
                           child: Lottie.asset(AppAssets.aLoading, height: 50),
                         );
                       }
-                      if (state is ProvincesLoaded) {
-                        final provinces = List.from(state.provinces);
-                        provinces.insert(0, Province(name: "Tất cả"));
+                      if (state is ProvincesMetaDataLoaded) {
+                        final provinces = List<String>.from(state.provinces);
+                        provinces.insert(0, "Tất cả");
                         return ListView.builder(
                           itemCount: provinces.length,
                           itemBuilder: (context, index) {
@@ -321,7 +320,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
                               child: ListTile(
                                 onTap: () {
                                   selectedProvinceFilter.value =
-                                      provinces[index].name;
+                                      provinces[index];
 
                                   fetchCustomersBloc.add(FetchCustomers(
                                     limit: _pageSize,
@@ -341,7 +340,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
                                 titleAlignment: ListTileTitleAlignment.center,
                                 contentPadding: const EdgeInsets.all(0),
                                 title: Text(
-                                  provinces[index].name ?? "",
+                                  provinces[index],
                                   style: AppStyle.boxField.copyWith(
                                     color: Colors.black87,
                                     fontWeight: FontWeight.w500,
@@ -436,17 +435,16 @@ class _CustomerListPageState extends State<CustomerListPage> {
             bloc: fetchCustomersBloc,
             listener: (context, state) {
               if (state is FetchCustomersLoaded) {
-                if(state.customers.isEmpty){
+                if (state.customers.isEmpty) {
                   totalCustomer.value = 0;
                   totalProductSold.value = 0;
                 } else {
                   totalCustomer.value = state.customers.length;
                   totalProductSold.value = state.customers.fold(
                     0,
-                        (sum, customer) => sum += customer.totalProduct ?? 0,
+                    (sum, customer) => sum += customer.totalProduct ?? 0,
                   );
                 }
-
               }
             },
             builder: (context, state) {
@@ -558,10 +556,9 @@ class _CustomerListPageState extends State<CustomerListPage> {
       itemCount: customers.length + (hasMore ? 1 : 0),
       padding: const EdgeInsets.symmetric(horizontal: 24),
       itemBuilder: (context, index) {
-        if (index == customers.length) {
-          return isLoadingMore
-              ? _buildLoadingIndicator()
-              : const SizedBox.shrink();
+        if (index >= customers.length) {
+          fetchCustomersBloc.add(FetchNextPage(_pageSize));
+          return _buildLoadingIndicator();
         }
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),

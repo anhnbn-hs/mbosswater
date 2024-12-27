@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Customer {
   String? id;
   String? fullName;
+  List<String>? searchTerms;
   Address? address;
   String? phoneNumber;
   String? email;
@@ -15,6 +16,7 @@ class Customer {
   Customer({
     this.id,
     this.fullName,
+    this.searchTerms,
     this.address,
     this.phoneNumber,
     this.email,
@@ -25,28 +27,65 @@ class Customer {
     this.totalProduct,
   });
 
+  // Hàm tạo searchTerms
+  static List<String> generateSearchTerms(String fullName) {
+    String normalized = fullName
+        .toLowerCase()
+        .replaceAll(RegExp(r'[àáạảãâầấậẩẫăằắặẳẵ]'), 'a')
+        .replaceAll(RegExp(r'[èéẹẻẽêềếệểễ]'), 'e')
+        .replaceAll(RegExp(r'[ìíịỉĩ]'), 'i')
+        .replaceAll(RegExp(r'[òóọỏõôồốộổỗơờớợởỡ]'), 'o')
+        .replaceAll(RegExp(r'[ùúụủũưừứựửữ]'), 'u')
+        .replaceAll(RegExp(r'[ỳýỵỷỹ]'), 'y')
+        .replaceAll(RegExp(r'[đ]'), 'd')
+        .replaceAll(RegExp(r'[^\w\s]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    List<String> terms = [];
+    List<String> parts = normalized.split(' ');
+
+    for (int i = 0; i < parts.length; i++) {
+      String current = '';
+      for (int j = i; j < parts.length; j++) {
+        current = current.isEmpty ? parts[j] : '$current ${parts[j]}';
+        terms.add(current);
+      }
+    }
+
+    terms = terms.toSet().toList();
+
+    if (!terms.contains(normalized)) {
+      terms.add(normalized);
+    }
+
+    return terms;
+  }
+
+
   factory Customer.fromJson(Map<String, dynamic> json) {
     return Customer(
-      id: json['id'],
-      updatedAt: json["updatedAt"],
-      fullName: json['fullName'],
-      address:
-          json['address'] != null ? Address.fromJson(json['address']) : null,
-      phoneNumber: json['phoneNumber'],
-      email: json['email'],
-      additionalInfo: json['additionalInfo'] != null
-          ? AdditionalInfo.fromJson(json['additionalInfo'])
-          : null,
-      agency: json['agency'] as String?,
-      createdAt: json["createdAt"],
-      totalProduct: json['totalProduct']
-    );
+        id: json['id'],
+        updatedAt: json["updatedAt"],
+        fullName: json['fullName'],
+        searchTerms: List<String>.from(json['searchTerms'] ?? []),
+        address:
+            json['address'] != null ? Address.fromJson(json['address']) : null,
+        phoneNumber: json['phoneNumber'],
+        email: json['email'],
+        additionalInfo: json['additionalInfo'] != null
+            ? AdditionalInfo.fromJson(json['additionalInfo'])
+            : null,
+        agency: json['agency'] as String?,
+        createdAt: json["createdAt"],
+        totalProduct: json['totalProduct']);
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'fullName': fullName,
+      'searchTerms': generateSearchTerms(fullName ?? ''),
       'address': address?.toJson(),
       'phoneNumber': phoneNumber,
       'email': email,
@@ -74,7 +113,7 @@ class Address {
 
   String displayAddress() {
     String pdc = "${commune!}, ${district!}, $province";
-    if(detail != null){
+    if (detail != null) {
       return "${detail!}, $pdc";
     }
     return pdc;

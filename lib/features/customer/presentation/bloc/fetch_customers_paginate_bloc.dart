@@ -52,6 +52,8 @@ class FetchCustomersPaginateBloc
 
       emit(currentState.copyWith(isLoadingMore: true));
 
+      await Future.delayed(const Duration(microseconds: 1000));
+
       try {
         final result = await fetchCustomersWithPaginationUC.getAll(
           limit: event.limit,

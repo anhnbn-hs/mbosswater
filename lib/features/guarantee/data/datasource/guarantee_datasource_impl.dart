@@ -26,6 +26,9 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
 
       if (actionType == ActionType.create) {
         batch.set(customerRef, customer.toJson());
+        batch.update(customerRef, {
+          'totalProduct': FieldValue.increment(1),
+        });
       } else if (actionType == ActionType.update) {
         // Update existing customer
         final querySnapshot = await _firebaseFirestore
@@ -38,6 +41,9 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
           // Use the existing customer reference and update
           final existingCustomerRef = querySnapshot.docs.first.reference;
           batch.update(existingCustomerRef, customer.toJson());
+          batch.update(existingCustomerRef, {
+            'totalProduct': FieldValue.increment(1),
+          });
         } else {
           throw Exception(
               'Customer with phone ${customer.phoneNumber} not found for update.');
@@ -104,8 +110,10 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
   Future<List<Agency>> fetchAgencies() async {
     try {
       // Fetching data from a Firestore collection called 'agencies'
-      QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('agency').get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('agency')
+          .where("isDelete", isEqualTo: false)
+          .get();
 
       // Map querySnapshot to a list of Agency objects
       return querySnapshot.docs
@@ -141,7 +149,9 @@ class GuaranteeDatasourceImpl extends GuaranteeDatasource {
   @override
   Future<void> createGuaranteeHistory(GuaranteeHistory gHistory) async {
     try {
-      await _firebaseFirestore.collection("guarantee_histories").add(gHistory.toJson());
+      await _firebaseFirestore
+          .collection("guarantee_histories")
+          .add(gHistory.toJson());
     } catch (e) {
       print("Failed to create guarantee history: $e");
       rethrow;

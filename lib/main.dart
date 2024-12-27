@@ -16,10 +16,12 @@ import 'package:mbosswater/features/agency/presentation/bloc/update_agency_staff
 import 'package:mbosswater/features/customer/presentation/bloc/customer_guarantee_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_bloc.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/provinces_metadata_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/cycle_bloc.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_customers_cubit.dart';
 import 'package:mbosswater/features/customer_care/bloc/fetch_guarantee_by_id_cubit.dart';
+import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/reminder.dart';
 import 'package:mbosswater/features/guarantee/presentation/bloc/address/communes_agency_bloc.dart';
@@ -83,8 +85,10 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  // await createRemindersForAllGuarantees();
-  // await batchUpdateCustomerTimestamps();
+
+
+  // await updateAllCustomersWithSearchTerms();
+
   runApp(
     MultiBlocProvider(
       providers: [
@@ -94,6 +98,7 @@ void main() async {
         BlocProvider(create: (_) => sl<VerifyOtpBloc>()),
         BlocProvider(create: (_) => sl<ChangePasswordBloc>()),
         BlocProvider(create: (_) => sl<ProvincesBloc>()),
+        BlocProvider(create: (_) => ProvincesMetadataBloc()),
         BlocProvider(create: (_) => sl<DistrictsBloc>()),
         BlocProvider(create: (_) => sl<CommunesBloc>()),
         BlocProvider(create: (_) => sl<ProvincesAgencyBloc>()),
@@ -144,70 +149,28 @@ void main() async {
       ),
     ),
   );
+
+
+
 }
 
-Future<void> batchUpdateCustomerTimestamps() async {
-  try {
-    final collectionRef = FirebaseFirestore.instance.collection('customers');
+Future<void> updateAllCustomersWithSearchTerms() async {
+  final QuerySnapshot snapshot = await FirebaseFirestore.instance
+      .collection('customers')
+      .get();
 
-    // Lấy tất cả các documents từ collection 'customers'
-    final querySnapshot = await collectionRef.get();
+  final batch = FirebaseFirestore.instance.batch();
 
-    // Tạo Firestore batch
-    final batch = FirebaseFirestore.instance.batch();
+  for (var doc in snapshot.docs) {
+    final data = doc.data() as Map<String, dynamic>;
+    final fullName = data['fullName'] as String;
 
-    for (var doc in querySnapshot.docs) {
-      final data = doc.data();
-      final updatedAt = data['updatedAt'] as Timestamp?;
-      final createdAt = data['createdAt'] as Timestamp?;
-
-      if (updatedAt != null) {
-        // Nếu updatedAt không null, gán giá trị của nó cho createdAt
-        batch.update(doc.reference, {
-          'createdAt': updatedAt,
-        });
-      } else {
-        batch.update(doc.reference, {
-          'createdAt': Timestamp.now(),
-          'updatedAt': Timestamp.now(),
-        });
-      }
-    }
-
-    // Commit batch
-    await batch.commit();
-
-    print("Batch update completed successfully.");
-  } catch (e) {
-    print("Error during batch update: $e");
+    batch.update(doc.reference, {
+      'searchTerms': Customer.generateSearchTerms(fullName),
+    });
   }
-}
 
-Future<void> createRemindersForAllGuarantees() async {
-  final querySnapshot =
-      await FirebaseFirestore.instance.collection('guarantees').get();
-
-  for (var doc in querySnapshot.docs) {
-    final guaranteeData = doc.data();
-    final guarantee = Guarantee.fromJson(guaranteeData);
-
-    // Create reminder for each guarantee
-    Reminder reminder = Reminder(
-      id: generateRandomId(6),
-      customerId: guarantee.customerID,
-      guaranteeId: guarantee.id,
-      createdAt: guarantee.createdAt,
-      endDate: guarantee.endDate,
-    );
-
-    // Generate reminder dates (3-month intervals in this case)
-    reminder.generateReminderDates(3); // Generate every 3 months
-
-    // Add reminder to Firestore
-    final reminderRef =
-        FirebaseFirestore.instance.collection('reminders').doc(reminder.id);
-    await reminderRef.set(reminder.toJson());
-  }
+  await batch.commit();
 }
 
 class MyApp extends StatelessWidget {
@@ -215,10 +178,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("Screen size: ${MediaQuery.of(context).size}");
-    print("Device pixel ratio: ${MediaQuery.of(context).devicePixelRatio}");
-    print("Text scale factor: ${MediaQuery.of(context).textScaleFactor}");
-
     return MaterialApp.router(
       title: 'MBossWater',
       locale: const Locale('vi', 'VN'),
@@ -244,4 +203,5 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
     );
   }
+
 }
