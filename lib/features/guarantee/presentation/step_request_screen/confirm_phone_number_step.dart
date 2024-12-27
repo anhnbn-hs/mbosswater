@@ -16,9 +16,9 @@ import 'package:mbosswater/features/customer/presentation/bloc/customer_guarante
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customer_state.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/search_customer_bloc.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/search_customer_event.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
+import 'package:mbosswater/features/home/bloc/search_customer_bloc.dart';
+import 'package:mbosswater/features/home/bloc/search_customer_event.dart';
+import 'package:mbosswater/features/home/bloc/search_customer_state.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
 import 'package:mbosswater/features/guarantee/data/model/guarantee.dart';
 import 'package:mbosswater/features/guarantee/data/model/product.dart';

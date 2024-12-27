@@ -1,9 +1,8 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:mbosswater/features/customer/domain/usecase/search_customer.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/search_customer_event.dart';
-import 'package:mbosswater/features/customer/presentation/bloc/search_customer_state.dart';
+import 'package:mbosswater/features/home/bloc/search_customer_event.dart';
+import 'package:mbosswater/features/home/bloc/search_customer_state.dart';
 
 class CustomerSearchBloc
     extends Bloc<CustomerSearchEvent, CustomerSearchState> {

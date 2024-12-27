@@ -121,14 +121,15 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
             return;
         }
 
+        const userData = userSnapshot.data();
+
         const technicalName = userData?.fullName || "Unknown";
         const agencyID = userData?.agency;
 
         // Gửi thông báo cho Agency Admin
         await sendNotificationToAgencyAdmin(agencyID, guaranteeId, technicalName);
 
-        // Get agency Name -> Gửi thông báo cho Agency Admin
-
+        // Get agency Name & Gửi thông báo cho MBOSS Admin
         const agencySnapshot = await admin.firestore().collection('agency').doc(agencyID).get();
         if (!agencySnapshot.exists) {
             console.log(`Agency with ID ${agencyID} does not exist.`);

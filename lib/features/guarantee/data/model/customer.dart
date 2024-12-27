@@ -44,13 +44,15 @@ class Customer {
 
     List<String> terms = [];
     List<String> parts = normalized.split(' ');
-
-    for (int i = 0; i < parts.length; i++) {
-      String current = '';
-      for (int j = i; j < parts.length; j++) {
-        current = current.isEmpty ? parts[j] : '$current ${parts[j]}';
-        terms.add(current);
+    int totalCombinations = 1 << parts.length; // 2^n
+    for (int mask = 1; mask < totalCombinations; mask++) {
+      String combination = '';
+      for (int i = 0; i < parts.length; i++) {
+        if ((mask & (1 << i)) != 0) { // Kiểm tra nếu bit thứ i trong mask là 1
+          combination = combination.isEmpty ? parts[i] : '$combination ${parts[i]}';
+        }
       }
+      terms.add(combination);
     }
 
     terms = terms.toSet().toList();

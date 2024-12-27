@@ -8,6 +8,7 @@ import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
 import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
+import 'package:mbosswater/features/customer/presentation/bloc/customer_stats_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_event.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_state.dart';
@@ -25,13 +26,17 @@ class CustomerListPage extends StatefulWidget {
 }
 
 class _CustomerListPageState extends State<CustomerListPage> {
+  // Customer item per page
   final _pageSize = 10;
 
   final _searchController = TextEditingController();
 
-  late FetchCustomersPaginateBloc fetchCustomersBloc;
-  late UserInfoBloc userInfoBloc;
+  // Bloc
+  late final FetchCustomersPaginateBloc fetchCustomersBloc;
+  late final UserInfoBloc userInfoBloc;
   late final ProvincesMetadataBloc provincesBloc;
+  late final CustomerStatsBloc customerStatsBloc;
+
   final List<String> dropdownTimeItems = [
     'Tất cả',
     'Tháng này',
@@ -40,14 +45,11 @@ class _CustomerListPageState extends State<CustomerListPage> {
     'Năm nay'
   ];
 
-  ValueNotifier<String?> searchNotifier = ValueNotifier(null);
+  // Value notifier
   ValueNotifier<String?> selectedTimeFilter = ValueNotifier(null);
   late ValueNotifier<String?> selectedProvinceFilter = ValueNotifier(null);
-  final ScrollController _scrollController = ScrollController();
 
-  // Variable
-  ValueNotifier<int> totalCustomer = ValueNotifier(0);
-  ValueNotifier<int> totalProductSold = ValueNotifier(0);
+  final ScrollController _scrollController = ScrollController();
 
   final GlobalKey _sliverAppBarContentKey = GlobalKey();
   double _sliverAppBarHeight = kToolbarHeight;
@@ -58,7 +60,10 @@ class _CustomerListPageState extends State<CustomerListPage> {
     fetchCustomersBloc = BlocProvider.of<FetchCustomersPaginateBloc>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
     provincesBloc = BlocProvider.of<ProvincesMetadataBloc>(context);
-    handleFetchCustomer();
+    customerStatsBloc = BlocProvider.of<CustomerStatsBloc>(context);
+
+    handleFetchCustomerData();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _calculateSliverAppBarHeight();
     });
@@ -100,18 +105,13 @@ class _CustomerListPageState extends State<CustomerListPage> {
     }
   }
 
-  handleFetchCustomer() {
+  handleFetchCustomerData() {
     final user = userInfoBloc.user;
-    bool isAgency = Roles.LIST_ROLES_AGENCY.contains(user?.role);
-    if (isAgency && user?.agency != null) {
-      fetchCustomersBloc.add(FetchCustomers(
-        limit: _pageSize,
-        agencyID: user?.agency,
-      ));
-    } else {
-      // Fetch all customer (for MBoss)
-      fetchCustomersBloc.add(FetchCustomers(limit: _pageSize));
-    }
+    fetchCustomersBloc.add(FetchCustomers(
+      limit: _pageSize,
+      agencyID: user?.agency,
+    ));
+    customerStatsBloc.add(CustomerStatsEvent(agency: user?.agency));
   }
 
   Widget buildSliverAppBarContent() {
@@ -138,7 +138,17 @@ class _CustomerListPageState extends State<CustomerListPage> {
                   builder: (context, value, child) => FilterDropdown(
                     selectedValue: selectedTimeFilter.value ?? 'Tất cả',
                     onChanged: (value) {
+
                       selectedTimeFilter.value = value;
+
+                      customerStatsBloc.add(
+                        CustomerStatsEvent(
+                          agency: userInfoBloc.user?.agency,
+                          provinceFilter: selectedProvinceFilter.value,
+                          timeFilter: selectedTimeFilter.value,
+                        ),
+                      );
+
                       fetchCustomersBloc.add(FetchCustomers(
                         limit: _pageSize,
                         searchQuery: _searchController.text != ""
@@ -158,27 +168,29 @@ class _CustomerListPageState extends State<CustomerListPage> {
             ],
           ),
         ),
-
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
               const SizedBox(height: 16),
-              ValueListenableBuilder(
-                valueListenable: totalCustomer,
-                builder: (context, value, child) {
-                  return buildInfoItem(
-                    label: "Tổng khách hàng",
-                    value: value.toString(),
-                  );
-                },
-              ),
-              ValueListenableBuilder(
-                valueListenable: totalProductSold,
-                builder: (context, value, child) {
-                  return buildInfoItem(
-                    label: "Tổng sản phẩm đã bán",
-                    value: totalProductSold.value.toString(),
+              BlocBuilder<CustomerStatsBloc, CustomerStatsState>(
+                builder: (context, state) {
+                  print(state);
+                  return Column(
+                    children: [
+                      buildInfoItem(
+                        label: "Tổng khách hàng",
+                        value: state is CustomerStatsSuccess
+                            ? state.totalCustomer.toString()
+                            : "0",
+                      ),
+                      buildInfoItem(
+                        label: "Tổng sản phẩm đã bán",
+                        value: state is CustomerStatsSuccess
+                            ? state.totalProductSold.toString()
+                            : "0",
+                      ),
+                    ],
                   );
                 },
               ),
@@ -322,6 +334,14 @@ class _CustomerListPageState extends State<CustomerListPage> {
                                   selectedProvinceFilter.value =
                                       provinces[index];
 
+                                  customerStatsBloc.add(
+                                    CustomerStatsEvent(
+                                      agency: userInfoBloc.user?.agency,
+                                      provinceFilter: selectedProvinceFilter.value,
+                                      timeFilter: selectedTimeFilter.value,
+                                    ),
+                                  );
+
                                   fetchCustomersBloc.add(FetchCustomers(
                                     limit: _pageSize,
                                     searchQuery: _searchController.text != ""
@@ -431,22 +451,8 @@ class _CustomerListPageState extends State<CustomerListPage> {
               ),
             ];
           },
-          body: BlocConsumer(
+          body: BlocBuilder(
             bloc: fetchCustomersBloc,
-            listener: (context, state) {
-              if (state is FetchCustomersLoaded) {
-                if (state.customers.isEmpty) {
-                  totalCustomer.value = 0;
-                  totalProductSold.value = 0;
-                } else {
-                  totalCustomer.value = state.customers.length;
-                  totalProductSold.value = state.customers.fold(
-                    0,
-                    (sum, customer) => sum += customer.totalProduct ?? 0,
-                  );
-                }
-              }
-            },
             builder: (context, state) {
               if (state is FetchCustomersLoading) {
                 return ListView.builder(
