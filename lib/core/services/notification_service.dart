@@ -1,8 +1,8 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
-  static const String CHANNEL_ID = "ezb_channel_1";
-  static const String CHANNEL_NAME = "Order Notifications";
+  static const String CHANNEL_ID = "MBOSS_Channel_1";
+  static const String CHANNEL_NAME = "Guarantee Notifications";
 
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -12,7 +12,6 @@ class NotificationService {
     print("Notification clicked: ${notificationResponse.payload}");
     if (notificationResponse.payload == 'instant_notification') {
       print("NAVIGATE ON CLICK NOTIFICATION");
-      // Điều hướng hoặc xử lý payload
     }
   }
 

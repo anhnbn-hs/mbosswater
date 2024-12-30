@@ -64,6 +64,7 @@ class CustomerDatasourceImpl extends CustomerDatasource {
       final querySnapshot = await firebaseFirestore
           .collection('guarantees')
           .where('customerID', isEqualTo: customerID)
+          .orderBy("createdAt", descending: true)
           .get();
 
       return querySnapshot.docs

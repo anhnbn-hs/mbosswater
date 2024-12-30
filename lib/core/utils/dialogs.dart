@@ -38,45 +38,7 @@ class DialogUtils {
   }
 
   static void hide(BuildContext context) {
-    Navigator.of(context).pop(); // Đóng dialog
-  }
-
-  static void showMessageDialogAutoClose(BuildContext context, String message) {
-    // Show a custom dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        Future.delayed(const Duration(seconds: 2), () {
-          Navigator.of(context).pop();
-        });
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          title: const Text(
-            'Success',
-            style: TextStyle(
-              fontFamily: "BeVietnam",
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const Icon(Icons.check_circle, color: Colors.green),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: Text(
-                message,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              )),
-            ],
-          ),
-        );
-      },
-    );
+    Navigator.of(context).pop();
   }
 
   static void showConfirmationDialog({

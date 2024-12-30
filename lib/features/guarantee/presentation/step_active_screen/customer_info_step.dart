@@ -43,19 +43,14 @@ class CustomerInfoStep extends StatefulWidget {
 
 class CustomerInfoStepState extends State<CustomerInfoStep>
     with AutomaticKeepAliveClientMixin {
-  final formKey = GlobalKey<FormState>();
 
   final nameController = TextEditingController();
-
   final addressController = TextEditingController();
-
   final phoneController = TextEditingController();
-
   final otpController = TextEditingController();
-
   final emailController = TextEditingController();
 
-  var pageController = PageController();
+  final pageController = PageController();
 
   // Focus Node
   final focusNodePhone = FocusNode();
@@ -103,11 +98,6 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     provincesBloc.add(FetchProvinces());
   }
 
-  void forceRebuild() {
-    provinceGlobalKey.currentState?.setState(() {});
-    districtGlobalKey.currentState?.setState(() {});
-    communeGlobalKey.currentState?.setState(() {});
-  }
 
   @override
   void dispose() {
@@ -133,219 +123,216 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     super.build(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Form(
-        key: formKey,
-        child: SingleChildScrollView(
-          child: BlocBuilder<FetchCustomerBloc, FetchCustomerState>(
-            builder: (context, state) {
-              Customer? customer;
-              if (state is FetchCustomerSuccess) {
-                customer = state.customer;
-                customerBloc.emitCustomer(customer);
+      child: SingleChildScrollView(
+        child: BlocBuilder<FetchCustomerBloc, FetchCustomerState>(
+          builder: (context, state) {
+            Customer? customer;
+            if (state is FetchCustomerSuccess) {
+              customer = state.customer;
+              customerBloc.emitCustomer(customer);
 
-                nameController.text = customer.fullName ?? "";
-                addressController.text = customer.address?.detail ?? "";
+              nameController.text = customer.fullName ?? "";
+              addressController.text = customer.address?.detail ?? "";
 
-                provincesBloc
-                    .selectProvince(Province(name: customer.address?.province));
+              provincesBloc
+                  .selectProvince(Province(name: customer.address?.province));
 
-                districtsBloc.emitDistrict(
-                  District(
-                    name: customer.address?.district,
-                    id: '',
-                    provinceId: '',
-                    type: null,
-                    typeText: '',
-                  ),
-                );
-
-                communesBloc.emitCommune(
-                  Commune(
-                    name: customer.address?.commune,
-                    id: '',
-                    districtId: "",
-                    type: null,
-                    typeText: '',
-                  ),
-                );
-              }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  buildTextFieldVerifyPhoneItem(
-                    label: "Số điện thoại",
-                    hint: "Số điện thoại",
-                    textButton: "GỬI MÃ",
-                    isPhoneField: true,
-                    onTap: () {
-                      /// Todo Send OTP SMS
-
-                      // Assign flag
-                      isOTPSent.value = true;
-                    },
-                    onTapOutSide: (phone) async =>
-                        handleCheckPhoneNumber(phone),
-                    onCompleted: (phone) async => handleCheckPhoneNumber(phone),
-                    isRequired: true,
-                    focusNode: focusNodePhone,
-                    inputType: TextInputType.number,
-                    controller: phoneController,
-                  ),
-                  const SizedBox(height: 12),
-                  ValueListenableBuilder(
-                    valueListenable: isOTPSent,
-                    builder: (context, value, child) {
-                      if (value == false) return const SizedBox.shrink();
-                      return Text(
-                        "Mã OTP đã được gửi đến số điện thoại",
-                        style: AppStyle.boxFieldLabel.copyWith(
-                          color: const Color((0xffD81E1E)),
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ValueListenableBuilder(
-                    valueListenable: isOTPSent,
-                    builder: (context, value, child) {
-                      if (value == false) {
-                        return const SizedBox.shrink();
-                      }
-                      return buildTextFieldVerifyPhoneItem(
-                        label: "Nhập mã OTP",
-                        hint: "Nhập mã OTP",
-                        textButton: "XÁC NHẬN",
-                        isPhoneField: false,
-                        onTap: () async => verifyOTP(),
-                        onTapOutSide: (p0) {},
-                        focusNode: focusNodeOTP,
-                        onCompleted: (p0) {},
-                        isRequired: true,
-                        inputType: TextInputType.number,
-                        controller: otpController,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  ValueListenableBuilder(
-                    valueListenable: isOTPCorrected,
-                    builder: (context, value, child) {
-                      if (value == true || value == null) {
-                        return const SizedBox.shrink();
-                      }
-                      return Text(
-                        "Nhập lại mã OTP",
-                        style: AppStyle.boxFieldLabel.copyWith(
-                          color: const Color((0xffD81E1E)),
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 12),
-                  ValueListenableBuilder(
-                    valueListenable: isOTPVerified,
-                    builder: (context, value, child) {
-                      if (value == false) return const SizedBox.shrink();
-                      return Column(
-                        children: [
-                          TextFieldLabelItem(
-                            isEnable: customer == null,
-                            label: "Họ và tên khách hàng",
-                            hint: "Nhập họ tên khách hàng",
-                            focusNode: focusNodeFullName,
-                            controller: nameController,
-                          ),
-                          const SizedBox(height: 20),
-                          Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: Row(
-                              children: [
-                                Text(
-                                  "Địa chỉ",
-                                  style: AppStyle.boxFieldLabel,
-                                ),
-                                Text(
-                                  " * ",
-                                  style: AppStyle.boxFieldLabel
-                                      .copyWith(color: const Color(0xff8A0E1E)),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          BlocBuilder(
-                            bloc: provincesBloc,
-                            builder: (context, state) {
-                              return buildAddressItem(
-                                isEnable: customer == null,
-                                label: provincesBloc.selectedProvince?.name ??
-                                    "Tỉnh/TP",
-                                addressType: AddressType.province,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          BlocBuilder(
-                            bloc: districtsBloc,
-                            builder: (context, state) {
-                              return buildAddressItem(
-                                isEnable: customer == null,
-                                label: districtsBloc.selectedDistrict?.name ??
-                                    "Quận/Huyện",
-                                addressType: AddressType.district,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          BlocBuilder(
-                            bloc: communesBloc,
-                            builder: (context, state) {
-                              return buildAddressItem(
-                                isEnable: customer == null,
-                                label: communesBloc.selectedCommune?.name ??
-                                    "Phường/Xã",
-                                addressType: AddressType.commune,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFieldLabelItem(
-                            label: "Địa chỉ chi tiết",
-                            hint: "Địa chỉ chi tiết",
-                            isEnable: customer == null,
-                            controller: addressController,
-                            focusNode: focusNodeAddress,
-                            isRequired: true,
-                          ),
-                          const SizedBox(height: 20),
-                          TextFieldLabelItem(
-                            label: "Email",
-                            hint: "Email",
-                            isEnable: customer == null,
-                            controller: emailController,
-                            isRequired: false,
-                          ),
-                          const SizedBox(height: 28),
-                          CustomButton(
-                            onTap: () {
-                              handleAndGoToNextStep();
-                            },
-                            textButton: "TIẾP TỤC",
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                ],
+              districtsBloc.emitDistrict(
+                District(
+                  name: customer.address?.district,
+                  id: '',
+                  provinceId: '',
+                  type: null,
+                  typeText: '',
+                ),
               );
-            },
-          ),
+
+              communesBloc.emitCommune(
+                Commune(
+                  name: customer.address?.commune,
+                  id: '',
+                  districtId: "",
+                  type: null,
+                  typeText: '',
+                ),
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildTextFieldVerifyPhoneItem(
+                  label: "Số điện thoại",
+                  hint: "Số điện thoại",
+                  textButton: "GỬI MÃ",
+                  isPhoneField: true,
+                  onTap: () {
+                    /// Todo Send OTP SMS
+
+                    // Assign flag if OTP sent
+                    isOTPSent.value = true;
+                  },
+                  onTapOutSide: (phone) async =>
+                      handleCheckPhoneNumber(phone),
+                  onCompleted: (phone) async => handleCheckPhoneNumber(phone),
+                  isRequired: true,
+                  focusNode: focusNodePhone,
+                  inputType: TextInputType.number,
+                  controller: phoneController,
+                ),
+                const SizedBox(height: 12),
+                ValueListenableBuilder(
+                  valueListenable: isOTPSent,
+                  builder: (context, value, child) {
+                    if (value == false) return const SizedBox.shrink();
+                    return Text(
+                      "Mã OTP đã được gửi đến số điện thoại",
+                      style: AppStyle.boxFieldLabel.copyWith(
+                        color: const Color((0xffD81E1E)),
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                ValueListenableBuilder(
+                  valueListenable: isOTPSent,
+                  builder: (context, value, child) {
+                    if (value == false) {
+                      return const SizedBox.shrink();
+                    }
+                    return buildTextFieldVerifyPhoneItem(
+                      label: "Nhập mã OTP",
+                      hint: "Nhập mã OTP",
+                      textButton: "XÁC NHẬN",
+                      isPhoneField: false,
+                      onTap: () async => verifyOTP(),
+                      onTapOutSide: (p0) {},
+                      focusNode: focusNodeOTP,
+                      onCompleted: (p0) {},
+                      isRequired: true,
+                      inputType: TextInputType.number,
+                      controller: otpController,
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                ValueListenableBuilder(
+                  valueListenable: isOTPCorrected,
+                  builder: (context, value, child) {
+                    if (value == true || value == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return Text(
+                      "Nhập lại mã OTP",
+                      style: AppStyle.boxFieldLabel.copyWith(
+                        color: const Color((0xffD81E1E)),
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 12),
+                ValueListenableBuilder(
+                  valueListenable: isOTPVerified,
+                  builder: (context, value, child) {
+                    if (value == false) return const SizedBox.shrink();
+                    return Column(
+                      children: [
+                        TextFieldLabelItem(
+                          isEnable: customer == null,
+                          label: "Họ và tên khách hàng",
+                          hint: "Nhập họ tên khách hàng",
+                          focusNode: focusNodeFullName,
+                          controller: nameController,
+                        ),
+                        const SizedBox(height: 20),
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Row(
+                            children: [
+                              Text(
+                                "Địa chỉ",
+                                style: AppStyle.boxFieldLabel,
+                              ),
+                              Text(
+                                " * ",
+                                style: AppStyle.boxFieldLabel
+                                    .copyWith(color: const Color(0xff8A0E1E)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        BlocBuilder(
+                          bloc: provincesBloc,
+                          builder: (context, state) {
+                            return buildAddressItem(
+                              isEnable: customer == null,
+                              label: provincesBloc.selectedProvince?.name ??
+                                  "Tỉnh/TP",
+                              addressType: AddressType.province,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        BlocBuilder(
+                          bloc: districtsBloc,
+                          builder: (context, state) {
+                            return buildAddressItem(
+                              isEnable: customer == null,
+                              label: districtsBloc.selectedDistrict?.name ??
+                                  "Quận/Huyện",
+                              addressType: AddressType.district,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        BlocBuilder(
+                          bloc: communesBloc,
+                          builder: (context, state) {
+                            return buildAddressItem(
+                              isEnable: customer == null,
+                              label: communesBloc.selectedCommune?.name ??
+                                  "Phường/Xã",
+                              addressType: AddressType.commune,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFieldLabelItem(
+                          label: "Địa chỉ chi tiết",
+                          hint: "Địa chỉ chi tiết",
+                          isEnable: customer == null,
+                          controller: addressController,
+                          focusNode: focusNodeAddress,
+                          isRequired: true,
+                        ),
+                        const SizedBox(height: 20),
+                        TextFieldLabelItem(
+                          label: "Email",
+                          hint: "Email",
+                          isEnable: customer == null,
+                          controller: emailController,
+                          isRequired: false,
+                        ),
+                        const SizedBox(height: 28),
+                        CustomButton(
+                          onTap: () {
+                            handleAndGoToNextStep();
+                          },
+                          textButton: "TIẾP TỤC",
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -540,7 +527,6 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
     final commune = communesBloc.selectedCommune;
     // Some fields
 
-    // bool validate = formKey.currentState!.validate();
     if (name.isEmpty ||
         phone.isEmpty ||
         detailAddress.isEmpty ||

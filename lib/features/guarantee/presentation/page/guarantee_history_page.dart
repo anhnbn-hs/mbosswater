@@ -160,26 +160,30 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                       ),
                     ),
                     if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 8, left: 3),
-                      child: Icon(Icons.edit_outlined, size: 20),
-                    )
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 8, left: 3),
+                        child: Icon(Icons.edit_outlined, size: 20),
+                      )
                   ],
                 ),
               ),
               BlocBuilder(
                 bloc: agencyBloc,
                 builder: (context, state) {
+                  print(state);
                   if (state is AgencyLoaded) {
                     return buildGuaranteeInfoItem(
                       label: "Đại lý",
                       value: state.agency.name,
                     );
                   }
-                  return buildGuaranteeInfoItem(
-                    label: "Đại lý",
-                    value: "Khách lẻ",
-                  );
+                  if (state is AgencyError) {
+                    return buildGuaranteeInfoItem(
+                      label: "Đại lý",
+                      value: "Khách lẻ",
+                    );
+                  }
+                  return const SizedBox.shrink();
                 },
               ),
               FutureBuilder<String?>(
@@ -327,14 +331,21 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 builder: (context, state) {
                   if (state is GuaranteeHistoryLoading) {
                     return Center(
-                      child: Lottie.asset(AppAssets.aLoading, height: 60),
+                      child: Lottie.asset(AppAssets.aLoading, height: 50),
                     );
                   }
                   if (state is GuaranteeHistoryListLoaded) {
                     if (state.guaranteeHistories.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          "Không có lịch sử bảo hành",
+                      return Center(
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 36),
+                          child: Text(
+                            "Không có lịch sử bảo hành",
+                            style: AppStyle.bodyText.copyWith(
+                              color: Colors.grey,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
                       );
                     }

@@ -348,6 +348,11 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                       }
                       if (state is FetchCustomersLoaded) {
                         List<CustomerReminder> customers = state.customers;
+
+                        // Customers map by province
+                        Map<String, List<CustomerReminder>>
+                            customersMapByProvinces = {};
+
                         if (selectedProvinceFilter.value != null &&
                             selectedProvinceFilter.value != "Tất cả") {
                           customers = customers.where((c) {
@@ -357,83 +362,43 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                             }
                             return false;
                           }).toList();
+
+                          customersMapByProvinces[
+                              selectedProvinceFilter.value!] = customers;
+                        } else {
+                          customers.forEach((c) {
+                            String province =
+                                c.customer.address?.province ?? "";
+                            customersMapByProvinces[province] = customers
+                                .where((c) =>
+                                    c.customer.address?.province == province)
+                                .toList();
+                          });
                         }
+                        var mapKeys = customersMapByProvinces.keys.toList();
                         return ListView.builder(
-                          itemCount: customers.length,
+                          itemCount: mapKeys.length,
                           itemBuilder: (context, index) {
-                            bool isNotified = false;
-                            String? note;
-
-                            final relevantReminders = customers[index]
-                                .reminder
-                                .reminderDates
-                                ?.where((e) {
-                              DateTime reminderDate = e.reminderDate.toDate();
-
-                              DateTime nextMonth = DateTime(
-                                focusDayNotifier.value.year,
-                                focusDayNotifier.value.month + 1,
-                                focusDayNotifier.value.day,
-                              );
-
-                              if (isInLastThreeDaysOfMonth(
-                                      focusDayNotifier.value) &&
-                                  focusDayNotifier.value.month != 12) {
-                                // Check if the reminder matches the focus day and is notified
-                                if (reminderDate.year ==
-                                        focusDayNotifier.value.year &&
-                                    reminderDate.month == nextMonth.month) {
-                                  return true;
-                                }
-                              } else if (isInLastThreeDaysOfMonth(
-                                      focusDayNotifier.value) &&
-                                  focusDayNotifier.value.month == 12) {
-                                if (reminderDate.year ==
-                                        focusDayNotifier.value.year + 1 &&
-                                    reminderDate.month == nextMonth.month) {
-                                  return true;
-                                }
-                              } else {
-                                if (reminderDate.year ==
-                                        focusDayNotifier.value.year &&
-                                    reminderDate.month ==
-                                        focusDayNotifier.value.month) {
-                                  return true;
-                                }
-                              }
-                              return false;
-                            }).toList();
-
-                            if (relevantReminders != null &&
-                                relevantReminders.isNotEmpty) {
-                              isNotified = relevantReminders.first.isNotified;
-                              note = relevantReminders.first.note;
-                            }
-
-                            return buildCustomerCardItem(
-                              phoneNumber:
-                                  customers[index].customer.phoneNumber ?? "",
-                              fullName:
-                                  customers[index].customer.fullName ?? "",
-                              province:
-                                  customers[index].customer.address?.province ??
-                                      "",
-                              isNotified: isNotified,
-                              onTap: () async {
-                                // Fetch guarantee
-                                fetchGuaranteeByIdCubit.fetchGuaranteeById(
-                                    customers[index].reminder.guaranteeId);
-                                // Show modal
-                                await showBottomSheetCustomerInformation(
-                                  customerReminder: customers[index],
-                                  reminderDate: relevantReminders
-                                          ?.first.reminderDate
-                                          .toDate() ??
-                                      DateTime.now(),
-                                  isNotified: isNotified,
-                                  node: note,
-                                );
-                              },
+                            final List<CustomerReminder>? customers =
+                                customersMapByProvinces[mapKeys[index]];
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 28),
+                                  child: Text(
+                                    mapKeys[index],
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: "BeVietnam",
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                buildListViewCustomers(customers!)
+                              ],
                             );
                           },
                         );
@@ -448,6 +413,74 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
           ),
         ),
       ),
+    );
+  }
+
+  ListView buildListViewCustomers(List<CustomerReminder> customers) {
+    return ListView.builder(
+      itemCount: customers.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        bool isNotified = false;
+        String? note;
+
+        final relevantReminders =
+            customers[index].reminder.reminderDates?.where((e) {
+          DateTime reminderDate = e.reminderDate.toDate();
+
+          DateTime nextMonth = DateTime(
+            focusDayNotifier.value.year,
+            focusDayNotifier.value.month + 1,
+            focusDayNotifier.value.day,
+          );
+
+          if (isInLastThreeDaysOfMonth(focusDayNotifier.value) &&
+              focusDayNotifier.value.month != 12) {
+            // Check if the reminder matches the focus day and is notified
+            if (reminderDate.year == focusDayNotifier.value.year &&
+                reminderDate.month == nextMonth.month) {
+              return true;
+            }
+          } else if (isInLastThreeDaysOfMonth(focusDayNotifier.value) &&
+              focusDayNotifier.value.month == 12) {
+            if (reminderDate.year == focusDayNotifier.value.year + 1 &&
+                reminderDate.month == nextMonth.month) {
+              return true;
+            }
+          } else {
+            if (reminderDate.year == focusDayNotifier.value.year &&
+                reminderDate.month == focusDayNotifier.value.month) {
+              return true;
+            }
+          }
+          return false;
+        }).toList();
+
+        if (relevantReminders != null && relevantReminders.isNotEmpty) {
+          isNotified = relevantReminders.first.isNotified;
+          note = relevantReminders.first.note;
+        }
+
+        return buildCustomerCardItem(
+          phoneNumber: customers[index].customer.phoneNumber ?? "",
+          fullName: customers[index].customer.fullName ?? "",
+          isNotified: isNotified,
+          onTap: () async {
+            // Fetch guarantee
+            fetchGuaranteeByIdCubit
+                .fetchGuaranteeById(customers[index].reminder.guaranteeId);
+            // Show modal
+            await showBottomSheetCustomerInformation(
+              customerReminder: customers[index],
+              reminderDate: relevantReminders?.first.reminderDate.toDate() ??
+                  DateTime.now(),
+              isNotified: isNotified,
+              node: note,
+            );
+          },
+        );
+      },
     );
   }
 
@@ -494,7 +527,6 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
   Widget buildCustomerCardItem({
     required String phoneNumber,
     required String fullName,
-    required String province,
     required VoidCallback onTap,
     bool isNotified = false,
   }) {
@@ -503,68 +535,50 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
         horizontal: 20,
         vertical: 8,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              province,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                fontFamily: "BeVietnam",
-              ),
-            ),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
           ),
-          const SizedBox(height: 10),
-          InkWell(
-            onTap: onTap,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: !isNotified
-                      ? const Color(0xff800000)
-                      : const Color(0xffDADADA),
-                  width: !isNotified ? 2.5 : 1,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: !isNotified
+                  ? const Color(0xff800000)
+                  : const Color(0xffDADADA),
+              width: !isNotified ? 2.5 : 1,
+            ),
+            borderRadius: BorderRadius.circular(10),
+            color: const Color(0xffFAFAFA),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Text(
+                fullName,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: "BeVietnam",
                 ),
-                borderRadius: BorderRadius.circular(10),
-                color: const Color(0xffFAFAFA),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Text(
-                    fullName,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "BeVietnam",
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    phoneNumber,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      fontFamily: "BeVietnam",
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                phoneNumber,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: "BeVietnam",
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
