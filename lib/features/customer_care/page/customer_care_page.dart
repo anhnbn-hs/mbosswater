@@ -279,7 +279,7 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
                 Expanded(
                   child: BlocConsumer<FetchCustomersCubit, FetchCustomersState>(
                     listener: (context, state) {
@@ -396,14 +396,12 @@ class _CustomerCarePageState extends State<CustomerCarePage> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 10),
                                 buildListViewCustomers(customers!)
                               ],
                             );
                           },
                         );
                       }
-
                       return const SizedBox.shrink();
                     },
                   ),
