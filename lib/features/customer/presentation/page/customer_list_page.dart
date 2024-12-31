@@ -7,7 +7,7 @@ import 'package:mbosswater/core/styles/app_assets.dart';
 import 'package:mbosswater/core/styles/app_styles.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
-import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
+import 'package:mbosswater/core/widgets/search_field.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/customer_stats_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_bloc.dart';
 import 'package:mbosswater/features/customer/presentation/bloc/fetch_customers_paginate_event.dart';
@@ -175,7 +175,6 @@ class _CustomerListPageState extends State<CustomerListPage> {
               const SizedBox(height: 16),
               BlocBuilder<CustomerStatsBloc, CustomerStatsState>(
                 builder: (context, state) {
-                  print(state);
                   return Column(
                     children: [
                       buildInfoItem(
@@ -529,7 +528,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
             height: 40,
             width: double.infinity,
             alignment: FractionalOffset.centerLeft,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.only(left: 12),
             decoration: BoxDecoration(
               color: const Color(0xffEEEEEE),
               borderRadius: BorderRadius.circular(10),

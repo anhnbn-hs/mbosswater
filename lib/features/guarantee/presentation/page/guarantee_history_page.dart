@@ -38,11 +38,17 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
   late AgencyBloc agencyBloc;
   late GuaranteeHistoryBloc guaranteeHistoryBloc;
   late ValueNotifier<String> modelNotifier;
+  late ValueNotifier<String> noteNotifier;
   late UserInfoBloc userInfoBloc;
 
+  final modelController = TextEditingController();
+  final noteController = TextEditingController();
+  final modelFocusNode = FocusNode();
+  final noteFocusNode = FocusNode();
   @override
   void initState() {
     modelNotifier = ValueNotifier(widget.guarantee.product.model ?? "");
+    noteNotifier = ValueNotifier(widget.guarantee.product.note ?? "");
     agencyBloc = BlocProvider.of<AgencyBloc>(context);
     guaranteeHistoryBloc = BlocProvider.of<GuaranteeHistoryBloc>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
@@ -170,7 +176,6 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
               BlocBuilder(
                 bloc: agencyBloc,
                 builder: (context, state) {
-                  print(state);
                   if (state is AgencyLoaded) {
                     return buildGuaranteeInfoItem(
                       label: "Đại lý",
@@ -231,16 +236,33 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                         color: const Color(0xffF6F6F6),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Align(
-                        alignment: FractionalOffset.centerLeft,
-                        child: Text(
-                          widget.guarantee.product.note ?? "",
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ValueListenableBuilder(
+                              valueListenable: noteNotifier,
+                              builder:(context, value, child) =>  Align(
+                                alignment: FractionalOffset.centerLeft,
+                                child: Text(
+                                  value,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                          if (userInfoBloc.user?.role == Roles.MBOSS_ADMIN)
+                            GestureDetector(
+                              onTap: () async => await showBottomSheetEditNote(),
+                              child: const Icon(
+                                Icons.edit_outlined,
+                                size: 20,
+                              ),
+                            )
+                        ],
                       ),
                     ),
                   ],
@@ -531,8 +553,7 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
     );
   }
 
-  final modelController = TextEditingController();
-  final modelFocusNode = FocusNode();
+
 
   @override
   void dispose() {
@@ -540,6 +561,9 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
     modelController.dispose();
     modelFocusNode.dispose();
     modelNotifier.dispose();
+    noteFocusNode.dispose();
+    noteNotifier.dispose();
+    noteController.dispose();
   }
 
   showBottomSheetEditModel() async {
@@ -611,45 +635,53 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
                 ),
                 const SizedBox(height: 24),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                          ),
+                          backgroundColor: const Color(0xffC2C2C2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Hủy',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontFamily: "BeVietnam",
-                          color: Colors.black87,
+                        child: const Text(
+                          'Hủy',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontFamily: "BeVietnam",
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () =>
-                          Navigator.pop(context, modelController.text),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            Navigator.pop(context, modelController.text),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
+                          backgroundColor: AppColors.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                        backgroundColor: AppColors.primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Lưu thay đổi',
-                        style: TextStyle(
-                          fontSize: 14,
-                          height: 1.2,
-                          fontFamily: "BeVietnam",
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
+                        child: const Text(
+                          'Cập nhật',
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.2,
+                            fontFamily: "BeVietnam",
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -673,5 +705,146 @@ class _GuaranteeHistoryPageState extends State<GuaranteeHistoryPage> {
       DialogUtils.hide(context);
     }
     modelController.text = "";
+  }
+
+  showBottomSheetEditNote() async {
+    final updatedNote = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        noteController.text = noteNotifier.value;
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Cập nhật ghi chú',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: "BeVietnam",
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: noteController,
+                  focusNode: noteFocusNode,
+                  onTapOutside: (event) =>
+                      FocusScope.of(context).requestFocus(FocusNode()),
+                  decoration: InputDecoration(
+                    labelText: 'Ghi chú',
+                    labelStyle: const TextStyle(color: Colors.black54),
+                    hintText: 'Nhập ghi chú',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1.5,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    prefixIcon: const Icon(Icons.phone_android),
+                  ),
+                  cursorColor: Colors.grey,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                          ),
+                          backgroundColor: const Color(0xffC2C2C2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Hủy',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontFamily: "BeVietnam",
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            Navigator.pop(context, noteController.text),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
+                          backgroundColor: AppColors.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cập nhật',
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.2,
+                            fontFamily: "BeVietnam",
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (updatedNote != null &&
+        updatedNote.trim() != widget.guarantee.product.note) {
+      DialogUtils.showLoadingDialog(context);
+      await FirebaseFirestore.instance
+          .collection("guarantees")
+          .doc(widget.guarantee.id)
+          .update({"product.note": updatedNote});
+      noteNotifier.value = updatedNote;
+      widget.guarantee.product.note = updatedNote;
+      DialogUtils.hide(context);
+    }
+    noteController.text = "";
   }
 }

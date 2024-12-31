@@ -459,17 +459,17 @@ class _MbossEditAgencyPageState extends State<MbossEditAgencyPage> {
                           ),
                           const SizedBox(height: 20),
                           TextFieldLabelItem(
-                            label: "Email",
-                            hint: "Email",
-                            isRequired: false,
-                            controller: agencyBossEmailController,
-                          ),
-                          const SizedBox(height: 20),
-                          TextFieldLabelItem(
                             label: "Căn cước công dân",
                             hint: "Số CMT/CCCD",
                             isRequired: false,
                             controller: agencyBossCCCDController,
+                          ),
+                          const SizedBox(height: 20),
+                          TextFieldLabelItem(
+                            label: "Email",
+                            hint: "Email",
+                            isRequired: false,
+                            controller: agencyBossEmailController,
                           ),
                         ],
                       );

@@ -74,24 +74,39 @@ class Reminder {
 
   void generateReminderDates(int cycleMonths) {
     List<ReminderDateModel> dates = [];
-    DateTime current = createdAt.toDate();  // Convert createdAt (Timestamp) to DateTime
+    DateTime current = createdAt.toDate();
 
-    // Add reminder dates based on the cycleMonths interval
     while (current.isBefore(endDate) || current.isAtSameMomentAs(endDate)) {
-      // Add cycleMonths to the current date
       current = DateTime(
         current.year,
-        current.month + cycleMonths, // Add months
+        current.month + cycleMonths,
         current.day,
       );
 
-      // Ensure the reminder doesn't go past the endDate
+      // Kiểm tra nếu ngày vượt quá ngày cuối của tháng
+      if (current.month > 12) {
+        int yearOffset = (current.month - 1) ~/ 12;
+        current = DateTime(
+          current.year + yearOffset,
+          (current.month - 1) % 12 + 1,
+          current.day,
+        );
+      }
+
+      // Điều chỉnh ngày nếu không hợp lệ (vd: 31 tháng 6 -> 30 tháng 6)
+      if (current.day != createdAt.toDate().day) {
+        current = DateTime(
+          current.year,
+          current.month,
+          0, // Ngày 0 chuyển thành ngày cuối của tháng trước
+        );
+      }
+
       if (current.isBefore(endDate) || current.isAtSameMomentAs(endDate)) {
         if (dates.length == 3) {
           break;
         }
 
-        // Create ReminderDateModel for each reminder date
         dates.add(
           ReminderDateModel(
             reminderDate: Timestamp.fromDate(current),
@@ -103,6 +118,7 @@ class Reminder {
 
     reminderDates = dates;
   }
+
 
   // Method to add a reminder date with a note and notification flag
   void addReminderDate(DateTime reminderDate, {String? note, bool isNotified = false}) {

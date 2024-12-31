@@ -184,11 +184,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
         guarantee.createdAt.toDate().toUtc().add(const Duration(hours: 7));
     final startDateFormatted = DateFormat("dd/MM/yyyy").format(startDate);
     bool expired = isExpired(guarantee.endDate);
-    int remainingMonth = getRemainingMonths(
-      guarantee.endDate.toUtc().add(
-            const Duration(hours: 7),
-          ),
-    );
+    int remainingMonth = getRemainingMonths(guarantee.endDate.toUtc());
     return GestureDetector(
       onTap: () {
         context.push(
@@ -305,27 +301,29 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
-              child: isSelectable ? SelectableText(
-                value,
-                maxLines: maxLine,
-                textAlign: TextAlign.end,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ) : Text(
-                value,
-                maxLines: maxLine,
-                textAlign: TextAlign.end,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+              child: isSelectable
+                  ? SelectableText(
+                      value,
+                      maxLines: maxLine,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )
+                  : Text(
+                      value,
+                      maxLines: maxLine,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
             ),
           ),
         ],

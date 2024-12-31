@@ -14,6 +14,7 @@ import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
+import 'package:mbosswater/core/widgets/search_field.dart';
 import 'package:mbosswater/core/widgets/text_field_label_item.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/create_agency_staff_bloc.dart';
 import 'package:mbosswater/features/agency/presentation/bloc/delete_agency_staff_bloc.dart';
@@ -49,6 +50,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   late CommunesBloc communesUserBloc;
 
   // Controller
+  final searchController = TextEditingController();
+
   PageController pageController = PageController();
 
   final nameController = TextEditingController();
@@ -79,6 +82,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
 
   final GlobalKey _sliverAppBarContentKey = GlobalKey();
   double _sliverAppBarHeight = kToolbarHeight;
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +107,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   @override
   void dispose() {
     super.dispose();
+    searchController.dispose();
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
@@ -115,8 +120,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
   }
 
   void _calculateSliverAppBarHeight() {
-    final RenderBox? renderBox =
-    _sliverAppBarContentKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox = _sliverAppBarContentKey.currentContext
+        ?.findRenderObject() as RenderBox?;
     if (renderBox != null) {
       setState(() {
         _sliverAppBarHeight = renderBox.size.height + kToolbarHeight;
@@ -131,7 +136,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
         Container(
           height: 40,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.only(left: 12),
           margin: const EdgeInsets.symmetric(horizontal: 20),
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
@@ -139,7 +144,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: SearchField(
-            hint: "Tìm kiếm theo tên",
+            hint: "Tìm kiếm theo tên hoặc số điện thoại",
+            controller: searchController,
             onSearch: (value) {
               fetchAgencyStaffBloc.searchStaff(value);
             },
@@ -299,7 +305,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           return Padding(
                             padding: const EdgeInsets.only(top: 100),
                             child: Text(
-                              "Đại lý của bạn chưa có nhân viên nào!",
+                              "Không có nhân viên nào!",
                               style: AppStyle.bodyText,
                             ),
                           );
@@ -337,7 +343,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                       state == true) {
                     DialogUtils.hide(context);
                     DialogUtils.hide(context);
-                    await fetchAgencyStaffBloc.fetchAgencyStaffs(userInfoBloc.user?.agency ?? "");
+                    await fetchAgencyStaffBloc
+                        .fetchAgencyStaffs(userInfoBloc.user?.agency ?? "");
                   }
                 },
                 child: const SizedBox.shrink(),
@@ -349,7 +356,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                       state == true) {
                     DialogUtils.hide(context);
                     DialogUtils.hide(context);
-                    await fetchAgencyStaffBloc.fetchAgencyStaffs(userInfoBloc.user?.agency ?? "");
+                    await fetchAgencyStaffBloc
+                        .fetchAgencyStaffs(userInfoBloc.user?.agency ?? "");
                   }
                 },
                 child: const SizedBox.shrink(),
@@ -361,7 +369,8 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                       state == true) {
                     DialogUtils.hide(context);
                     DialogUtils.hide(context);
-                    await fetchAgencyStaffBloc.fetchAgencyStaffs(userInfoBloc.user?.agency ?? "");
+                    await fetchAgencyStaffBloc
+                        .fetchAgencyStaffs(userInfoBloc.user?.agency ?? "");
                   }
                 },
                 child: const SizedBox.shrink(),
@@ -1081,9 +1090,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                             controller: phoneController,
                             focusNode: focusNodePhone,
                             inputType: TextInputType.phone,
-                            formatter: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
+                            formatter: [FilteringTextInputFormatter.digitsOnly],
                           ),
                           const SizedBox(height: 12),
                           Align(
@@ -1109,18 +1116,18 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                             bloc: provincesUserBloc,
                             builder: (context, state) {
                               return buildAddressItem(
-                                label: provincesUserBloc
-                                    .selectedProvince?.name ??
-                                    "Tỉnh/TP",
+                                label:
+                                    provincesUserBloc.selectedProvince?.name ??
+                                        "Tỉnh/TP",
                                 addressType: AddressType.province,
                               );
-                            },),
+                            },
+                          ),
                           const SizedBox(height: 12),
                           BlocBuilder(
                             bloc: districtsUserBloc,
                             builder: (context, state) => buildAddressItem(
-                              label: districtsUserBloc
-                                  .selectedDistrict?.name ??
+                              label: districtsUserBloc.selectedDistrict?.name ??
                                   "Quận/Huyện",
                               addressType: AddressType.district,
                             ),
@@ -1129,8 +1136,7 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
                           BlocBuilder(
                             bloc: communesUserBloc,
                             builder: (context, state) => buildAddressItem(
-                              label: communesUserBloc
-                                  .selectedCommune?.name ??
+                              label: communesUserBloc.selectedCommune?.name ??
                                   "Phường/Xã",
                               addressType: AddressType.commune,
                             ),
@@ -1175,12 +1181,14 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
           ),
         );
       },
-    ).then((value) {
-      selectedRole.value = null;
-      provincesUserBloc.selectedProvince = null;
-      districtsUserBloc.selectedDistrict = null;
-      communesUserBloc.selectedCommune = null;
-    },);
+    ).then(
+      (value) {
+        selectedRole.value = null;
+        provincesUserBloc.selectedProvince = null;
+        districtsUserBloc.selectedDistrict = null;
+        communesUserBloc.selectedCommune = null;
+      },
+    );
   }
 
   handleDeleteStaff(UserModel? user) async {
@@ -1204,7 +1212,6 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
     String addressDetail = addressDetailController.text.trim();
     String cccd = cccdController.text.trim();
 
-
     if (fullName.isEmpty) {
       DialogUtils.showWarningDialog(
         context: context,
@@ -1223,7 +1230,6 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
       );
       return;
     }
-
 
     if (phoneNumber.isEmpty) {
       DialogUtils.showWarningDialog(
@@ -1246,7 +1252,6 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
       return;
     }
 
-
     if (addressDetail.isEmpty) {
       DialogUtils.showWarningDialog(
         context: context,
@@ -1256,7 +1261,6 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
       focusNodeAddress.requestFocus();
       return;
     }
-
 
     DialogUtils.showConfirmationDialog(
       context: context,
@@ -1411,7 +1415,6 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
             .get();
 
         if (userDoc.docs.isEmpty) {
-
           // Check if email exists
           if (email.isNotEmpty) {
             final emailQuerySnapshot = await FirebaseFirestore.instance
@@ -1484,7 +1487,6 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
             onClickOutSide: () {},
           );
         }
-
       },
     );
   }
@@ -1556,69 +1558,4 @@ class _AgencyStaffManagementState extends State<AgencyStaffManagement> {
 
 enum ShowType { view, create, update }
 
-class SearchField extends StatefulWidget {
-  final Function(String) onSearch;
-  final String hint;
-  TextEditingController? controller;
 
-  SearchField({
-    super.key,
-    required this.onSearch,
-    required this.hint,
-    this.controller,
-  });
-
-  @override
-  State<SearchField> createState() => _SearchFieldState();
-}
-
-class _SearchFieldState extends State<SearchField> {
-  Timer? _debounce;
-
-  void _onSearchChanged(String query) {
-    // Hủy Timer cũ nếu có
-    if (_debounce?.isActive ?? false) {
-      _debounce?.cancel();
-    }
-
-    // Tạo Timer mới
-    _debounce = Timer(const Duration(milliseconds: 800), () {
-      widget.onSearch(query);
-    });
-  }
-
-  @override
-  void dispose() {
-    // Hủy Timer khi Widget bị dispose
-    _debounce?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: widget.controller,
-      onChanged: (value) => _onSearchChanged(value),
-      onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()),
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        fontFamily: 'BeVietNam',
-        color: Color(0xff3C3C43),
-      ),
-      textAlignVertical: TextAlignVertical.center,
-      decoration: InputDecoration(
-        border: const UnderlineInputBorder(borderSide: BorderSide.none),
-        hintText: widget.hint,
-        hintStyle: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-          fontFamily: 'BeVietNam',
-          color: Colors.grey.shade500,
-        ),
-        isCollapsed: true,
-      ),
-      cursorColor: Colors.grey,
-    );
-  }
-}

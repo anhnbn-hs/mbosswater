@@ -64,8 +64,6 @@ class CycleBloc extends Bloc<CycleEvent, CycleState> {
         }
       }
 
-      print(groupedReminders);
-
       // Convert grouped data to List<GuaranteeDateModel>
       List<GuaranteeDateModel> results = groupedReminders.entries
           .map((entry) => GuaranteeDateModel(entry.key, entry.value))

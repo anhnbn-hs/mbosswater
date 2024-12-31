@@ -33,25 +33,36 @@ class FeatureGridItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ImageHelper.loadAssetImage(
-                assetIcon,
-                width: 26,
-                height: 26,
-                fit: BoxFit.fill,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: ImageHelper.loadAssetImage(
+                  assetIcon,
+                  width: 26,
+                  height: 26,
+                  fit: BoxFit.fill,
+                ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: AppStyle.titleItem,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: AppStyle.subTitleItem,
-              ),
-              const SizedBox(height: 3),
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: AppStyle.titleItem.copyWith(
+                          color: const Color(0xffAD1227),
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: AppStyle.subTitleItem,
+                      ),
+                    ],
+                  ),
+                ),
+              )
             ],
           ),
         ),

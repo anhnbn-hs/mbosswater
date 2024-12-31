@@ -166,6 +166,7 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                   textButton: "GỬI MÃ",
                   isPhoneField: true,
                   onTap: () {
+                    customerBloc.reset();
                     /// Todo Send OTP SMS
 
                     // Assign flag if OTP sent

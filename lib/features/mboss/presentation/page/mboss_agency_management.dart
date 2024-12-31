@@ -16,8 +16,8 @@ import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
 import 'package:mbosswater/core/widgets/filter_dropdown.dart';
+import 'package:mbosswater/core/widgets/search_field.dart';
 import 'package:mbosswater/core/widgets/text_field_label_item.dart';
-import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
 import 'package:mbosswater/features/guarantee/data/model/agency.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
@@ -59,6 +59,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
   late CommunesBloc communesUserBloc;
 
   // Text editing controller
+  final searchController = TextEditingController();
   final agencyNameController = TextEditingController();
   final agencyAddressController = TextEditingController();
   final agencyBossNameController = TextEditingController();
@@ -119,6 +120,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
   @override
   void dispose() {
     super.dispose();
+    searchController.dispose();
     agencyNameController.dispose();
     agencyAddressController.dispose();
     agencyBossNameController.dispose();
@@ -356,7 +358,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
         Container(
           height: 40,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.only(left: 12),
           margin: const EdgeInsets.symmetric(horizontal: 20),
           alignment: Alignment.center,
           decoration: BoxDecoration(
@@ -365,6 +367,7 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
           ),
           child: SearchField(
             hint: "Tìm kiếm theo tên hoặc địa chỉ",
+            controller: searchController,
             onSearch: (value) {
               fetchAgenciesBloc.searchAgency(value.trim().toLowerCase());
             },
@@ -733,17 +736,17 @@ class _MbossAgencyManagementState extends State<MbossAgencyManagement> {
                         ),
                         const SizedBox(height: 12),
                         TextFieldLabelItem(
-                          label: "Email",
-                          hint: "Email",
-                          isRequired: false,
-                          controller: agencyBossEmailController,
-                        ),
-                        const SizedBox(height: 12),
-                        TextFieldLabelItem(
                           label: "Căn cước công dân",
                           hint: "Số CMT/CCCD",
                           isRequired: false,
                           controller: agencyBossCCCDController,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFieldLabelItem(
+                          label: "Email",
+                          hint: "Email",
+                          isRequired: false,
+                          controller: agencyBossEmailController,
                         ),
                         const SizedBox(height: 28),
                         CustomButton(

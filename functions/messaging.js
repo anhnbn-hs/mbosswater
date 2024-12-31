@@ -123,8 +123,21 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
 
         const userData = userSnapshot.data();
 
-        const technicalName = userData?.fullName || "Unknown";
-        const agencyID = userData?.agency;
+        const technicalName = userData?.fullName;
+
+        var agencyID = userData?.agency;
+
+        if (agencyID === undefined) {
+            const customerID = guaranteeData["customerID"];
+            const customerSnapshot = await admin.firestore().collection('customers').doc(customerID).get();
+            if (!customerSnapshot.exists) {
+                console.log(`Customer with ID ${customerID} does not exist.`);
+                return;
+            }
+            agencyID = customerSnapshot.data()["agency"];
+        }
+
+
 
         // Gửi thông báo cho Agency Admin
         await sendNotificationToAgencyAdmin(agencyID, guaranteeId, technicalName);
@@ -136,7 +149,7 @@ exports.sendNotificationWhenGuaranteeActivated = onDocumentCreated('guarantees/{
             return;
         }
 
-        const agencyName = agencySnapshot.data()?.name || "Unknown";
+        const agencyName = agencySnapshot.data()?.name;
         await sendNotificationToMbossAdmin(guaranteeId, agencyName);
 
     } catch (error) {

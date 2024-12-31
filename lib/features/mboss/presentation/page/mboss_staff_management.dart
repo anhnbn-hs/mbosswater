@@ -13,8 +13,8 @@ import 'package:mbosswater/core/utils/encryption_helper.dart';
 import 'package:mbosswater/core/utils/function_utils.dart';
 import 'package:mbosswater/core/utils/image_helper.dart';
 import 'package:mbosswater/core/widgets/custom_button.dart';
+import 'package:mbosswater/core/widgets/search_field.dart';
 import 'package:mbosswater/core/widgets/text_field_label_item.dart';
-import 'package:mbosswater/features/agency/presentation/page/agency_staff_management.dart';
 import 'package:mbosswater/features/customer/presentation/widgets/customer_card_item_shimmer.dart';
 import 'package:mbosswater/features/guarantee/data/model/commune.dart';
 import 'package:mbosswater/features/guarantee/data/model/customer.dart';
@@ -48,6 +48,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   late CommunesBloc communesUserBloc;
 
   // Controller
+  final searchController = TextEditingController();
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
@@ -123,6 +124,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
   @override
   void dispose() {
     super.dispose();
+    searchController.dispose();
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
@@ -149,7 +151,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
         Container(
           height: 40,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.only(left: 12),
           margin: const EdgeInsets.symmetric(horizontal: 20),
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
@@ -158,6 +160,7 @@ class _MbossStaffManagementState extends State<MbossStaffManagement> {
           ),
           child: SearchField(
             hint: "Tìm kiếm theo tên hoặc số điện thoại",
+            controller: searchController,
             onSearch: (value) {
               mbossStaffBloc.searchStaff(value);
             },

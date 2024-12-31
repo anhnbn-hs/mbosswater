@@ -329,7 +329,8 @@ showBottomSheetChooseAddressAgency({
                                 provincesAgencyBloc
                                     ?.add(SearchProvinces(value));
                               },
-                              onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
+                              onTapOutside: (event) => FocusScope.of(context)
+                                  .requestFocus(FocusNode()),
                               decoration: InputDecoration(
                                 hintText: "Tìm kiếm tỉnh thành",
                                 hintStyle:
@@ -418,7 +419,9 @@ showBottomSheetChooseAddressAgency({
                                     districtsAgencyBloc
                                         ?.add(SearchDistrict(value));
                                   },
-                                  onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
+                                  onTapOutside: (event) =>
+                                      FocusScope.of(context)
+                                          .requestFocus(FocusNode()),
                                   decoration: InputDecoration(
                                     hintText: "Tìm kiếm quận huyện",
                                     hintStyle: AppStyle.boxField
@@ -528,7 +531,8 @@ showBottomSheetChooseAddressAgency({
                               onChanged: (value) {
                                 communesAgencyBloc?.add(SearchCommunes(value));
                               },
-                              onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
+                              onTapOutside: (event) => FocusScope.of(context)
+                                  .requestFocus(FocusNode()),
                               decoration: InputDecoration(
                                 hintText: "Tìm kiếm phường xã",
                                 hintStyle:
@@ -739,7 +743,6 @@ showBottomSheetChooseAddress({
                 child: ListTile(
                   onTap: () {
                     communesBloc?.selectCommune(communes[index]);
-
                     context.pop();
                   },
                   leading: null,
@@ -822,11 +825,16 @@ showBottomSheetChooseAddress({
                           ),
                           child: Center(
                             child: TextField(
-                              style: AppStyle.boxField.copyWith(fontSize: 15),
+
+                              style: AppStyle.boxField.copyWith(
+                                fontSize: 15,
+                                color: Colors.black87,
+                              ),
                               onChanged: (value) {
                                 provincesBloc?.add(SearchProvinces(value));
                               },
-                              onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
+                              onTapOutside: (event) => FocusScope.of(context)
+                                  .requestFocus(FocusNode()),
                               decoration: InputDecoration(
                                 hintText: "Tìm kiếm tỉnh thành",
                                 hintStyle:
@@ -836,6 +844,7 @@ showBottomSheetChooseAddress({
                                   size: 20,
                                   color: Colors.grey,
                                 ),
+
                                 contentPadding:
                                     const EdgeInsets.symmetric(vertical: 12),
                                 border: const UnderlineInputBorder(
@@ -912,7 +921,9 @@ showBottomSheetChooseAddress({
                                   onChanged: (value) {
                                     districtsBloc?.add(SearchDistrict(value));
                                   },
-                                  onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
+                                  onTapOutside: (event) =>
+                                      FocusScope.of(context)
+                                          .requestFocus(FocusNode()),
                                   decoration: InputDecoration(
                                     hintText: "Tìm kiếm quận huyện",
                                     hintStyle: AppStyle.boxField
@@ -1020,7 +1031,8 @@ showBottomSheetChooseAddress({
                               onChanged: (value) {
                                 communesBloc?.add(SearchCommunes(value));
                               },
-                              onTapOutside: (event) =>  FocusScope.of(context).requestFocus(FocusNode()),
+                              onTapOutside: (event) => FocusScope.of(context)
+                                  .requestFocus(FocusNode()),
                               decoration: InputDecoration(
                                 hintText: "Tìm kiếm phường xã",
                                 hintStyle:

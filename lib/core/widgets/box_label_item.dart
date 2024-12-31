@@ -50,14 +50,15 @@ class BoxLabelItem extends StatelessWidget {
               Expanded(
                 child: Text(
                   fieldValue,
-                  style: AppStyle.boxField.copyWith(),
+                  style: AppStyle.boxField.copyWith(color: Colors.black87),
+                  maxLines: 10,
                 ),
               ),
               icon != null
                   ? Icon(
                       icon,
                       size: 20,
-                      color: Colors.grey,
+                      color: Colors.black87,
                     )
                   : const SizedBox.shrink()
             ],

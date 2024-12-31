@@ -33,15 +33,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final searchController = TextEditingController();
   late CustomerSearchBloc bloc;
   late UserInfoBloc userInfoBloc;
+  final ValueNotifier<bool> _hasValueNotifier = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
     bloc = BlocProvider.of<CustomerSearchBloc>(context);
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
+  }
+
+  @override
+  void dispose() {
+    _hasValueNotifier.dispose();
+    super.dispose();
   }
 
   @override
@@ -258,7 +264,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: FeatureGridItem(
-                    title: "Cài đặt tài khoản",
+                    title: "Cài đặt",
                     subtitle: "Thông tin tài khoản",
                     assetIcon: AppAssets.icAccount,
                     onTap: () => context.push("/user-profile"),
@@ -321,7 +327,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: FeatureGridItem(
-                    title: "Cài đặt tài khoản",
+                    title: "Cài đặt",
                     subtitle: "Thông tin tài khoản",
                     assetIcon: AppAssets.icAccount,
                     onTap: () => context.push("/user-profile"),
@@ -399,7 +405,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: FeatureGridItem(
-                    title: "Cài đặt tài khoản",
+                    title: "Cài đặt",
                     subtitle: "Thông tin tài khoản",
                     assetIcon: AppAssets.icAccount,
                     onTap: () => context.push("/user-profile"),
@@ -448,7 +454,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: FeatureGridItem(
-                    title: "Cài đặt tài khoản",
+                    title: "Cài đặt",
                     subtitle: "Thông tin tài khoản",
                     assetIcon: AppAssets.icAccount,
                     onTap: () => context.push("/user-profile"),
@@ -464,6 +470,67 @@ class _HomePageState extends State<HomePage> {
       default:
     }
     return body;
+  }
+
+  Widget _buildTextField(BuildContext context, TextEditingController controller,
+      FocusNode focusNode) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: _hasValueNotifier,
+      builder: (context, hasValue, child) {
+        return TextField(
+          controller: controller,
+          focusNode: focusNode,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(
+            fontFamily: "BeVietnam",
+            color: Colors.black87,
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+          ),
+          cursorColor: Colors.grey,
+          textAlignVertical: TextAlignVertical.center,
+          onTapOutside: (event) =>
+              FocusScope.of(context).requestFocus(FocusNode()),
+          onChanged: (value) {
+            if(value == ""){
+              _hasValueNotifier.value = false;
+            } else {
+              _hasValueNotifier.value = true;
+            }
+          },
+          decoration: InputDecoration(
+            border: const UnderlineInputBorder(
+              borderSide: BorderSide.none,
+            ),
+            prefixIcon: const Icon(
+              Icons.search,
+              color: Colors.grey,
+            ),
+            suffixIcon: hasValue
+                ? IconButton(
+                    onPressed: () {
+                      controller.clear();
+                      _hasValueNotifier.value = false;
+                    },
+                    icon: const Icon(
+                      Icons.clear,
+                      color: Colors.grey,
+                      size: 20,
+                    ),
+                  )
+                : null,
+            hintText: "Tìm kiếm theo SĐT",
+            hintStyle: const TextStyle(
+              fontFamily: "BeVietnam",
+              color: Color(0xffA7A7A7),
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+            ),
+            isCollapsed: true,
+          ),
+        );
+      },
+    );
   }
 
   Widget buildSearchSection(BuildContext context) {
@@ -504,38 +571,7 @@ class _HomePageState extends State<HomePage> {
             return null;
           },
           builder: (context, controller, focusNode) {
-            return TextField(
-              controller: controller,
-              focusNode: focusNode,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(
-                fontFamily: "BeVietnam",
-                color: Colors.black87,
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-              ),
-              cursorColor: Colors.grey,
-              textAlignVertical: TextAlignVertical.center,
-              onTapOutside: (event) =>
-                  FocusScope.of(context).requestFocus(FocusNode()),
-              decoration: const InputDecoration(
-                border: UnderlineInputBorder(
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Colors.grey,
-                ),
-                hintText: "Tìm kiếm theo SĐT",
-                hintStyle: TextStyle(
-                  fontFamily: "BeVietnam",
-                  color: Color(0xffA7A7A7),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                ),
-                isCollapsed: true,
-              ),
-            );
+            return _buildTextField(context, controller, focusNode);
           },
           loadingBuilder: (context) {
             return Container(
@@ -639,12 +675,12 @@ class _HomePageState extends State<HomePage> {
   Future<void> handleLogout(BuildContext context) async {
     try {
       DialogUtils.showLoadingDialog(context);
-      // await FirebaseAuth.instance.signOut();
       await PreferencesUtils.deleteValue(loginSessionKey);
+      /// Todo delete token both Android and IOS (IOS need setting APNS)
       if (Platform.isAndroid) {
         await FirebaseMessaging.instance.deleteToken();
       }
-      await Future.delayed(const Duration(milliseconds: 800));
+      await Future.delayed(const Duration(milliseconds: 500));
       userInfoBloc.reset();
       DialogUtils.hide(context);
       Navigator.of(context).pushReplacement(
