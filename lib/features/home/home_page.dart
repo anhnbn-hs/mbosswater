@@ -230,58 +230,62 @@ class _HomePageState extends State<HomePage> {
       case Roles.AGENCY_BOSS:
         body = Column(
           children: <Widget>[
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Kích hoạt bảo hành",
-                    subtitle: "Quét mã sản phẩm\ntại đây",
-                    assetIcon: AppAssets.icGuarantee,
-                    onTap: () {
-                      context.push(
-                        '/qrcode-scanner',
-                        extra: ScanType.activate,
-                      );
-                    },
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Kích hoạt bảo hành",
+                      subtitle: "Quét mã sản phẩm\ntại đây",
+                      assetIcon: AppAssets.icGuarantee,
+                      onTap: () {
+                        context.push(
+                          '/qrcode-scanner',
+                          extra: ScanType.activate,
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Khách hàng",
-                    subtitle: "Danh sách khách hàng",
-                    assetIcon: AppAssets.icCustomer,
-                    onTap: () => context.push("/customer-list"),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Khách hàng",
+                      subtitle: "Danh sách khách hàng",
+                      assetIcon: AppAssets.icCustomer,
+                      onTap: () => context.push("/customer-list"),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
 
             // Management
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Cài đặt",
-                    subtitle: "Thông tin tài khoản",
-                    assetIcon: AppAssets.icAccount,
-                    onTap: () => context.push("/user-profile"),
+            IntrinsicHeight(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Cài đặt",
+                      subtitle: "Thông tin tài khoản",
+                      assetIcon: AppAssets.icAccount,
+                      onTap: () => context.push("/user-profile"),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Quản lý nhân viên",
-                    subtitle: "Quản lý thông tin\nnhân viên",
-                    assetIcon: AppAssets.icTeamManagement,
-                    onTap: () {
-                      context.push("/agency-staff-management");
-                    },
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Quản lý nhân viên",
+                      subtitle: "Quản lý thông tin\nnhân viên",
+                      assetIcon: AppAssets.icTeamManagement,
+                      onTap: () {
+                        context.push("/agency-staff-management");
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         );
@@ -291,179 +295,193 @@ class _HomePageState extends State<HomePage> {
             Roles.MBOSS_TECHNICAL:
         body = Column(
           children: <Widget>[
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Kích hoạt bảo hành",
-                    subtitle: "Quét mã sản phẩm\ntại đây",
-                    assetIcon: AppAssets.icGuarantee,
-                    onTap: () {
-                      context.push(
-                        '/qrcode-scanner',
-                        extra: ScanType.activate,
-                      );
-                    },
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Kích hoạt bảo hành",
+                      subtitle: "Quét mã sản phẩm\ntại đây",
+                      assetIcon: AppAssets.icGuarantee,
+                      onTap: () {
+                        context.push(
+                          '/qrcode-scanner',
+                          extra: ScanType.activate,
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Yêu cầu bảo hành",
-                    subtitle: "Điền đơn yêu cầu tại đây",
-                    assetIcon: AppAssets.icRequest,
-                    onTap: () {
-                      context.push(
-                        '/qrcode-scanner',
-                        extra: ScanType.request,
-                      );
-                    },
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Yêu cầu bảo hành",
+                      subtitle: "Điền đơn yêu cầu tại đây",
+                      assetIcon: AppAssets.icRequest,
+                      onTap: () {
+                        context.push(
+                          '/qrcode-scanner',
+                          extra: ScanType.request,
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Cài đặt",
-                    subtitle: "Thông tin tài khoản",
-                    assetIcon: AppAssets.icAccount,
-                    onTap: () => context.push("/user-profile"),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Cài đặt",
+                      subtitle: "Thông tin tài khoản",
+                      assetIcon: AppAssets.icAccount,
+                      onTap: () => context.push("/user-profile"),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                    child: Container(
-                  width: double.infinity,
-                )),
-              ],
-            )
+                  const SizedBox(width: 20),
+                  Expanded(
+                      child: Container(
+                    width: double.infinity,
+                  )),
+                ],
+              ),
+            ),
           ],
         );
         break;
       case Roles.MBOSS_ADMIN:
         body = Column(
           children: <Widget>[
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Kích hoạt bảo hành",
-                    subtitle: "Quét mã sản phẩm\ntại đây",
-                    assetIcon: AppAssets.icGuarantee,
-                    onTap: () {
-                      context.push(
-                        '/qrcode-scanner',
-                        extra: ScanType.activate,
-                      );
-                    },
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Kích hoạt bảo hành",
+                      subtitle: "Quét mã sản phẩm\ntại đây",
+                      assetIcon: AppAssets.icGuarantee,
+                      onTap: () {
+                        context.push(
+                          '/qrcode-scanner',
+                          extra: ScanType.activate,
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Quản lý đại lý",
-                    subtitle: "Quản lý thông tin\nđại lý",
-                    assetIcon: AppAssets.icAgencyManagement,
-                    onTap: () {
-                      context.push('/mboss-agency-management');
-                    },
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Quản lý đại lý",
+                      subtitle: "Quản lý thông tin\nđại lý",
+                      assetIcon: AppAssets.icAgencyManagement,
+                      onTap: () {
+                        context.push('/mboss-agency-management');
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Quản lý nhân viên",
-                    subtitle: "Quản lý thông tin\nnhân viên",
-                    assetIcon: AppAssets.icTeamManagement,
-                    onTap: () {
-                      context.push('/mboss-staff-management');
-                    },
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Quản lý nhân viên",
+                      subtitle: "Quản lý thông tin\nnhân viên",
+                      assetIcon: AppAssets.icTeamManagement,
+                      onTap: () {
+                        context.push('/mboss-staff-management');
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Quản lý khách hàng",
-                    subtitle: "Quản lý thông tin\nkhách hàng",
-                    assetIcon: AppAssets.icCustomer,
-                    onTap: () {
-                      context.push('/customer-list');
-                    },
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Quản lý khách hàng",
+                      subtitle: "Quản lý thông tin\nkhách hàng",
+                      assetIcon: AppAssets.icCustomer,
+                      onTap: () {
+                        context.push('/customer-list');
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Cài đặt",
-                    subtitle: "Thông tin tài khoản",
-                    assetIcon: AppAssets.icAccount,
-                    onTap: () => context.push("/user-profile"),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Cài đặt",
+                      subtitle: "Thông tin tài khoản",
+                      assetIcon: AppAssets.icAccount,
+                      onTap: () => context.push("/user-profile"),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                const Spacer(),
-              ],
-            )
+                  const SizedBox(width: 20),
+                  const Spacer(),
+                ],
+              ),
+            ),
           ],
         );
         break;
       case Roles.MBOSS_CUSTOMERCARE:
         body = Column(
           children: <Widget>[
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "CSKH",
-                    subtitle: "Chăm sóc khách hàng",
-                    assetIcon: AppAssets.icCSKH,
-                    onTap: () {
-                      context.push('/customer-care');
-                    },
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "CSKH",
+                      subtitle: "Chăm sóc khách hàng",
+                      assetIcon: AppAssets.icCSKH,
+                      onTap: () {
+                        context.push('/customer-care');
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Yêu cầu bảo hành",
-                    subtitle: "Điền đơn yêu cầu tại đây",
-                    assetIcon: AppAssets.icRequest,
-                    onTap: () {
-                      context.push(
-                        '/qrcode-scanner',
-                        extra: ScanType.request,
-                      );
-                    },
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Yêu cầu bảo hành",
+                      subtitle: "Điền đơn yêu cầu tại đây",
+                      assetIcon: AppAssets.icRequest,
+                      onTap: () {
+                        context.push(
+                          '/qrcode-scanner',
+                          extra: ScanType.request,
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: FeatureGridItem(
-                    title: "Cài đặt",
-                    subtitle: "Thông tin tài khoản",
-                    assetIcon: AppAssets.icAccount,
-                    onTap: () => context.push("/user-profile"),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FeatureGridItem(
+                      title: "Cài đặt",
+                      subtitle: "Thông tin tài khoản",
+                      assetIcon: AppAssets.icAccount,
+                      onTap: () => context.push("/user-profile"),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                const Spacer(),
-              ],
-            )
+                  const SizedBox(width: 20),
+                  const Spacer(),
+                ],
+              ),
+            ),
           ],
         );
         break;

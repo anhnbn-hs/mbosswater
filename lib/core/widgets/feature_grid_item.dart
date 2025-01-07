@@ -23,7 +23,6 @@ class FeatureGridItem extends StatelessWidget {
         splashColor: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          height: 102,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
@@ -31,7 +30,7 @@ class FeatureGridItem extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
@@ -42,10 +41,11 @@ class FeatureGridItem extends StatelessWidget {
                   fit: BoxFit.fill,
                 ),
               ),
+              const SizedBox(height: 8),
               Expanded(
                 child: Center(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
                         title,

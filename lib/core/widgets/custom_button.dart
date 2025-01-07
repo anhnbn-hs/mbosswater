@@ -5,12 +5,14 @@ class CustomButton extends StatelessWidget {
   final VoidCallback onTap;
   final String textButton;
   BorderRadius? borderRadius;
+  bool? secondaryButton;
 
   CustomButton({
     super.key,
     required this.onTap,
     required this.textButton,
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    this.secondaryButton = false,
   });
 
   @override
@@ -23,7 +25,7 @@ class CustomButton extends StatelessWidget {
           height: 50,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.primaryColor,
+            color: secondaryButton == true ? const Color(0xffC2C2C2) : AppColors.primaryColor,
             borderRadius: borderRadius,
           ),
           child: Center(

@@ -105,28 +105,57 @@ class _GuaranteeAfterStepState extends State<GuaranteeAfterStep>
           ),
         ),
         const Spacer(),
-        CustomButton(
-          onTap: () {
-            if (widget.stateAfterController.text.trim().isEmpty) {
-              DialogUtils.showWarningDialog(
-                context: context,
-                title: "Hãy nhập tình trạng sau bảo hành!",
-                onClickOutSide: () {},
-              );
-              return;
-            }
-            if (pickedImageNotifier.value == null) {
-              DialogUtils.showWarningDialog(
-                context: context,
-                title: "Hãy chụp ảnh tình trạng sau bảo hành để tiếp tục!",
-                onClickOutSide: () {},
-              );
-              return;
-            }
-            widget.onConfirm(pickedImageNotifier.value);
-          },
-          textButton: "XÁC NHẬN",
-        ),
+        if (widget.stateAfterController.text.trim().isEmpty || pickedImageNotifier.value == null)
+          ...[
+            CustomButton(
+              onTap: () {
+                if (widget.stateAfterController.text.trim().isEmpty) {
+                  DialogUtils.showWarningDialog(
+                    context: context,
+                    title: "Hãy nhập tình trạng sau bảo hành!",
+                    onClickOutSide: () {},
+                  );
+                  return;
+                }
+                if (pickedImageNotifier.value == null) {
+                  DialogUtils.showWarningDialog(
+                    context: context,
+                    title: "Hãy chụp ảnh tình trạng sau bảo hành để tiếp tục!",
+                    onClickOutSide: () {},
+                  );
+                  return;
+                }
+                widget.onConfirm(pickedImageNotifier.value);
+              },
+              textButton: "XÁC NHẬN",
+              secondaryButton: true,
+            ),
+          ]
+        else 
+          ...[
+            CustomButton(
+              onTap: () {
+                if (widget.stateAfterController.text.trim().isEmpty) {
+                  DialogUtils.showWarningDialog(
+                    context: context,
+                    title: "Hãy nhập tình trạng sau bảo hành!",
+                    onClickOutSide: () {},
+                  );
+                  return;
+                }
+                if (pickedImageNotifier.value == null) {
+                  DialogUtils.showWarningDialog(
+                    context: context,
+                    title: "Hãy chụp ảnh tình trạng sau bảo hành để tiếp tục!",
+                    onClickOutSide: () {},
+                  );
+                  return;
+                }
+                widget.onConfirm(pickedImageNotifier.value);
+              },
+              textButton: "XÁC NHẬN",
+            ),
+          ],
         const SizedBox(height: 24),
       ],
     );
