@@ -320,24 +320,13 @@ class CustomerInfoStepState extends State<CustomerInfoStep>
                           isRequired: false,
                         ),
                         const SizedBox(height: 28),
-                        if (checkInput())
-                        ...[
-                          CustomButton(
-                            onTap: () {
-                              handleAndGoToNextStep();
-                            },
-                            textButton: "TIẾP TỤC",
-                          ),
-                        ]
-                        else ...[
-                          CustomButton(
-                            onTap: () {
-                              handleAndGoToNextStep();
-                            },
-                            textButton: "TIẾP TỤC",
-                            secondaryButton: true,
-                          ),
-                        ]
+                        CustomButton(
+                          onTap: () {
+                            handleAndGoToNextStep();
+                          },
+                          textButton: "TIẾP TỤC",
+                          secondaryButton: checkInput() ? false : true,
+                        ),
                       ],
                     );
                   },

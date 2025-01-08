@@ -20,10 +20,21 @@ class GuaranteeAfterStep extends StatefulWidget {
 class _GuaranteeAfterStepState extends State<GuaranteeAfterStep>
     with AutomaticKeepAliveClientMixin {
   ValueNotifier<XFile?> pickedImageNotifier = ValueNotifier(null);
+  bool isButtonDisabled = true;
 
   Future<void> pickImage(ImageSource source) async {
     final ImagePicker imagePicker = ImagePicker();
     final XFile? image = await imagePicker.pickImage(source: source);
+
+    if (image == null) {
+      setState(() {
+        isButtonDisabled = true;
+      });
+    } else if (widget.stateAfterController.text.trim().isNotEmpty) {
+      setState(() {
+        isButtonDisabled = false;
+      });
+    }
 
     if (image == null) return;
 
@@ -31,6 +42,22 @@ class _GuaranteeAfterStepState extends State<GuaranteeAfterStep>
 
     // Upload image logic
     // await uploadImage(image);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.stateAfterController.addListener(() {
+      if (widget.stateAfterController.text.trim().isEmpty) {
+        setState(() {
+          isButtonDisabled = true;
+        });
+      } else if (pickedImageNotifier.value != null) {
+        setState(() {
+          isButtonDisabled = false;
+        });
+      }
+    });
   }
 
   @override
@@ -105,57 +132,29 @@ class _GuaranteeAfterStepState extends State<GuaranteeAfterStep>
           ),
         ),
         const Spacer(),
-        if (widget.stateAfterController.text.trim().isEmpty || pickedImageNotifier.value == null)
-          ...[
-            CustomButton(
-              onTap: () {
-                if (widget.stateAfterController.text.trim().isEmpty) {
-                  DialogUtils.showWarningDialog(
-                    context: context,
-                    title: "Hãy nhập tình trạng sau bảo hành!",
-                    onClickOutSide: () {},
-                  );
-                  return;
-                }
-                if (pickedImageNotifier.value == null) {
-                  DialogUtils.showWarningDialog(
-                    context: context,
-                    title: "Hãy chụp ảnh tình trạng sau bảo hành để tiếp tục!",
-                    onClickOutSide: () {},
-                  );
-                  return;
-                }
-                widget.onConfirm(pickedImageNotifier.value);
-              },
-              textButton: "XÁC NHẬN",
-              secondaryButton: true,
-            ),
-          ]
-        else 
-          ...[
-            CustomButton(
-              onTap: () {
-                if (widget.stateAfterController.text.trim().isEmpty) {
-                  DialogUtils.showWarningDialog(
-                    context: context,
-                    title: "Hãy nhập tình trạng sau bảo hành!",
-                    onClickOutSide: () {},
-                  );
-                  return;
-                }
-                if (pickedImageNotifier.value == null) {
-                  DialogUtils.showWarningDialog(
-                    context: context,
-                    title: "Hãy chụp ảnh tình trạng sau bảo hành để tiếp tục!",
-                    onClickOutSide: () {},
-                  );
-                  return;
-                }
-                widget.onConfirm(pickedImageNotifier.value);
-              },
-              textButton: "XÁC NHẬN",
-            ),
-          ],
+        CustomButton(
+          onTap: () {
+            if (widget.stateAfterController.text.trim().isEmpty) {
+              DialogUtils.showWarningDialog(
+                context: context,
+                title: "Hãy nhập tình trạng sau bảo hành!",
+                onClickOutSide: () {},
+              );
+              return;
+            }
+            if (pickedImageNotifier.value == null) {
+              DialogUtils.showWarningDialog(
+                context: context,
+                title: "Hãy chụp ảnh tình trạng sau bảo hành để tiếp tục!",
+                onClickOutSide: () {},
+              );
+              return;
+            }
+            widget.onConfirm(pickedImageNotifier.value);
+          },
+          textButton: "XÁC NHẬN",
+          secondaryButton: isButtonDisabled ? true : false,
+        ),
         const SizedBox(height: 24),
       ],
     );

@@ -40,6 +40,7 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
   late UserInfoBloc userInfoBloc;
   late FetchCustomerBloc fetchCustomerBloc;
   Customer? customer;
+  bool isButtonDisabled = true;
 
   ValueNotifier<XFile?> pickedImageNotifier = ValueNotifier(null);
 
@@ -49,6 +50,17 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
     fetchCustomerBloc = BlocProvider.of<FetchCustomerBloc>(context);
     fetchCustomerBloc.add(FetchCustomerByProduct(widget.product.id));
+    widget.reasonController.addListener(() {
+      if (widget.reasonController.text.trim().isEmpty) {
+        setState(() {
+          isButtonDisabled = true;
+        });
+      } else if (pickedImageNotifier.value != null) {
+        setState(() {
+          isButtonDisabled = false;
+        });
+      }
+    });
   }
 
   @override
@@ -201,59 +213,30 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
                     ),
                   ),
                   const SizedBox(height: 40),
-                  if (widget.reasonController.text.trim().isEmpty || pickedImageNotifier.value == null)
-                    ...[
-                      CustomButton(
-                        onTap: () {
-                          if (widget.reasonController.text.trim().isEmpty) {
-                            DialogUtils.showWarningDialog(
-                              context: context,
-                              title: "Hãy nhập nguyên nhân bảo hành để tiếp tục!",
-                              onClickOutSide: () {},
-                            );
-                            return;
-                          }
-                          if (pickedImageNotifier.value == null) {
-                            DialogUtils.showWarningDialog(
-                              context: context,
-                              title:
-                                  "Hãy chụp ảnh tình trạng trước bảo hành để tiếp tục!",
-                              onClickOutSide: () {},
-                            );
-                            return;
-                          }
-                          widget.onNextStep();
-                        },
-                        textButton: "TIẾP TỤC",
-                        secondaryButton: true,
-                      ),
-                    ]
-                  else
-                    ...[
-                      CustomButton(
-                        onTap: () {
-                          if (widget.reasonController.text.trim().isEmpty) {
-                            DialogUtils.showWarningDialog(
-                              context: context,
-                              title: "Hãy nhập nguyên nhân bảo hành để tiếp tục!",
-                              onClickOutSide: () {},
-                            );
-                            return;
-                          }
-                          if (pickedImageNotifier.value == null) {
-                            DialogUtils.showWarningDialog(
-                              context: context,
-                              title:
-                                  "Hãy chụp ảnh tình trạng trước bảo hành để tiếp tục!",
-                              onClickOutSide: () {},
-                            );
-                            return;
-                          }
-                          widget.onNextStep();
-                        },
-                        textButton: "TIẾP TỤC",
-                      ),
-                    ],
+                  CustomButton(
+                    onTap: () {
+                      if (widget.reasonController.text.trim().isEmpty) {
+                        DialogUtils.showWarningDialog(
+                          context: context,
+                          title: "Hãy nhập nguyên nhân bảo hành để tiếp tục!",
+                          onClickOutSide: () {},
+                        );
+                        return;
+                      }
+                      if (pickedImageNotifier.value == null) {
+                        DialogUtils.showWarningDialog(
+                          context: context,
+                          title:
+                              "Hãy chụp ảnh tình trạng trước bảo hành để tiếp tục!",
+                          onClickOutSide: () {},
+                        );
+                        return;
+                      }
+                      widget.onNextStep();
+                    },
+                    textButton: "TIẾP TỤC",
+                    secondaryButton: isButtonDisabled ? true : false,
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -268,6 +251,16 @@ class GuaranteeBeforeStepState extends State<GuaranteeBeforeStep>
   Future<void> pickImage(ImageSource source) async {
     final ImagePicker imagePicker = ImagePicker();
     final XFile? image = await imagePicker.pickImage(source: source);
+
+    if (image == null) {
+      setState(() {
+        isButtonDisabled = true;
+      });
+    } else if (widget.reasonController.text.trim().isNotEmpty) {
+      setState(() {
+        isButtonDisabled = false;
+      });
+    }
 
     if (image == null) return;
 

@@ -190,33 +190,17 @@ class ProductInfoStepState extends State<ProductInfoStep>
               ),
             ),
             const SizedBox(height: 40),
-            if (modelController.text.isEmpty)
-              ...[
-                CustomButton(
-                  onTap: () {
-                    if (checkModelTextEditingController()) {
-                      if (checkAgencySelected()) {
-                        widget.onNextStep();
-                      }
-                    }
-                  },
-                  textButton: "TIẾP TỤC",
-                  secondaryButton: true,
-                ),
-              ]
-            else
-            ...[
-              CustomButton(
-                onTap: () {
-                  if (checkModelTextEditingController()) {
-                    if (checkAgencySelected()) {
-                      widget.onNextStep();
-                    }
+            CustomButton(
+              onTap: () {
+                if (checkModelTextEditingController()) {
+                  if (checkAgencySelected()) {
+                    widget.onNextStep();
                   }
-                },
-                textButton: "TIẾP TỤC",
-              ),
-            ],
+                }
+              },
+              textButton: "TIẾP TỤC",
+              secondaryButton: modelController.text.isEmpty ? true : false,
+            ),
             const SizedBox(height: 24),
           ],
         ),
