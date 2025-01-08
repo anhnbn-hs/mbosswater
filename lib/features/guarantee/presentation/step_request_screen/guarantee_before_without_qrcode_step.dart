@@ -37,11 +37,23 @@ class GuaranteeBeforeWithoutQRCodeStepState
   Customer? customer;
   Guarantee? guarantee;
   ValueNotifier<XFile?> pickedImageNotifier = ValueNotifier(null);
+  bool isButtonDisabled = true;
 
   @override
   void initState() {
     super.initState();
     userInfoBloc = BlocProvider.of<UserInfoBloc>(context);
+    widget.reasonController.addListener(() {
+      if (widget.reasonController.text.trim().isEmpty) {
+        setState(() {
+          isButtonDisabled = true;
+        });
+      } else if (pickedImageNotifier.value != null) {
+        setState(() {
+          isButtonDisabled = false;
+        });
+      }
+    });
   }
 
   @override
@@ -53,6 +65,16 @@ class GuaranteeBeforeWithoutQRCodeStepState
   Future<void> pickImage(ImageSource source) async {
     final ImagePicker imagePicker = ImagePicker();
     final XFile? image = await imagePicker.pickImage(source: source);
+
+    if (image == null) {
+      setState(() {
+        isButtonDisabled = true;
+      });
+    } else if (widget.reasonController.text.trim().isNotEmpty) {
+      setState(() {
+        isButtonDisabled = false;
+      });
+    }
 
     if (image == null) return;
 
@@ -188,6 +210,7 @@ class GuaranteeBeforeWithoutQRCodeStepState
                 widget.onNextStep();
               },
               textButton: "TIẾP TỤC",
+              secondaryButton: isButtonDisabled ? true : false,
             ),
             const SizedBox(height: 24),
           ],
