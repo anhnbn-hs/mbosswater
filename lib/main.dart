@@ -91,7 +91,7 @@ void main() async {
       providers: [
         BlocProvider(create: (_) => sl<LoginBloc>()),
         BlocProvider(create: (_) => sl<UserInfoBloc>()),
-        BlocProvider(create: (_) => sl<VerifyOtpBloc>()),
+        BlocProvider(create: (_) => VerifyOtpBloc()),
         BlocProvider(create: (_) => sl<ChangePasswordBloc>()),
         BlocProvider(create: (_) => sl<ProvincesBloc>()),
         BlocProvider(create: (_) => ProvincesMetadataBloc()),
